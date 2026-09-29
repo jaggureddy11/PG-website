@@ -1,5 +1,10 @@
-/* CHARLA LIVING — motion & interaction layer */
-(function () {
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+
+gsap.registerPlugin(ScrollTrigger);
+
+export function initSiteInteractions() {
   "use strict";
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -359,12 +364,11 @@
 
   /* ── hero entrance ── */
   gsap.timeline({ defaults: { ease: "power3.out" } })
-    .fromTo(".hero__copy [data-reveal]", { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, stagger: 0.12 }, 0.15)
-    .fromTo(".hero__img--main", { y: 28, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 1.4 }, 0.35);
+    .fromTo(".site-hero__copy [data-reveal]", { y: 32, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.1 }, 0.15);
 
   /* ── scroll reveals ── */
   gsap.utils.toArray("[data-reveal]").forEach((el) => {
-    if (el.closest(".hero")) return;
+    if (el.closest(".site-hero") || el.matches(".audiences__grid .acard")) return;
     gsap.fromTo(
       el,
       { y: 42, opacity: 0 },
@@ -375,8 +379,38 @@
     );
   });
 
+  /* ── connected audience-card sequence ── */
+  const audienceGrid = document.querySelector(".audiences__grid");
+  if (audienceGrid) {
+    const cards = [...audienceGrid.querySelectorAll(".acard")];
+    const timeline = gsap.timeline({
+      scrollTrigger: { trigger: audienceGrid, start: "top 80%", once: true },
+    });
+
+    cards.forEach((card, index) => {
+      const position = index * 0.24;
+      timeline.fromTo(
+        card,
+        { y: 42, opacity: 0, clipPath: "inset(0 0 18% 0 round 14px)" },
+        { y: 0, opacity: 1, clipPath: "inset(0 0 0% 0 round 14px)", duration: 0.82, ease: "power3.out" },
+        position,
+      );
+
+      const marker = card.querySelector(".acard__index");
+      if (marker) {
+        timeline.fromTo(
+          marker,
+          { scale: 0.86, backgroundColor: "#14283b" },
+          { scale: 1.08, backgroundColor: "#f8750b", duration: 0.22, yoyo: true, repeat: 1, ease: "power1.inOut" },
+          position + 0.56,
+        );
+      }
+    });
+  }
+
   /* ── image mask reveals ── */
   gsap.utils.toArray("[data-mask]").forEach((el) => {
+    if (el.closest(".audiences__grid")) return;
     const img = el.querySelector("img");
     gsap.fromTo(el,
       { clipPath: "inset(12% 12% 12% 12% round 20px)", opacity: 0.4 },
@@ -423,9 +457,4 @@
     scrollTrigger: { trigger: ".how__steps", start: "top 78%", end: "bottom 55%", scrub: 0.8 },
   });
 
-  /* ── hero media drift on scroll ── */
-  gsap.to(".hero__media", {
-    y: -60, ease: "none",
-    scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1 },
-  });
-})();
+}
