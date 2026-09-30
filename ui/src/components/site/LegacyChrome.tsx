@@ -8,8 +8,7 @@ export function LegacyChrome() {
   <header className="nav" id="nav">
     <div className="container nav__inner">
       <a href="#home" className="brand" aria-label="Charla Living home">
-        <img src="assets/logo.png" alt="Charla Living logo" className="brand__mark" />
-        <span className="brand__word">Charla<em>Living</em></span>
+        <img src="assets/logo.png" alt="Charla Living" className="brand__mark" width={96} height={64} />
       </a>
       <nav className="nav__links" aria-label="Primary">
         <a href="#residences">Residences</a>

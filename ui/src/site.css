@@ -168,15 +168,18 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   gap: 24px;
   height: 76px;
 }
-.brand { display: inline-flex; align-items: center; gap: 12px; }
-.brand__mark { width: 42px; height: 42px; object-fit: contain; }
-.brand__word {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 520;
-  letter-spacing: -.01em;
+.brand { display: inline-flex; align-items: center; }
+.brand__mark {
+  height: 64px;
+  width: auto;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
 }
-.brand__word em { font-style: normal; color: var(--blue); }
+.brand__mark--footer {
+  height: 76px;
+}
+.brand__word { display: none; }
 .nav__links { display: flex; gap: 26px; }
 .nav__links a {
   font-size: 14.5px;
@@ -1061,8 +1064,9 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 .visit__panel .eyebrow { justify-content: center; }
 .visit__logo {
   display: block;
-  width: 112px;
-  height: 112px;
+  height: 120px;
+  width: auto;
+  max-width: 200px;
   object-fit: contain;
   margin: 24px auto 10px;
   filter: drop-shadow(0 8px 18px rgba(0, 15, 42, .28));
@@ -1528,7 +1532,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   .faq__q svg { padding: 7px; }
   .faq__a p { padding: 0 20px 22px 62px; }
   .visit__panel { min-height: 0; padding: 56px 24px; border-radius: 24px; }
-  .visit__logo { width: 96px; height: 96px; margin-top: 18px; }
+  .visit__logo { height: 96px; width: auto; margin-top: 18px; }
   .visit__form { flex-direction: column; }
   .visit__field { width: 100%; }
   .visit__form .btn { justify-content: center; }
@@ -1550,14 +1554,18 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   .pin__tip { display: none; }
 }
 
+@media (max-width: 480px) {
+  .brand__mark { height: 50px; }
+  .footer__brand .brand__mark { height: 64px; }
+}
+
 @media (max-width: 360px) {
   .nav__inner { gap: 8px; }
   .nav__cta { gap: 0; }
   .nav__phone { width: 44px; height: 44px; justify-content: center; flex: none; }
   .nav__burger { flex: none; }
-  .brand { gap: 8px; }
-  .brand__mark { width: 36px; height: 36px; }
-  .brand__word { font-size: 20px; }
+  .brand { gap: 0; }
+  .brand__mark { height: 44px; }
   .stats__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat { padding-inline: 8px; }
   .stat__num { font-size: 2.25rem; }

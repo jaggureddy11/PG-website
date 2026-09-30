@@ -5,9 +5,8 @@ export function LegacyFooter() {
   <div className="container">
     <div className="footer__grid">
       <div className="footer__brand">
-        <a href="#home" className="brand">
-          <img src="assets/logo.png" alt="Charla Living logo" className="brand__mark" />
-          <span className="brand__word">Charla<em>Living</em></span>
+        <a href="#home" className="brand" aria-label="Charla Living home">
+          <img src="assets/logo.png" alt="Charla Living" className="brand__mark brand__mark--footer" width={114} height={76} />
         </a>
         <p>Six family-run PG residences across South Bengaluru, hosting students and professionals since 2019.</p>
         <div className="footer__social">
