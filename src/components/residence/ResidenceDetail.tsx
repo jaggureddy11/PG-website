@@ -203,17 +203,6 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
 
   return (
     <div className="residence-page">
-      {/* ─── TOPBAR ─── */}
-      <div className="topbar">
-        <p>
-          <span>Zero brokerage</span>
-          <i />
-          <span>1-month deposit</span>
-          <i />
-          <span>South Bengaluru residences</span>
-        </p>
-      </div>
-
       {/* ─── MINIMAL HEADER ─── */}
       <header className="nav" id="nav">
         <div className="container nav__inner">

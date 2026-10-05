@@ -121,17 +121,6 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, currentPage
 
   return (
     <>
-      {/* ── Top Reassurance Bar ── */}
-      <div className="topbar">
-        <p>
-          <span>Zero Brokerage</span>
-          <i />
-          <span>1-Month Refundable Deposit</span>
-          <i />
-          <span>Managed Residences Across South Bengaluru</span>
-        </p>
-      </div>
-
       {/* ── Main Navigation Bar ── */}
       <header className={`nav ${isScrolled ? "scrolled" : ""}`} id="nav">
         <div className="container nav__inner">
