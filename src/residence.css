@@ -1297,6 +1297,13 @@
     justify-content: center;
   }
   
+  .residence-booking-field input,
+  .residence-booking-field select {
+    font-size: 16px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
   .residence-floating-bar {
     display: flex;
     position: fixed;
@@ -1308,7 +1315,7 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-top: 1px solid var(--line);
-    padding: 10px 16px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 -4px 20px rgba(12, 27, 52, 0.1);

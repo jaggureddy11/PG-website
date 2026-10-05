@@ -629,7 +629,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   border: none;
   background: transparent;
   font: inherit;
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--ink);
   outline: none;
@@ -2771,9 +2771,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   .nav__links { display: none; }
   .nav__cta { display: none; }
   .nav__mobile-actions { display: flex; }
-  .nav__burger {
-    display: flex;
-  }
+  .nav__burger { display: flex; }
   .hero__grid { grid-template-columns: 1fr; }
   .hero__media { min-height: 480px; margin-top: 12px; }
   .hero__img--main { left: 24px; }
@@ -2784,99 +2782,550 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   .residences__grid, .audiences__grid { grid-template-columns: repeat(2, 1fr); }
   .food__favs { grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .food__meals { grid-template-columns: repeat(2, 1fr); }
-  .mapwrap { height: 520px; }
+  .mapwrap { height: 500px; }
   .footer__grid { grid-template-columns: repeat(2, 1fr); gap: 40px; }
   .footer__brand { grid-column: 1 / -1; }
 }
 
-@media (max-width: 720px) {
-  .topbar { font-size: 11px; padding: 6px 12px; }
-  .topbar p { gap: 8px; }
-  .nav__inner { height: 64px; }
-  .brand__mark { height: 44px; }
-  .hero__media { min-height: 400px; }
-  .stories__marquee--columns { grid-template-columns: 1fr; height: 540px; }
-  .hero__badge-spin { display: none; }
-  .finder__go { justify-content: center; }
-  .stats__grid { grid-template-columns: 1fr 1fr; row-gap: 36px; }
-  .stat:nth-child(3)::before { display: none; }
-  .residences__grid, .audiences__grid, .amenities__list { grid-template-columns: 1fr; }
-  .rcard__top { flex-direction: column; gap: 8px; }
-  .rcard__price { align-self: flex-start; }
-  .food__favs { grid-template-columns: repeat(2, 1fr); }
-  .food__menu-head { flex-direction: column; align-items: stretch; }
-  .food__days { align-self: flex-start; max-width: 100%; overflow-x: auto; }
-  .food__meals { grid-template-columns: 1fr; }
-  .food__nav { display: none; }
-  .section-head--row { flex-direction: column; align-items: flex-start; gap: 20px; }
+@media (max-width: 768px) {
+  .container {
+    width: min(100% - 32px, 1240px);
+  }
+
+  /* ── Header & Topbar ── */
+  .topbar {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+  .topbar p {
+    gap: 8px;
+    justify-content: center;
+  }
+  .nav__inner {
+    height: 62px;
+  }
+  .brand__mark {
+    height: 46px;
+  }
+
+  /* ── Hero Section ── */
+  .hero-title {
+    font-size: clamp(2rem, 7.5vw, 3rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero-finder {
+    width: 100%;
+    max-width: 100%;
+  }
+  .finder {
+    flex-direction: column;
+    padding: 8px;
+    gap: 8px;
+    border-radius: 18px;
+  }
+  .finder__search-box {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 12px;
+    border-radius: 12px;
+  }
+  .finder__input {
+    font-size: 16px;
+  }
+  .finder__go {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 15.5px;
+  }
+  .hero__proof {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 12px;
+    margin-top: 18px;
+    padding: 0 4px;
+  }
+
+  /* ── Stats Section ── */
+  .stats {
+    padding: 44px 0 36px;
+    background: #FFFFFF;
+  }
+  .stats__grid {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 28px;
+    column-gap: 16px;
+  }
+  .stat {
+    padding: 8px 4px;
+    text-align: center;
+    border: none;
+  }
+  .stat::before {
+    display: none;
+  }
+  .stat__num {
+    font-size: clamp(2rem, 7.5vw, 2.75rem);
+    letter-spacing: -0.02em;
+  }
+  .stat__label {
+    font-size: 12.5px;
+    line-height: 1.35;
+    margin-top: 4px;
+  }
+
+  /* ── Story Zigzag Section ── */
+  .story-zigzag-section {
+    padding: 56px 0 36px;
+    overflow: hidden;
+  }
+  .story-thread-svg {
+    display: none !important;
+  }
+  .story-zigzag-wrap {
+    gap: 44px;
+  }
+  .story-row {
+    flex-direction: column !important;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .story-collage {
+    width: 100%;
+    max-width: 360px;
+    height: 230px;
+    min-height: 230px;
+    margin: 0 auto;
+  }
+  .story-card--tall {
+    width: 58%;
+    height: 200px;
+    border-radius: 18px;
+  }
+  .story-card--wide {
+    width: 66%;
+    height: 130px;
+    border-radius: 16px;
+  }
+  .story-content {
+    width: 100%;
+    text-align: left;
+    padding: 0 4px;
+  }
+  .story-title {
+    font-size: clamp(1.35rem, 5vw, 1.8rem);
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .story-desc {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  /* ── Residences & Chips ── */
+  .chips {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 4px 0 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  .residences__grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .rcard {
+    border-radius: 18px;
+  }
+  .rcard__img {
+    height: 220px;
+  }
+  .rcard__body {
+    padding: 18px 16px;
+  }
+  .rcard__top {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .rcard__price {
+    align-self: flex-start;
+  }
+  .rcard__actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .rcard__actions .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* ── Locations & Map ── */
+  .locations {
+    padding: 56px 0;
+  }
+  .locations__layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .mapcard {
+    position: static;
+    width: 100%;
+    order: -1;
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+  .mapcard__list {
+    overflow: visible;
+  }
+  .mapcard__row {
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    padding: 12px 10px;
+    border-radius: 12px;
+  }
+  .mapcard__name {
+    flex: 1 1 110px;
+    min-width: 0;
+  }
+  .mapcard__meta {
+    flex: 1 1 100%;
+    margin-left: 36px;
+    white-space: normal;
+    font-size: 12.5px;
+  }
+  .mapwrap {
+    height: 320px;
+    border-radius: 18px;
+  }
+  .pin {
+    width: 30px;
+    height: 39px;
+  }
+  .pin__tip {
+    display: none;
+  }
+
+  /* ── How It Works ── */
+  .how {
+    padding: 56px 0;
+  }
+  .how__steps {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .how__line {
+    display: none;
+  }
+  .howcard {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  /* ── Amenities ── */
+  .amenities {
+    padding: 56px 0;
+  }
+  .amenities__grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .amenities__list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .amcard {
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  /* ── Food Menu ── */
+  .food {
+    padding: 56px 0;
+  }
+  .food__favs {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .food__menu {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+  .food__menu-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .food__days {
+    align-self: flex-start;
+    max-width: 100%;
+    overflow-x: auto;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .food__days::-webkit-scrollbar {
+    display: none;
+  }
+  .food__meals {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .food__nav {
+    display: none;
+  }
+
+  /* ── Reviews ── */
+  .stories {
+    padding: 56px 0;
+  }
+  .section-head--row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
   .stories__rating {
     width: 100%;
     box-sizing: border-box;
     gap: 12px;
     border-left: 0;
     border-top: 1px solid var(--line);
-    padding: 16px 0 0;
+    padding: 14px 0 0;
   }
-  .stories__rating-detail { min-width: 0; }
-  .stories__rating-copy { white-space: normal; }
-  .strip { grid-template-columns: 1fr; }
-  .strip__item--tall { margin-top: 0; }
-  .how__steps { grid-template-columns: 1fr; gap: 40px; }
-  .how__line { display: none; }
-  .faq__q { min-height: 76px; gap: 12px; padding: 16px 14px; font-size: 15px; }
-  .faq__q::before { width: 24px; }
-  .faq__q svg { padding: 7px; }
-  .faq__a p { padding: 0 20px 22px 62px; }
-  .visit__panel { min-height: 0; padding: 56px 24px; border-radius: 24px; }
-  .visit__logo { height: 96px; width: auto; margin-top: 18px; }
-  .visit__form { flex-direction: column; }
-  .visit__field { width: 100%; }
-  .visit__form .btn { justify-content: center; }
-  .tcard { width: 320px; }
-  .footer__grid { grid-template-columns: 1fr; gap: 36px; }
-  .footer__brand { grid-column: auto; }
-}
+  .stories__rating-detail {
+    min-width: 0;
+  }
+  .stories__rating-copy {
+    white-space: normal;
+    font-size: 12.5px;
+  }
+  .stories__marquee--columns {
+    grid-template-columns: 1fr;
+    height: 480px;
+  }
+  .tcard {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
 
-@media (max-width: 780px) {
-  .finder { flex-direction: column; padding: 10px; gap: 10px; }
-  .finder__search-box { width: 100%; }
-  .finder__go { width: 100%; }
-  .locations__layout { display: flex; flex-direction: column; gap: 16px; }
-  .mapcard { position: static; width: 100%; order: -1; }
-  .mapcard__list { overflow: visible; }
-  .mapcard__row { flex-wrap: wrap; gap: 8px 10px; }
-  .mapcard__name { flex: 1 1 110px; min-width: 0; }
-  .mapcard__meta { flex: 1 1 100%; margin-left: 36px; white-space: normal; }
-  .mapwrap { height: 380px; }
-  .pin { width: 30px; height: 39px; }
-  .pin__tip { display: none; }
+  /* ── FAQ ── */
+  .faq {
+    padding: 56px 0;
+  }
+  .faq__grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .faq__q {
+    min-height: 60px;
+    gap: 12px;
+    padding: 14px 14px;
+    font-size: 14.5px;
+  }
+  .faq__q::before {
+    width: 22px;
+  }
+  .faq__q svg {
+    padding: 6px;
+  }
+  .faq__a p {
+    padding: 0 16px 18px 48px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* ── Schedule Visit ── */
+  .visit {
+    padding: 48px 0;
+  }
+  .visit__panel {
+    min-height: 0;
+    padding: 36px 18px;
+    border-radius: 20px;
+  }
+  .visit__logo {
+    height: 72px;
+    width: auto;
+    margin-top: 14px;
+  }
+  .visit__title {
+    font-size: clamp(1.6rem, 6.5vw, 2.2rem);
+  }
+  .visit__form {
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+  .visit__field {
+    width: 100%;
+  }
+  .visit__field input,
+  .visit__field select {
+    height: 50px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+  .visit__form .btn {
+    width: 100%;
+    height: 50px;
+    justify-content: center;
+    font-size: 15.5px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 40px 0 24px;
+  }
+  .footer__sketch-divider {
+    height: 80px;
+  }
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .footer__brand {
+    grid-column: auto;
+  }
+  .footer__brand .brand__mark {
+    height: 60px;
+  }
+  .footer__giant-wordmark-wrap {
+    padding: 20px 12px 0;
+  }
+  .footer__giant-wordmark {
+    max-height: 48px;
+  }
+
+  /* ── Floating Actions ── */
+  .floating-contact-actions {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    gap: 10px;
+  }
+  body.has-floating-bar .floating-contact-actions {
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  }
+  .floating-btn {
+    width: 48px;
+    height: 48px;
+  }
+  .floating-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+  .floating-contact-tooltip {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
-  .brand__mark { height: 50px; }
-  .footer__brand .brand__mark { height: 64px; }
-  .food__favs { grid-template-columns: 1fr; gap: 12px; }
-  .tcard { width: min(300px, calc(100vw - 44px)); }
-  .story-zigzag-wrap { gap: 48px; }
-  .story-collage { height: 235px; min-height: 235px; }
-  .story-card--tall { height: 205px; width: 60%; }
-  .story-card--wide { height: 135px; width: 68%; }
-  .story-title { font-size: 1.35rem; }
-  .hero__title { font-size: clamp(2rem, 8.5vw, 2.75rem); }
-  .section-head__title { font-size: clamp(1.85rem, 7vw, 2.3rem); }
-  .visit__panel { padding: 40px 16px; border-radius: 20px; }
+  .container {
+    width: min(100% - 24px, 1240px);
+  }
+  .brand__mark {
+    height: 44px;
+  }
+  .hero-title {
+    font-size: clamp(1.85rem, 7.8vw, 2.4rem);
+  }
+  .amenities__list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .food__favs {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .tcard {
+    width: min(300px, calc(100vw - 36px));
+  }
+  .story-zigzag-wrap {
+    gap: 36px;
+  }
+  .story-collage {
+    height: 220px;
+    min-height: 220px;
+    max-width: 320px;
+  }
+  .story-card--tall {
+    height: 190px;
+    width: 58%;
+  }
+  .story-card--wide {
+    height: 125px;
+    width: 66%;
+  }
+  .visit__panel {
+    padding: 28px 14px;
+    border-radius: 16px;
+  }
 }
 
 @media (max-width: 360px) {
-  .nav__inner { gap: 8px; }
-  .nav__cta { gap: 0; }
-  .nav__phone { width: 44px; height: 44px; justify-content: center; flex: none; }
-  .nav__burger { flex: none; }
-  .brand { gap: 0; }
-  .brand__mark { height: 44px; }
-  .stats__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stat { padding-inline: 8px; }
-  .stat__num { font-size: 2.25rem; }
+  .nav__inner {
+    gap: 6px;
+  }
+  .nav__mobile-actions {
+    gap: 6px;
+  }
+  .nav__mobile-call-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .nav__burger {
+    width: 38px;
+    height: 38px;
+  }
+  .brand__mark {
+    height: 40px;
+  }
+  .stats__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 8px;
+  }
+  .stat {
+    padding-inline: 4px;
+  }
+  .stat__num {
+    font-size: 1.95rem;
+  }
+  .story-collage {
+    height: 200px;
+    min-height: 200px;
+    max-width: 290px;
+  }
+  .story-card--tall {
+    height: 175px;
+    width: 58%;
+  }
+  .story-card--wide {
+    height: 115px;
+    width: 66%;
+  }
 }
 
 /* ── residences banner carousel ────────────────────── */
