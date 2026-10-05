@@ -4,8 +4,37 @@ import Lenis from "lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
+let activeLenis = null;
+let lenisTickerFn = null;
+let activeEventListeners = [];
+
+export function cleanupSiteInteractions() {
+  // Remove event listeners
+  activeEventListeners.forEach(({ target, type, handler, options }) => {
+    target.removeEventListener(type, handler, options);
+  });
+  activeEventListeners = [];
+
+  // Remove GSAP ticker function
+  if (lenisTickerFn) {
+    gsap.ticker.remove(lenisTickerFn);
+    lenisTickerFn = null;
+  }
+
+  // Destroy Lenis
+  if (activeLenis) {
+    activeLenis.destroy();
+    activeLenis = null;
+  }
+
+  // Kill all active ScrollTriggers
+  ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+}
+
 export function initSiteInteractions() {
   "use strict";
+
+  cleanupSiteInteractions();
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hasGsap = typeof gsap !== "undefined";
@@ -13,59 +42,85 @@ export function initSiteInteractions() {
   document.documentElement.classList.remove("no-js");
   if (reduced || !hasGsap) document.documentElement.classList.add("no-motion");
 
-  /* ── smooth scroll (Lenis) + GSAP wiring ── */
-  let lenis = null;
-  if (!reduced && hasGsap && typeof Lenis !== "undefined") {
-    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-    lenis.on("scroll", ScrollTrigger.update);
-    gsap.ticker.add((t) => lenis.raf(t * 1000));
-    gsap.ticker.lagSmoothing(0);
-  }
+  const addTrackedListener = (target, type, handler, options) => {
+    target.addEventListener(type, handler, options);
+    activeEventListeners.push({ target, type, handler, options });
+  };
 
-  if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+  /* ── Ultra-smooth scroll (Lenis) with zero input lag & adaptive sync ── */
+  if (!reduced && hasGsap && typeof Lenis !== "undefined") {
+    activeLenis = new Lenis({
+      duration: 0.9,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.2,
+      syncTouch: false,
+    });
+
+    activeLenis.on("scroll", ScrollTrigger.update);
+
+    lenisTickerFn = (time) => {
+      activeLenis?.raf(time * 1000);
+    };
+
+    gsap.ticker.add(lenisTickerFn);
+    gsap.ticker.lagSmoothing(500, 33);
+  }
 
   /* ── anchor navigation through Lenis ── */
   function scrollToTarget(sel) {
     const el = document.querySelector(sel);
     if (!el) return;
-    if (lenis) lenis.scrollTo(el, { offset: -80, duration: 1.4 });
+    if (activeLenis) activeLenis.scrollTo(el, { offset: -80, duration: 1.0 });
     else el.scrollIntoView({ behavior: "smooth" });
   }
+
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
-    a.addEventListener("click", (e) => {
+    const clickHandler = (e) => {
       const id = a.getAttribute("href");
-      if (id.length > 1 && document.querySelector(id)) {
+      if (id && id.length > 1 && document.querySelector(id)) {
         e.preventDefault();
         closeMenu();
         scrollToTarget(id);
       }
-    });
+    };
+    addTrackedListener(a, "click", clickHandler);
   });
 
   /* ── nav state ── */
   const nav = document.getElementById("nav");
-  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 30);
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  if (nav) {
+    const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 30);
+    addTrackedListener(window, "scroll", onScroll, { passive: true });
+    onScroll();
+  }
 
   /* ── mobile menu ── */
   const burger = document.getElementById("burger");
   const mmenu = document.getElementById("mmenu");
   function closeMenu() {
+    if (!burger || !mmenu) return;
     burger.classList.remove("open");
     mmenu.classList.remove("open");
     burger.setAttribute("aria-expanded", "false");
     mmenu.setAttribute("aria-hidden", "true");
-    if (lenis) lenis.start();
+    if (activeLenis) activeLenis.start();
   }
-  burger.addEventListener("click", () => {
-    const open = !mmenu.classList.contains("open");
-    burger.classList.toggle("open", open);
-    mmenu.classList.toggle("open", open);
-    burger.setAttribute("aria-expanded", String(open));
-    mmenu.setAttribute("aria-hidden", String(!open));
-    if (lenis) open ? lenis.stop() : lenis.start();
-  });
+
+  if (burger && mmenu) {
+    const burgerClick = () => {
+      const open = !mmenu.classList.contains("open");
+      burger.classList.toggle("open", open);
+      mmenu.classList.toggle("open", open);
+      burger.setAttribute("aria-expanded", String(open));
+      mmenu.setAttribute("aria-hidden", String(!open));
+      if (activeLenis) (open ? activeLenis.stop() : activeLenis.start());
+    };
+    addTrackedListener(burger, "click", burgerClick);
+  }
 
   /* ── locality chips + finder → highlight a card ── */
   function spotlight(locality) {
@@ -74,38 +129,52 @@ export function initSiteInteractions() {
     gsap.fromTo(
       card,
       { boxShadow: "0 0 0 0 rgba(251,112,9,.55)" },
-      { boxShadow: "0 0 0 14px rgba(251,112,9,0)", duration: 1.6, ease: "power2.out", clearProps: "boxShadow", delay: 0.9 }
+      { boxShadow: "0 0 0 14px rgba(251,112,9,0)", duration: 1.2, ease: "power2.out", clearProps: "boxShadow", delay: 0.6 }
     );
   }
+
   document.querySelectorAll(".chip").forEach((chip) => {
-    chip.addEventListener("click", () => spotlight(chip.dataset.locality));
+    addTrackedListener(chip, "click", () => spotlight(chip.dataset.locality));
   });
-  document.getElementById("finder").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const loc = document.getElementById("f-locality").value;
-    scrollToTarget("#residences");
-    if (loc) spotlight(loc);
-  });
+
+  const finderForm = document.getElementById("finder");
+  if (finderForm) {
+    const finderSubmit = (e) => {
+      e.preventDefault();
+      const locEl = document.getElementById("f-locality");
+      const loc = locEl ? locEl.value : "";
+      scrollToTarget("#residences");
+      if (loc) spotlight(loc);
+    };
+    addTrackedListener(finderForm, "submit", finderSubmit);
+  }
 
   /* ── FAQ accordion ── */
   document.querySelectorAll(".faq__item").forEach((item) => {
     const btn = item.querySelector(".faq__q");
     const panel = item.querySelector(".faq__a");
-    btn.addEventListener("click", () => {
-      const isOpen = item.classList.contains("open");
-      document.querySelectorAll(".faq__item.open").forEach((other) => {
-        other.classList.remove("open");
-        other.querySelector(".faq__a").style.maxHeight = "0px";
-        other.querySelector(".faq__a").setAttribute("aria-hidden", "true");
-        other.querySelector(".faq__q").setAttribute("aria-expanded", "false");
-      });
-      if (!isOpen) {
-        item.classList.add("open");
-        panel.style.maxHeight = panel.scrollHeight + "px";
-        panel.setAttribute("aria-hidden", "false");
-        btn.setAttribute("aria-expanded", "true");
-      }
-    });
+    if (btn && panel) {
+      const toggleFaq = () => {
+        const isOpen = item.classList.contains("open");
+        document.querySelectorAll(".faq__item.open").forEach((other) => {
+          other.classList.remove("open");
+          const otherPanel = other.querySelector(".faq__a");
+          if (otherPanel) {
+            otherPanel.style.maxHeight = "0px";
+            otherPanel.setAttribute("aria-hidden", "true");
+          }
+          const otherBtn = other.querySelector(".faq__q");
+          if (otherBtn) otherBtn.setAttribute("aria-expanded", "false");
+        });
+        if (!isOpen) {
+          item.classList.add("open");
+          panel.style.maxHeight = panel.scrollHeight + "px";
+          panel.setAttribute("aria-hidden", "false");
+          btn.setAttribute("aria-expanded", "true");
+        }
+      };
+      addTrackedListener(btn, "click", toggleFaq);
+    }
   });
 
   /* ── rolling resident stories ── */
@@ -145,31 +214,41 @@ export function initSiteInteractions() {
     };
 
     buildStoryColumns();
-    window.addEventListener("resize", () => {
+    const resizeHandler = () => {
       clearTimeout(storiesResizeTimer);
       storiesResizeTimer = setTimeout(buildStoryColumns, 180);
-    });
-    reducedMotion.addEventListener?.("change", buildStoryColumns);
+    };
+    addTrackedListener(window, "resize", resizeHandler);
+    if (reducedMotion.addEventListener) {
+      addTrackedListener(reducedMotion, "change", buildStoryColumns);
+    }
   }
 
   /* ── visit form (front-end demo) ── */
-  document.getElementById("visitForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    this.style.display = "none";
-    document.querySelector(".visit__alt").style.display = "none";
-    const success = document.getElementById("visitSuccess");
-    success.hidden = false;
-    if (hasGsap && !reduced) {
-      gsap.fromTo(success, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" });
-    }
-  });
+  const visitForm = document.getElementById("visitForm");
+  if (visitForm) {
+    const visitSubmit = function (e) {
+      e.preventDefault();
+      this.style.display = "none";
+      const altEl = document.querySelector(".visit__alt");
+      if (altEl) altEl.style.display = "none";
+      const success = document.getElementById("visitSuccess");
+      if (success) {
+        success.hidden = false;
+        if (hasGsap && !reduced) {
+          gsap.fromTo(success, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", force3D: true });
+        }
+      }
+    };
+    addTrackedListener(visitForm, "submit", visitSubmit);
+  }
 
   /* ── amenities category filter ── */
   const amFilters = document.querySelectorAll(".am-filter");
   const amCards = document.querySelectorAll(".amcard");
   if (amFilters.length && amCards.length) {
     amFilters.forEach((btn) => {
-      btn.addEventListener("click", () => {
+      const filterClick = () => {
         const cat = btn.dataset.cat;
         amFilters.forEach((b) => b.classList.remove("is-active"));
         btn.classList.add("is-active");
@@ -179,18 +258,20 @@ export function initSiteInteractions() {
           if (match) {
             card.classList.remove("is-hidden");
             if (hasGsap && !reduced) {
-              gsap.fromTo(card, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" });
+              gsap.fromTo(card, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", force3D: true });
             }
           } else {
             card.classList.add("is-hidden");
           }
         });
-      });
+      };
+      addTrackedListener(btn, "click", filterClick);
     });
   }
 
   /* ── footer year ── */
-  document.getElementById("year").textContent = new Date().getFullYear();
+  const yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   /* ── weekly food menu tabs ── */
   const WEEK = [
@@ -247,19 +328,27 @@ export function initSiteInteractions() {
     let day = (new Date().getDay() + 6) % 7;
 
     const movePill = (btn) => {
+      if (!pill || !btn) return;
       pill.style.left = btn.offsetLeft + "px";
       pill.style.width = btn.offsetWidth + "px";
     };
     const swapContent = () => {
+      if (!mealsGrid) return;
       WEEK[day].meals.forEach((m, mi) => {
         const card = mealsGrid.querySelector(`[data-meal="${SLOTS[mi]}"]`);
-        card.querySelector("[data-slot]").textContent = m[0];
-        card.querySelector("[data-slotdesc]").textContent = m[1];
-        card.querySelector("[data-slotnote]").textContent = m[2];
+        if (!card) return;
+        const slotEl = card.querySelector("[data-slot]");
+        if (slotEl) slotEl.textContent = m[0];
+        const slotDescEl = card.querySelector("[data-slotdesc]");
+        if (slotDescEl) slotDescEl.textContent = m[1];
+        const slotNoteEl = card.querySelector("[data-slotnote]");
+        if (slotNoteEl) slotNoteEl.textContent = m[2];
         const dot = card.querySelector(".meal__dot");
-        dot.classList.toggle("meal__dot--veg", !!m[3]);
-        dot.classList.toggle("meal__dot--nv", !m[3]);
-        dot.title = m[3] ? "Vegetarian" : "Non-veg";
+        if (dot) {
+          dot.classList.toggle("meal__dot--veg", !!m[3]);
+          dot.classList.toggle("meal__dot--nv", !m[3]);
+          dot.title = m[3] ? "Vegetarian" : "Non-veg";
+        }
       });
     };
     const renderDay = (i, animate) => {
@@ -271,23 +360,23 @@ export function initSiteInteractions() {
         gsap.killTweensOf(".meal");
         gsap.fromTo(
           ".meal",
-          { opacity: 0, y: 12 },
-          { opacity: 1, y: 0, duration: 0.35, ease: "power2.out", stagger: 0.05, overwrite: true }
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.28, ease: "power2.out", stagger: 0.04, overwrite: true, force3D: true }
         );
       }
     };
 
-    tabs.forEach((t) => t.addEventListener("click", () => renderDay(+t.dataset.day, true)));
+    tabs.forEach((t) => addTrackedListener(t, "click", () => renderDay(+t.dataset.day, true)));
     const prev = document.getElementById("dayPrev");
     const next = document.getElementById("dayNext");
-    if (prev) prev.addEventListener("click", () => renderDay(day - 1, true));
-    if (next) next.addEventListener("click", () => renderDay(day + 1, true));
+    if (prev) addTrackedListener(prev, "click", () => renderDay(day - 1, true));
+    if (next) addTrackedListener(next, "click", () => renderDay(day + 1, true));
 
     const initDay = () => renderDay(day, false);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(initDay);
     else initDay();
     let dayRT;
-    window.addEventListener("resize", () => {
+    addTrackedListener(window, "resize", () => {
       clearTimeout(dayRT);
       dayRT = setTimeout(() => movePill(tabs[day]), 150);
     });
@@ -312,16 +401,17 @@ export function initSiteInteractions() {
         frame.dataset.z = String(z);
         frame.src = `https://maps.google.com/maps?q=${MAP_CENTER.lat},${MAP_CENTER.lng}&z=${z}&hl=en&output=embed`;
       }
+      if (!layer) return;
       const scale = Math.pow(2, z);
       const cx = mercX(MAP_CENTER.lng);
       const cy = mercY(MAP_CENTER.lat);
       const pins = [...layer.querySelectorAll(".pin")];
+      if (!pins.length) return;
       const pts = pins.map((pin) => ({
         pin,
         px: (mercX(parseFloat(pin.dataset.lng)) - cx) * scale + w / 2,
         py: (mercY(parseFloat(pin.dataset.lat)) - cy) * scale + h / 2,
       }));
-      // shift the cluster into the free space (right of the card on desktop)
       const minX = Math.min(...pts.map((p) => p.px));
       const maxX = Math.max(...pts.map((p) => p.px));
       const mid = (minX + maxX) / 2;
@@ -335,7 +425,7 @@ export function initSiteInteractions() {
     };
     layoutMap();
     let mapRT;
-    window.addEventListener("resize", () => {
+    addTrackedListener(window, "resize", () => {
       clearTimeout(mapRT);
       mapRT = setTimeout(layoutMap, 150);
     });
@@ -349,17 +439,16 @@ export function initSiteInteractions() {
       rows.filter((r) => r.dataset.locality === loc).forEach((r) => r.classList.toggle("is-lit", on));
     };
     [...pins, ...rows].forEach((el) => {
-      el.addEventListener("mouseenter", () => sync(el.dataset.locality, true));
-      el.addEventListener("mouseleave", () => sync(el.dataset.locality, false));
+      addTrackedListener(el, "mouseenter", () => sync(el.dataset.locality, true));
+      addTrackedListener(el, "mouseleave", () => sync(el.dataset.locality, false));
     });
 
-    // drop-in once visible
     if ("IntersectionObserver" in window) {
       const io = new IntersectionObserver(
         (entries) => entries.forEach((e) => {
           if (e.isIntersecting) { mapWrap.classList.add("in-view"); io.disconnect(); }
         }),
-        { threshold: 0.25 }
+        { threshold: 0.2 }
       );
       io.observe(mapWrap);
     } else {
@@ -384,22 +473,22 @@ export function initSiteInteractions() {
 
   if (!hasGsap || reduced) {
     document.querySelectorAll("[data-reveal]").forEach((el) => (el.style.opacity = 1));
-    return;
+    return cleanupSiteInteractions;
   }
 
   /* ── hero entrance ── */
   gsap.timeline({ defaults: { ease: "power3.out" } })
-    .fromTo(".site-hero__copy [data-reveal]", { y: 32, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.1 }, 0.15);
+    .fromTo(".site-hero__copy [data-reveal]", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.08, force3D: true }, 0.1);
 
   /* ── scroll reveals ── */
   gsap.utils.toArray("[data-reveal]").forEach((el) => {
     if (el.closest(".site-hero") || el.matches(".audiences__grid .acard") || el.closest(".story-zigzag-section")) return;
     gsap.fromTo(
       el,
-      { y: 42, opacity: 0 },
+      { y: 30, opacity: 0 },
       {
-        y: 0, opacity: 1, duration: 1.05, ease: "power3.out",
-        scrollTrigger: { trigger: el, start: "top 88%", once: true },
+        y: 0, opacity: 1, duration: 0.85, ease: "power3.out", force3D: true,
+        scrollTrigger: { trigger: el, start: "top 90%", once: true },
       }
     );
   });
@@ -445,36 +534,22 @@ export function initSiteInteractions() {
       const c3 = getBox(collages[2]);
       const c4 = getBox(collages[3]);
 
-      // High-end organic sketch spline waypoints tailored to the 2-card collage geometry
       const waypoints = [
-        // Row 1: Collage Left (Tall card on left, Wide card on bottom-right)
         { x: c1.left - 20, y: c1.top - 42 },
         { x: c1.left + c1.w * 0.28, y: c1.top - 18 },
         { x: c1.right + 18, y: c1.top + c1.h * 0.52 },
         { x: c1.left + c1.w * 0.68, y: c1.bottom + 24 },
-
-        // Midpoint wave through center whitespace 1 -> 2
         { x: (c1.right + c2.left) / 2, y: (c1.bottom + c2.top) / 2 + 10 },
-
-        // Row 2: Collage Right (Tall card on right, Wide card on bottom-left)
         { x: c2.left + c2.w * 0.15, y: c2.top + c2.h * 0.28 },
         { x: c2.left + c2.w * 0.72, y: c2.top - 18 },
         { x: c2.right + 18, y: c2.top + c2.h * 0.52 },
         { x: c2.left + c2.w * 0.32, y: c2.bottom + 24 },
-
-        // Midpoint wave through center whitespace 2 -> 3
         { x: (c2.left + c3.right) / 2, y: (c2.bottom + c3.top) / 2 + 10 },
-
-        // Row 3: Collage Left (Tall card on left, Wide card on bottom-right)
         { x: c3.left - 20, y: c3.top + c3.h * 0.28 },
         { x: c3.left + c3.w * 0.28, y: c3.top - 18 },
         { x: c3.right + 18, y: c3.top + c3.h * 0.52 },
         { x: c3.left + c3.w * 0.68, y: c3.bottom + 24 },
-
-        // Midpoint wave through center whitespace 3 -> 4
         { x: (c3.right + c4.left) / 2, y: (c3.bottom + c4.top) / 2 + 10 },
-
-        // Row 4: Collage Right (Tall card on right, Wide card on bottom-left)
         { x: c4.left + c4.w * 0.15, y: c4.top + c4.h * 0.28 },
         { x: c4.left + c4.w * 0.72, y: c4.top - 18 },
         { x: c4.right + 18, y: c4.top + c4.h * 0.52 },
@@ -482,7 +557,6 @@ export function initSiteInteractions() {
         { x: c4.left - 15, y: c4.bottom + 48 },
       ];
 
-      // Convert waypoints to smooth Catmull-Rom cubic Bézier curve
       function getSmoothSplinePath(pts, tension = 0.24) {
         if (!pts || pts.length < 2) return "";
         let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
@@ -503,7 +577,6 @@ export function initSiteInteractions() {
       }
 
       const d = getSmoothSplinePath(waypoints, 0.25);
-
       threadSvg.setAttribute("viewBox", `0 0 ${secRect.width} ${secRect.height}`);
       threadPath.setAttribute("d", d);
       if (threadTrack) threadTrack.setAttribute("d", d);
@@ -522,19 +595,16 @@ export function initSiteInteractions() {
         threadTimeline = gsap.timeline({
           scrollTrigger: {
             trigger: storySection,
-            start: "top 68%",
-            end: "bottom 78%",
-            scrub: 0.6
+            start: "top 72%",
+            end: "bottom 80%",
+            scrub: 0.4
           }
         });
 
         threadTimeline.fromTo(
           threadPath,
           { strokeDashoffset: pathLength },
-          {
-            strokeDashoffset: 0,
-            ease: "none"
-          },
+          { strokeDashoffset: 0, ease: "none" },
           0
         );
 
@@ -545,8 +615,8 @@ export function initSiteInteractions() {
           if (content) {
             threadTimeline.fromTo(
               content,
-              { y: 14, opacity: 0.75 },
-              { y: 0, opacity: 1, duration: 0.26, ease: "power1.out" },
+              { y: 12, opacity: 0.8 },
+              { y: 0, opacity: 1, duration: 0.22, ease: "power1.out", force3D: true },
               position + 0.03
             );
           }
@@ -554,15 +624,14 @@ export function initSiteInteractions() {
       }
     };
 
-    // Initialize after DOM layout and images load
     if (document.readyState === "complete") {
-      setTimeout(buildStoryThread, 100);
+      setTimeout(buildStoryThread, 80);
     } else {
-      window.addEventListener("load", () => setTimeout(buildStoryThread, 100));
+      addTrackedListener(window, "load", () => setTimeout(buildStoryThread, 80));
     }
 
     let storyResizeTimer;
-    window.addEventListener("resize", () => {
+    addTrackedListener(window, "resize", () => {
       clearTimeout(storyResizeTimer);
       storyResizeTimer = setTimeout(buildStoryThread, 200);
     });
@@ -573,27 +642,28 @@ export function initSiteInteractions() {
     if (el.closest(".audiences__grid")) return;
     const img = el.querySelector("img");
     gsap.fromTo(el,
-      { clipPath: "inset(12% 12% 12% 12% round 20px)", opacity: 0.4 },
+      { clipPath: "inset(10% 10% 10% 10% round 20px)", opacity: 0.5 },
       {
-        clipPath: "inset(0% 0% 0% 0% round 20px)", opacity: 1, duration: 1.3, ease: "power3.out",
-        scrollTrigger: { trigger: el, start: "top 85%", once: true },
+        clipPath: "inset(0% 0% 0% 0% round 20px)", opacity: 1, duration: 1.0, ease: "power3.out", force3D: true,
+        scrollTrigger: { trigger: el, start: "top 88%", once: true },
       }
     );
     if (img) {
-      gsap.fromTo(img, { scale: 1.18 }, {
-        scale: 1, duration: 1.6, ease: "power3.out",
-        scrollTrigger: { trigger: el, start: "top 85%", once: true },
+      gsap.fromTo(img, { scale: 1.12 }, {
+        scale: 1, duration: 1.2, ease: "power3.out", force3D: true,
+        scrollTrigger: { trigger: el, start: "top 88%", once: true },
       });
     }
   });
 
   /* ── parallax layers ── */
   gsap.utils.toArray("[data-parallax]").forEach((el) => {
-    const amt = parseFloat(el.dataset.parallax) || 6;
+    const amt = parseFloat(el.dataset.parallax) || 5;
     gsap.to(el, {
       yPercent: amt,
       ease: "none",
-      scrollTrigger: { trigger: el.closest("section") || el, start: "top bottom", end: "bottom top", scrub: 1.2 },
+      force3D: true,
+      scrollTrigger: { trigger: el.closest("section") || el, start: "top bottom", end: "bottom top", scrub: 0.5 },
     });
   });
 
@@ -603,9 +673,9 @@ export function initSiteInteractions() {
     const decimals = parseInt(el.dataset.decimal || "0", 10);
     const obj = { v: 0 };
     ScrollTrigger.create({
-      trigger: el, start: "top 88%", once: true,
+      trigger: el, start: "top 90%", once: true,
       onEnter: () => gsap.to(obj, {
-        v: target, duration: 2, ease: "power2.out",
+        v: target, duration: 1.6, ease: "power2.out",
         onUpdate: () => (el.textContent = obj.v.toFixed(decimals)),
       }),
     });
@@ -613,8 +683,14 @@ export function initSiteInteractions() {
 
   /* ── how-it-works line draw ── */
   gsap.to("#howLine", {
-    scaleX: 1, ease: "none",
-    scrollTrigger: { trigger: ".how__steps", start: "top 78%", end: "bottom 55%", scrub: 0.8 },
+    scaleX: 1, ease: "none", force3D: true,
+    scrollTrigger: { trigger: ".how__steps", start: "top 80%", end: "bottom 60%", scrub: 0.4 },
   });
 
+  // Schedule a clean refresh after layout stabilizes
+  setTimeout(() => {
+    ScrollTrigger.refresh();
+  }, 300);
+
+  return cleanupSiteInteractions;
 }

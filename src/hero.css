@@ -107,11 +107,8 @@ body {
   max-width: none;
   object-fit: contain;
   object-position: center bottom;
-  transform: translateY(42px);
-}
-
-.hero-ground {
-  background: linear-gradient(0deg, #e8efea 0%, rgba(232, 239, 234, .72) 14%, transparent 100%);
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 @media (max-width: 720px) {

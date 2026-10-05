@@ -69,7 +69,10 @@ function App() {
 
   useEffect(() => {
     if (currentView === "home") {
-      initSiteInteractions();
+      const cleanup = initSiteInteractions();
+      return () => {
+        if (typeof cleanup === "function") cleanup();
+      };
     }
   }, [currentView]);
 
