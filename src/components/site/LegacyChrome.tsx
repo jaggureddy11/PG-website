@@ -16,7 +16,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: "residences", label: "Residences", badge: "Popular" },
-  { id: "amenities", label: "Amenities" },
   { id: "stories", label: "Why Charla" },
   { id: "map", label: "Locations" },
   { id: "reviews", label: "Reviews" },
@@ -40,7 +39,7 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, currentPage
       }
 
       // Section scrollspy
-      const sections = ["home", "stories", "amenities", "map", "reviews", "faq", "visit"];
+      const sections = ["home", "stories", "map", "reviews", "faq", "visit"];
       for (let i = sections.length - 1; i >= 0; i--) {
         const secId = sections[i];
         const el = document.getElementById(secId);

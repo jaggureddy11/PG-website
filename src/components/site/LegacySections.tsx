@@ -1,4 +1,5 @@
 import { type CSSProperties } from "react";
+import { CommunityLogosMarquee } from "./CommunityLogosMarquee";
 
 interface LegacySectionsProps {
   onSelectResidence?: (id: string) => void;
@@ -22,7 +23,7 @@ export function LegacySections({
         </div>
         <div className="stat" data-reveal>
           <span className="stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx={9} cy={8} r="3.4" /><path d="M2.6 20c.8-3.5 3.4-5.2 6.4-5.2s5.6 1.7 6.4 5.2" /><circle cx="17.2" cy={9} r="2.6" /><path d="M15.8 15.1c2.6.4 4.6 1.9 5.4 4.6" /></svg></span>
-          <p className="stat__num"><span data-count={500}>0</span>+</p>
+          <p className="stat__num"><span data-count={150}>0</span>+</p>
           <p className="stat__label">Residents calling us home</p>
         </div>
         <div className="stat" data-reveal>
@@ -57,9 +58,6 @@ export function LegacySections({
               <stop offset="70%" stopColor="#FB7009" />
               <stop offset="100%" stopColor="#F95A00" />
             </linearGradient>
-            <filter id="storyThreadGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="rgba(251, 112, 9, 0.28)" />
-            </filter>
           </defs>
 
           {/* Subtle Sketched Dashed Guide Trail */}
@@ -80,7 +78,6 @@ export function LegacySections({
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
-            filter="url(#storyThreadGlow)"
           />
         </svg>
 
@@ -172,238 +169,7 @@ export function LegacySections({
     </div>
   </section>
 
-  <section className="amenities" id="amenities">
-    <div className="container amenities__grid">
-      <div className="amenities__sticky" data-reveal>
-        <span className="eyebrow"><span className="eyebrow__dot"></span>All-Inclusive Living</span>
-        <h2 className="h2">Everything handled, <span className="story-accent">daily.</span></h2>
-        <p className="section-sub">A residence should feel effortless — fresh meals on time, spotless rooms, lightning-fast internet, and zero hidden utility bills. That's our standard.</p>
-        
-        <div className="amenities__promise">
-          <div className="amenities__promise-item">
-            <span className="tick" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-            </span>
-            <div>
-              <strong>Zero Brokerage. Always.</strong>
-              <p>Direct resident booking with property management, not a broker chain.</p>
-            </div>
-          </div>
-          <div className="amenities__promise-item">
-            <span className="tick" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-            </span>
-            <div>
-              <strong>Flexible 30-Day Notice</strong>
-              <p>No lock-in traps. Hassle-free 100% deposit refund policy.</p>
-            </div>
-          </div>
-          <div className="amenities__promise-item">
-            <span className="tick" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-            </span>
-            <div>
-              <strong>Prompt 30-Min Maintenance</strong>
-              <p>Raise a ticket anytime on the resident app, handled by on-site crew.</p>
-            </div>
-          </div>
-        </div>
 
-        <div className="amenities__cta-wrap">
-          <a href="#visit" className="btn btn--primary">
-            Book a free walkthrough
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-          </a>
-        </div>
-      </div>
-
-      <div className="amenities__content-col">
-        {/* Category Filter Pills */}
-        <div className="amenities__filters" role="tablist" aria-label="Filter amenities by category" data-reveal>
-          <button type="button" className="am-filter is-active" data-cat="all">All (8)</button>
-          <button type="button" className="am-filter" data-cat="living">Daily Living</button>
-          <button type="button" className="am-filter" data-cat="food">Food &amp; Dining</button>
-          <button type="button" className="am-filter" data-cat="tech">Security &amp; Tech</button>
-        </div>
-
-        <div className="amenities__list">
-          {/* Card 1: Wi-Fi */}
-          <div className="amcard" data-cat="tech" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" /></svg>
-              </span>
-              <span className="amcard__badge">100 Mbps Fibre</span>
-            </div>
-            <div className="amcard__body">
-              <h3>High-speed Wi-Fi</h3>
-              <p>Dedicated high-speed fibre in every room with automated secondary backup for calls that can't drop.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Included in rent
-              </span>
-            </div>
-          </div>
-
-          {/* Card 2: Meals */}
-          <div className="amcard" data-cat="food" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" /></svg>
-              </span>
-              <span className="amcard__badge">4 Meals Daily</span>
-            </div>
-            <div className="amcard__body">
-              <h3>Homely Fresh Meals</h3>
-              <p>Four freshly prepared meals daily — balanced South &amp; North Indian menus with Sunday feast specials.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Cooked fresh daily
-              </span>
-            </div>
-          </div>
-
-          {/* Card 3: Housekeeping */}
-          <div className="amcard" data-cat="living" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z" /></svg>
-              </span>
-              <span className="amcard__badge">Daily Routine</span>
-            </div>
-            <div className="amcard__body">
-              <h3>Daily Housekeeping</h3>
-              <p>Rooms cleaned, surfaces dusted, and corridors mopped daily. Fresh bedsheets changed twice weekly.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Included in rent
-              </span>
-            </div>
-          </div>
-
-          {/* Card 4: Laundry */}
-          <div className="amcard" data-cat="living" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x={2} y={4} width={20} height={16} rx={2} /><circle cx={12} cy={12} r={4} /><path d="M12 4v2" /></svg>
-              </span>
-              <span className="amcard__badge">In-House Hub</span>
-            </div>
-            <div className="amcard__body">
-              <h3>Laundry &amp; Ironing</h3>
-              <p>High-capacity smart washing machines on premises plus an iron-and-fold service on request.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Smart machines ready
-              </span>
-            </div>
-          </div>
-
-          {/* Card 5: Security */}
-          <div className="amcard" data-cat="tech" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9.5 11.5l2 2 3.5-3.5" /></svg>
-              </span>
-              <span className="amcard__badge">Biometric &amp; CCTV</span>
-            </div>
-            <div className="amcard__body">
-              <h3>24×7 Smart Security</h3>
-              <p>Biometric access control, full entry CCTV coverage, and night guard presence with strict guest logs.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Always protected
-              </span>
-            </div>
-          </div>
-
-          {/* Card 6: Power Backup */}
-          <div className="amcard" data-cat="tech" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-              </span>
-              <span className="amcard__badge">Zero Downtime</span>
-            </div>
-            <div className="amcard__body">
-              <h3>100% Power Backup</h3>
-              <p>Instant inverters for room lights, fans and Wi-Fi routers, plus diesel generators for building lifts.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Seamless switchover
-              </span>
-            </div>
-          </div>
-
-          {/* Card 7: Attached Washrooms */}
-          <div className="amcard" data-cat="living" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16v2a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-2zM6 12V5a2 2 0 0 1 4 0" /><path d="M7 21l1-1M17 21l-1-1" /></svg>
-              </span>
-              <span className="amcard__badge">Private Ensuite</span>
-            </div>
-            <div className="amcard__body">
-              <h3>Attached Washrooms</h3>
-              <p>Private western-style washrooms with 24/7 instant hot geysers, modern fittings, and exhaust airflow.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                Attached in every room
-              </span>
-            </div>
-          </div>
-
-          {/* Card 8: Fully Furnished */}
-          <div className="amcard" data-cat="living" data-reveal>
-            <div className="amcard__top">
-              <span className="amcard__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9" /></svg>
-              </span>
-              <span className="amcard__badge">Move-in Ready</span>
-            </div>
-            <div className="amcard__body">
-              <h3>Fully Furnished Rooms</h3>
-              <p>Ergonomic study desk, cushioned mattress, spacious wardrobe with personal key lock. Move in with one bag.</p>
-            </div>
-            <div className="amcard__footer">
-              <span className="amcard__status">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                All furniture included
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div className="container strip">
-      <figure className="strip__item" data-parallax={-8} data-reveal>
-        <img src="https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=800&q=75" alt="Fresh meals prepared in the residence kitchen" />
-        <figcaption>The kitchen, 7 a.m.</figcaption>
-      </figure>
-      <figure className="strip__item strip__item--tall" data-parallax={6} data-reveal>
-        <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=75" alt="Residents relaxing in the common lounge" />
-        <figcaption>The lounge, after hours</figcaption>
-      </figure>
-      <figure className="strip__item" data-parallax={-5} data-reveal>
-        <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=75" alt="Clean attached washroom with geyser" />
-        <figcaption>Washed twice a day</figcaption>
-      </figure>
-    </div>
-  </section>
   <section className="locations" id="map">
     <div className="container">
       <div className="section-head" data-reveal>
@@ -499,25 +265,55 @@ export function LegacySections({
   </section>
   <section className="how" id="how">
     <div className="container">
-      <div className="section-head" data-reveal>
+      <div className="section-head text-center" data-reveal>
         <h2 className="h2">From enquiry to keys in <em>72 hours.</em></h2>
+        <p className="section-sub">A seamless, 3-step transition from browsing your next room to sleeping in it — with zero broker drama.</p>
       </div>
+
       <div className="how__steps">
-        <div className="how__line" aria-hidden="true"><span id="howLine" /></div>
+        {/* Step 1 */}
         <div className="step" data-reveal>
-          <p className="step__num">01</p>
-          <h3><span className="step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-5.6-7-10.8a7 7 0 0 1 14 0C19 15.4 12 21 12 21z" /><circle cx={12} cy={10} r="2.6" /></svg></span>Pick your locality</h3>
-          <p>Browse the residences, compare room types and prices, or just call us and say what you need.</p>
+          <div className="step__header">
+            <span className="step__number">01</span>
+            <span className="step__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-5.6-7-10.8a7 7 0 0 1 14 0C19 15.4 12 21 12 21z" /><circle cx={12} cy={10} r="2.6" /></svg>
+            </span>
+          </div>
+          <h3>Pick your locality</h3>
+          <p>Browse addresses across South Bengaluru, compare room sharing options, or simply tell us your office or college location.</p>
+          <div className="step__footer">
+            <span className="step__pill">6 prime locations</span>
+          </div>
         </div>
+
+        {/* Step 2 */}
         <div className="step" data-reveal>
-          <p className="step__num">02</p>
-          <h3><span className="step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z" /><rect x={1} y={5} width={15} height={14} rx={2} /></svg></span>Take the free walkthrough</h3>
-          <p>Visit in person or over a video call. See the room you'll actually get — same floor, same light.</p>
+          <div className="step__header">
+            <span className="step__number">02</span>
+            <span className="step__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z" /><rect x={1} y={5} width={15} height={14} rx={2} /></svg>
+            </span>
+          </div>
+          <h3>Take the free walkthrough</h3>
+          <p>Visit in person or book a live HD video tour. See the exact room you'll get — same floor, same natural sunlight.</p>
+          <div className="step__footer">
+            <span className="step__pill">In-Person or Video</span>
+          </div>
         </div>
+
+        {/* Step 3 */}
         <div className="step" data-reveal>
-          <p className="step__num">03</p>
-          <h3><span className="step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="15.5" r="4.5" /><path d="M10.8 12.2 21 2m-3.5 3.5L21 9" /></svg></span>Move in with one bag</h3>
-          <p>Sign a one-page agreement, pay a one-month deposit, and collect your keys. Dinner's included that night.</p>
+          <div className="step__header">
+            <span className="step__number">03</span>
+            <span className="step__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="15.5" r="4.5" /><path d="M10.8 12.2 21 2m-3.5 3.5L21 9" /></svg>
+            </span>
+          </div>
+          <h3>Move in with one bag</h3>
+          <p>Sign a simple 1-page agreement, pay a 1-month deposit, and collect your keys. Hot dinner will be waiting for you that night.</p>
+          <div className="step__footer">
+            <span className="step__pill">Keys in 72h</span>
+          </div>
         </div>
       </div>
     </div>
@@ -775,6 +571,10 @@ export function LegacySections({
       </div>
     </div>
   </section>
+
+  {/* ─── OUR COMMUNITY / ROLLING INSTITUTION LOGOS ─── */}
+  <CommunityLogosMarquee />
+
   <section className="visit" id="visit">
     <div className="container">
       <div className="visit__panel" data-reveal>

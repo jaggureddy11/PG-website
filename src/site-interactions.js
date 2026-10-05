@@ -67,7 +67,7 @@ export function initSiteInteractions() {
     };
 
     gsap.ticker.add(lenisTickerFn);
-    gsap.ticker.lagSmoothing(500, 33);
+    gsap.ticker.lagSmoothing(0);
   }
 
   /* ── anchor navigation through Lenis ── */
@@ -535,26 +535,37 @@ export function initSiteInteractions() {
       const c4 = getBox(collages[3]);
 
       const waypoints = [
-        { x: c1.left - 20, y: c1.top - 42 },
-        { x: c1.left + c1.w * 0.28, y: c1.top - 18 },
-        { x: c1.right + 18, y: c1.top + c1.h * 0.52 },
-        { x: c1.left + c1.w * 0.68, y: c1.bottom + 24 },
-        { x: (c1.right + c2.left) / 2, y: (c1.bottom + c2.top) / 2 + 10 },
-        { x: c2.left + c2.w * 0.15, y: c2.top + c2.h * 0.28 },
-        { x: c2.left + c2.w * 0.72, y: c2.top - 18 },
-        { x: c2.right + 18, y: c2.top + c2.h * 0.52 },
-        { x: c2.left + c2.w * 0.32, y: c2.bottom + 24 },
-        { x: (c2.left + c3.right) / 2, y: (c2.bottom + c3.top) / 2 + 10 },
-        { x: c3.left - 20, y: c3.top + c3.h * 0.28 },
-        { x: c3.left + c3.w * 0.28, y: c3.top - 18 },
-        { x: c3.right + 18, y: c3.top + c3.h * 0.52 },
-        { x: c3.left + c3.w * 0.68, y: c3.bottom + 24 },
-        { x: (c3.right + c4.left) / 2, y: (c3.bottom + c4.top) / 2 + 10 },
-        { x: c4.left + c4.w * 0.15, y: c4.top + c4.h * 0.28 },
-        { x: c4.left + c4.w * 0.72, y: c4.top - 18 },
-        { x: c4.right + 18, y: c4.top + c4.h * 0.52 },
-        { x: c4.left + c4.w * 0.32, y: c4.bottom + 24 },
-        { x: c4.left - 15, y: c4.bottom + 48 },
+        // ── Row 1: Collage 1 (Left Image - line emerges smoothly from image) ──
+        { x: c1.left + c1.w * 0.45, y: c1.top + c1.h * 0.4 },
+        { x: c1.right + 20, y: c1.top + c1.h * 0.58 },
+        { x: c1.left + c1.w * 0.7, y: c1.bottom + 30 },
+        
+        // ── Smooth Weave from Row 1 to Row 2 ──
+        { x: (c1.right + c2.left) / 2, y: (c1.bottom + c2.top) / 2 },
+        
+        // ── Row 2: Collage 2 (Right Image) ──
+        { x: c2.left - 15, y: c2.top + c2.h * 0.3 },
+        { x: c2.left + c2.w * 0.55, y: c2.top - 20 },
+        { x: c2.right + 20, y: c2.top + c2.h * 0.52 },
+        { x: c2.left + c2.w * 0.45, y: c2.bottom + 30 },
+        
+        // ── Clean, Elegant Curve from Row 2 to Row 3 ──
+        { x: (c2.left + c3.right) / 2, y: (c2.bottom + c3.top) / 2 },
+        
+        // ── Row 3: Collage 3 (Left Image) ──
+        { x: c3.right + 15, y: c3.top + c3.h * 0.28 },
+        { x: c3.left + c3.w * 0.45, y: c3.top - 20 },
+        { x: c3.left - 20, y: c3.top + c3.h * 0.5 },
+        { x: c3.left + c3.w * 0.6, y: c3.bottom + 30 },
+        
+        // ── Clean Curve from Row 3 to Row 4 ──
+        { x: (c3.right + c4.left) / 2, y: (c3.bottom + c4.top) / 2 },
+        
+        // ── Row 4: Collage 4 (Right Image) ──
+        { x: c4.left - 15, y: c4.top + c4.h * 0.3 },
+        { x: c4.left + c4.w * 0.55, y: c4.top - 20 },
+        { x: c4.right + 20, y: c4.top + c4.h * 0.52 },
+        { x: c4.left + c4.w * 0.35, y: c4.bottom + 45 },
       ];
 
       function getSmoothSplinePath(pts, tension = 0.24) {
@@ -594,46 +605,53 @@ export function initSiteInteractions() {
 
         threadTimeline = gsap.timeline({
           scrollTrigger: {
-            trigger: storySection,
-            start: "top 72%",
-            end: "bottom 80%",
-            scrub: 0.4
+            trigger: rows[0],
+            endTrigger: rows[rows.length - 1],
+            start: "top 60%",
+            end: "bottom 65%",
+            scrub: true,
+            invalidateOnRefresh: true,
           }
         });
 
         threadTimeline.fromTo(
           threadPath,
           { strokeDashoffset: pathLength },
-          { strokeDashoffset: 0, ease: "none" },
+          { strokeDashoffset: 0, ease: "none", force3D: true },
           0
         );
-
-        rows.forEach((row, index) => {
-          const content = row.querySelector(".story-content");
-          const position = index * 0.24;
-
-          if (content) {
-            threadTimeline.fromTo(
-              content,
-              { y: 12, opacity: 0.8 },
-              { y: 0, opacity: 1, duration: 0.22, ease: "power1.out", force3D: true },
-              position + 0.03
-            );
-          }
-        });
       }
     };
 
     if (document.readyState === "complete") {
-      setTimeout(buildStoryThread, 80);
+      setTimeout(() => {
+        buildStoryThread();
+        ScrollTrigger.refresh();
+      }, 60);
     } else {
-      addTrackedListener(window, "load", () => setTimeout(buildStoryThread, 80));
+      addTrackedListener(window, "load", () => {
+        setTimeout(() => {
+          buildStoryThread();
+          ScrollTrigger.refresh();
+        }, 60);
+      });
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        setTimeout(() => {
+          buildStoryThread();
+          ScrollTrigger.refresh();
+        }, 100);
+      });
     }
 
     let storyResizeTimer;
     addTrackedListener(window, "resize", () => {
       clearTimeout(storyResizeTimer);
-      storyResizeTimer = setTimeout(buildStoryThread, 200);
+      storyResizeTimer = setTimeout(() => {
+        buildStoryThread();
+        ScrollTrigger.refresh();
+      }, 150);
     });
   }
 
@@ -682,10 +700,12 @@ export function initSiteInteractions() {
   });
 
   /* ── how-it-works line draw ── */
-  gsap.to("#howLine", {
-    scaleX: 1, ease: "none", force3D: true,
-    scrollTrigger: { trigger: ".how__steps", start: "top 80%", end: "bottom 60%", scrub: 0.4 },
-  });
+  if (document.getElementById("howLine")) {
+    gsap.to("#howLine", {
+      scaleX: 1, ease: "none", force3D: true,
+      scrollTrigger: { trigger: ".how__steps", start: "top 80%", end: "bottom 60%", scrub: 0.4 },
+    });
+  }
 
   // Schedule a clean refresh after layout stabilizes
   setTimeout(() => {

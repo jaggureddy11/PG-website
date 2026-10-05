@@ -390,7 +390,7 @@ function Skiper39({ onSearch }: Skiper39Props) {
         <div className="hero__proof" data-reveal>
           <span className="hero__proof-item">4.8 Google rating</span>
           <i aria-hidden="true" />
-          <span className="hero__proof-item">500+ happy residents</span>
+          <span className="hero__proof-item">150+ happy residents</span>
           <i aria-hidden="true" />
           <span className="hero__proof-item">Zero Brokerage Guaranteed</span>
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { LegacyChrome } from "@/components/site/LegacyChrome";
 import { LegacyFooter } from "@/components/site/LegacyFooter";
 import { LegacySections } from "@/components/site/LegacySections";
+import { FloatingContactActions } from "@/components/site/FloatingContactActions";
 import { ResidenceDetail } from "@/components/residence/ResidenceDetail";
 import { ResidencesPage } from "@/components/residence/ResidencesPage";
 import { RESIDENCES } from "@/data/residences";
@@ -193,6 +194,8 @@ function App() {
         onSelectResidence={handleSelectResidence} 
         onNavigateHome={handleBackToHome} 
       />
+
+      <FloatingContactActions />
     </>
   );
 }

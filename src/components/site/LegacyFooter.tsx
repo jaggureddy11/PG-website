@@ -60,7 +60,6 @@ export function LegacyFooter({ onSelectResidence, onNavigateHome }: LegacyFooter
             </div>
             <div className="footer__col">
               <h4>Explore</h4>
-              <a href="#amenities">Amenities</a>
               <a href="#map">Find us on the map</a>
               <a href="#how">How it works</a>
               <a href="#stories">Resident stories</a>
