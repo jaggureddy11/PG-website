@@ -210,7 +210,7 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
           <i />
           <span>1-month deposit</span>
           <i />
-          <span>Six South Bengaluru residences</span>
+          <span>South Bengaluru residences</span>
         </p>
       </div>
 

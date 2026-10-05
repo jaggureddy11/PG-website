@@ -50,25 +50,30 @@ body {
 }
 
 .hero-finder {
-  width: min(100%, 1120px);
-  max-width: 1120px;
-  margin-top: clamp(28px, 4vh, 44px);
+  width: min(100%, 760px);
+  max-width: 760px;
+  margin-top: clamp(24px, 3.5vh, 36px);
 }
 
 .hero-finder .finder__go {
-  min-width: 320px;
-  min-height: 64px;
+  min-width: 175px;
+  min-height: 52px;
   justify-content: center;
-  padding-inline: 32px;
+  padding-inline: 24px;
   border-radius: 12px;
   background: #003b99;
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 59, 153, 0.25);
+  transition: all 0.2s ease;
 }
 
 .hero-finder .finder__go:hover {
   background: #002f7c;
+  box-shadow: 0 6px 18px rgba(0, 59, 153, 0.35);
+  transform: translateY(-1px);
 }
 
 .hero-cta {

@@ -28,7 +28,7 @@ export function LegacyFooter({ onSelectResidence, onNavigateHome }: LegacyFooter
         <a href="#home" onClick={handleHomeClick} className="brand" aria-label="Charla Living home">
           <img src="/assets/logo.png" alt="Charla Living" className="brand__mark brand__mark--footer" width={114} height={76} />
         </a>
-        <p>Six family-run PG residences across South Bengaluru, hosting students and professionals since 2019.</p>
+        <p>Family-run PG residences across South Bengaluru, hosting students and professionals since 2019.</p>
         <div className="footer__social">
           <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x={2} y={2} width={20} height={20} rx={5} /><circle cx={12} cy={12} r={4} /><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" /></svg></a>
           <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg></a>

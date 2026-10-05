@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowRight, LocateFixed, Loader2, Search } from "lucide-react";
 import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
+import { findNearestLocality } from "@/utils/location";
 
 interface CrowdCanvasProps {
   src: string;
@@ -119,83 +120,92 @@ function CrowdCanvas({ src, rows = 15, cols = 7, className = "" }: CrowdCanvasPr
         },
       });
 
-      timeline.timeScale(randomRange(0.7, 1.25));
-      timeline.to(peep, { duration, x: endX, ease: "none" }, 0);
-      timeline.to(
-        peep,
-        {
-          duration: 0.32,
-          repeat: Math.ceil(duration / 0.64),
-          yoyo: true,
-          y: startY - 6,
-          ease: "sine.inOut",
-        },
-        0,
-      );
       peep.walk = timeline;
       crowd.push(peep);
-      crowd.sort((first, second) => first.anchorY - second.anchorY);
+      crowd.sort((a, b) => a.anchorY - b.anchorY);
+
+      timeline.fromTo(
+        peep,
+        { x: peep.x, y: startY },
+        {
+          x: endX,
+          duration,
+          ease: "none",
+          immediateRender: true,
+        },
+      );
     };
 
     const createSprites = () => {
+      if (!image.naturalWidth || !image.naturalHeight) return;
       allPeeps.length = 0;
-      const safeRows = Math.max(1, Math.floor(rows));
-      const safeCols = Math.max(1, Math.floor(cols));
-      const rectWidth = image.naturalWidth / safeRows;
-      const rectHeight = image.naturalHeight / safeCols;
+      availablePeeps.length = 0;
+      crowd.length = 0;
 
-      for (let index = 0; index < safeRows * safeCols; index += 1) {
-        allPeeps.push(
-          createPeep([
-            (index % safeRows) * rectWidth,
-            Math.floor(index / safeRows) * rectHeight,
-            rectWidth,
-            rectHeight,
-          ]),
-        );
+      const spriteWidth = image.naturalWidth / cols;
+      const spriteHeight = image.naturalHeight / rows;
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const rect: SpriteRect = [
+            j * spriteWidth,
+            i * spriteHeight,
+            spriteWidth,
+            spriteHeight,
+          ];
+          allPeeps.push(createPeep(rect));
+        }
       }
     };
 
     const resize = () => {
-      if (disposed) return;
-      stage.width = canvas.clientWidth;
-      stage.height = canvas.clientHeight;
+      const parent = canvas.parentElement;
+      if (!parent) return;
+
+      const rect = parent.getBoundingClientRect();
+      stage.width = Math.max(rect.width, 320);
+      stage.height = Math.max(rect.height, 240);
+
       pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(stage.width * pixelRatio);
-      canvas.height = Math.round(stage.height * pixelRatio);
-      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      canvas.width = stage.width * pixelRatio;
+      canvas.height = stage.height * pixelRatio;
+      canvas.style.width = `${stage.width}px`;
+      canvas.style.height = `${stage.height}px`;
 
-      if (!imageReady || stage.width === 0 || stage.height === 0) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(pixelRatio, pixelRatio);
 
-      crowd.forEach((peep) => peep.walk?.kill());
-      crowd.length = 0;
+      const isMobile = stage.width < 640;
+      const targetCrowdSize = isMobile ? 8 : 16;
+      const scale = isMobile ? 0.38 : 0.48;
+
+      allPeeps.forEach((peep) => peep.setScale(scale));
       availablePeeps.length = 0;
       availablePeeps.push(...allPeeps);
 
-      const scale = stage.width < 520 ? 0.78 : stage.width < 900 ? 1.05 : 1.25;
-      allPeeps.forEach((peep) => peep.setScale(scale));
+      crowd.forEach((peep) => peep.walk?.kill());
+      crowd.length = 0;
 
       if (reducedMotion.matches) {
-        const count = Math.min(10, availablePeeps.length);
-        for (let index = 0; index < count; index += 1) {
+        const staticCount = Math.min(allPeeps.length, isMobile ? 6 : 10);
+        for (let i = 0; i < staticCount; i++) {
           const peep = availablePeeps.splice(randomIndex(availablePeeps.length), 1)[0];
-          peep.x = (stage.width * (index + 0.5)) / count - peep.width / 2;
-          peep.y = stage.height - peep.height + randomRange(-18, 42);
-          peep.anchorY = peep.y;
-          peep.scaleX = 1;
+          peep.x = (stage.width / (staticCount + 1)) * (i + 1) - peep.width / 2;
+          peep.y = stage.height - peep.height + randomRange(-40, 20);
+          peep.scaleX = Math.random() > 0.5 ? 1 : -1;
           crowd.push(peep);
         }
-        crowd.sort((first, second) => first.anchorY - second.anchorY);
+        crowd.sort((a, b) => a.anchorY - b.anchorY);
         render();
         return;
       }
 
-      while (availablePeeps.length > 0) addPeepToCrowd();
-      render();
+      for (let i = 0; i < targetCrowdSize; i++) {
+        addPeepToCrowd();
+      }
     };
 
     const initialize = () => {
-      if (disposed || imageReady || image.naturalWidth === 0) return;
       imageReady = true;
       createSprites();
       resize();
@@ -228,48 +238,164 @@ function CrowdCanvas({ src, rows = 15, cols = 7, className = "" }: CrowdCanvasPr
   return <canvas ref={canvasRef} className={`hero-crowd-canvas ${className}`} aria-hidden="true" />;
 }
 
-function Skiper39() {
+interface Skiper39Props {
+  onSearch?: (searchData: {
+    locality: string;
+    roomType: string;
+    userCoords: { lat: number; lng: number } | null;
+    detectedLocalityInfo?: { id: string; name: string; distanceKm: number } | null;
+    sortBy?: string;
+  }) => void;
+}
+
+function resolveLocalityFromQuery(query: string): string {
+  const q = query.toLowerCase().trim();
+  if (!q) return "all";
+  if (q.includes("kumara") || q.includes("layout") || q.includes("ks layout")) return "kumaraswamy-layout";
+  if (q.includes("uttara") || q.includes("halli")) return "uttarahalli";
+  if (q.includes("banashankari") || q.includes("bsk")) return "banashankari";
+  if (q.includes("padmanabha") || q.includes("padman")) return "padmanabhanagar";
+  if (q.includes("jp") || q.includes("jp nagar")) return "jp-nagar";
+  if (q.includes("jaya") || q.includes("jayanagar")) return "jayanagar";
+  return "all";
+}
+
+function Skiper39({ onSearch }: Skiper39Props) {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [locationStatus, setLocationStatus] = useState<"idle" | "success" | "denied">("idle");
+  const [detectedLocality, setDetectedLocality] = useState<{ id: string; name: string; distanceKm: number } | null>(null);
+
+  const handleDetectLocation = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser. Please search your locality manually.");
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationStatus("idle");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const nearest = findNearestLocality(latitude, longitude);
+
+        setIsLocating(false);
+        setLocationStatus("success");
+        setDetectedLocality(nearest);
+        setSearchQuery(`📍 Near ${nearest.name}`);
+
+        if (onSearch) {
+          onSearch({
+            locality: nearest.id,
+            roomType: "any",
+            userCoords: { lat: latitude, lng: longitude },
+            detectedLocalityInfo: nearest,
+            sortBy: "nearest"
+          });
+        }
+      },
+      (error) => {
+        console.warn("Geolocation error:", error.message);
+        setIsLocating(false);
+        setLocationStatus("denied");
+
+        if (onSearch) {
+          onSearch({
+            locality: resolveLocalityFromQuery(searchQuery),
+            roomType: "any",
+            userCoords: null,
+            sortBy: "featured"
+          });
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const resolvedLocality = detectedLocality && searchQuery.includes(detectedLocality.name)
+      ? detectedLocality.id
+      : resolveLocalityFromQuery(searchQuery);
+
+    if (onSearch) {
+      onSearch({
+        locality: resolvedLocality,
+        roomType: "any",
+        userCoords: null,
+        detectedLocalityInfo: detectedLocality,
+        sortBy: detectedLocality ? "nearest" : "featured"
+      });
+    }
+  };
+
   return (
     <section className="site-hero relative isolate flex w-full flex-col items-center overflow-hidden" aria-labelledby="site-hero-title">
       <div className="site-hero__copy container relative z-10 flex flex-col items-center text-center">
         <h1 className="hero-title" id="site-hero-title" data-reveal>
           Move in today.<br />Feel at <em>home</em> tonight.
         </h1>
-        <form className="finder hero-finder" id="finder" data-reveal>
-          <div className="finder__field">
-            <label htmlFor="f-locality">Locality</label>
-            <select id="f-locality" defaultValue="">
-              <option value="">Anywhere in South BLR</option>
-              <option>Kumaraswamy Layout</option>
-              <option>Uttarahalli</option>
-              <option>Banashankari</option>
-              <option>Padmanabhanagar</option>
-              <option>JP Nagar</option>
-              <option>Jayanagar</option>
-            </select>
+
+        {/* ── Minimalist Unified Hero Finder ── */}
+        <form className="finder hero-finder" id="finder" onSubmit={handleSubmit} data-reveal>
+          <div className="finder__search-box">
+            <Search className="finder__search-icon" size={20} aria-hidden="true" />
+            <input
+              type="text"
+              className="finder__input"
+              placeholder="Find residences in South Bangalore..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (locationStatus === "success") setLocationStatus("idle");
+              }}
+              aria-label="Find residences in South Bangalore"
+            />
+
+            <div className="finder__gps-wrap">
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={isLocating}
+                className={`finder__gps-icon-btn ${isLocating ? "is-loading" : ""} ${locationStatus === "success" ? "is-success" : ""}`}
+                aria-label="Detect current location"
+              >
+                {isLocating ? (
+                  <Loader2 className="animate-spin text-blue-600" size={19} />
+                ) : (
+                  <LocateFixed size={19} className="finder__gps-svg" />
+                )}
+              </button>
+
+              {/* On-Hover Tooltip Popup */}
+              <div className="finder__gps-tooltip" role="tooltip">
+                <LocateFixed size={15} className="finder__tooltip-icon" />
+                <span className="finder__tooltip-text">
+                  Search <strong>Near me</strong>
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="finder__field">
-            <label htmlFor="f-room">Room type</label>
-            <select id="f-room" defaultValue="Any room type">
-              <option>Any room type</option>
-              <option>Single room</option>
-              <option>Double sharing</option>
-              <option>Triple sharing</option>
-            </select>
-          </div>
+
+          {/* Submit Action */}
           <Button size="lg" type="submit" className="btn btn--blue finder__go">
-            Find my room
+            <span>Find my room</span>
             <ArrowRight aria-hidden="true" />
           </Button>
         </form>
+
+        {/* ── Minimal Social Proof ── */}
         <div className="hero__proof" data-reveal>
           <span className="hero__proof-item">4.8 Google rating</span>
           <i aria-hidden="true" />
-          <span className="hero__proof-item">480+ happy residents</span>
+          <span className="hero__proof-item">500+ happy residents</span>
           <i aria-hidden="true" />
-          <span className="hero__proof-item">Family-run since 2019</span>
+          <span className="hero__proof-item">Zero Brokerage Guaranteed</span>
         </div>
       </div>
+
       <div className="site-hero__skyline pointer-events-none absolute inset-x-0 bottom-0 z-0" aria-hidden="true">
         <img
           src="/bangalore-city-landscape.svg"

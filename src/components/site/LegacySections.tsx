@@ -1,17 +1,14 @@
-import type { CSSProperties } from "react";
+import { type CSSProperties } from "react";
 
 interface LegacySectionsProps {
   onSelectResidence?: (id: string) => void;
+  onNavigateResidences?: () => void;
 }
 
-export function LegacySections({ onSelectResidence }: LegacySectionsProps = {}) {
-  const handleOpenResidence = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onSelectResidence) {
-      onSelectResidence(id);
-    }
-  };
-
+export function LegacySections({
+  onSelectResidence: _onSelectResidence,
+  onNavigateResidences: _onNavigateResidences
+}: LegacySectionsProps = {}) {
   return (
     <>
 <div>
@@ -20,18 +17,18 @@ export function LegacySections({ onSelectResidence }: LegacySectionsProps = {}) 
       <div className="stats__grid">
         <div className="stat" data-reveal>
           <span className="stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.8V21h14V9.8" /><path d="M10 21v-6h4v6" /></svg></span>
-          <p className="stat__num"><span data-count={6}>0</span></p>
-          <p className="stat__label">Managed residences</p>
+          <p className="stat__num"><span data-count={100}>0</span>%</p>
+          <p className="stat__label">Consistent quality standard</p>
         </div>
         <div className="stat" data-reveal>
           <span className="stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx={9} cy={8} r="3.4" /><path d="M2.6 20c.8-3.5 3.4-5.2 6.4-5.2s5.6 1.7 6.4 5.2" /><circle cx="17.2" cy={9} r="2.6" /><path d="M15.8 15.1c2.6.4 4.6 1.9 5.4 4.6" /></svg></span>
-          <p className="stat__num"><span data-count={480}>0</span>+</p>
+          <p className="stat__num"><span data-count={500}>0</span>+</p>
           <p className="stat__label">Residents calling us home</p>
         </div>
         <div className="stat" data-reveal>
-          <span className="stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-5.6-7-10.8a7 7 0 0 1 14 0C19 15.4 12 21 12 21z" /><circle cx={12} cy={10} r="2.6" /></svg></span>
-          <p className="stat__num"><span data-count={6}>0</span></p>
-          <p className="stat__label">Neighbourhoods, one city</p>
+          <span className="stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx={12} cy={12} r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <p className="stat__num"><span>24/7</span></p>
+          <p className="stat__label">On-site manager & support</p>
         </div>
         <div className="stat" data-reveal>
           <span className="stat__icon stat__icon--star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" /></svg></span>
@@ -172,162 +169,6 @@ export function LegacySections({ onSelectResidence }: LegacySectionsProps = {}) 
         </div>
 
       </div>
-    </div>
-  </section>
-  <section className="residences" id="residences">
-    <div className="container">
-      <div className="section-head section-head--row" data-reveal>
-        <div>
-          <h2 className="h2">Six addresses. <em>One</em> standard.</h2>
-        </div>
-        <p className="section-sub">Every Charla residence runs on the same playbook — serviced rooms, cooked meals and a resident manager who lives on site. Choose your locality; the standard travels with you.</p>
-      </div>
-      <div className="residences__grid" id="residenceGrid">
-        <article className="rcard group" data-reveal data-locality="Kumaraswamy Layout">
-          <a href="#/residence/kumaraswamy-layout" onClick={(e) => handleOpenResidence("kumaraswamy-layout", e)} className="rcard__media" data-mask>
-            <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=900&q=80" alt="Charla Living Kumaraswamy Layout residence exterior" />
-            <span className="rcard__flag rcard__flag--blue">Bestseller</span>
-          </a>
-          <div className="rcard__body">
-            <div className="rcard__top">
-              <h3 className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={(e) => handleOpenResidence("kumaraswamy-layout", e)}>Charla Living — Kumaraswamy Layout</h3>
-              <p className="rcard__price"><span>from</span> ₹8,500<em>/mo</em></p>
-            </div>
-            <p className="rcard__loc">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx={12} cy={10} r={3} /></svg>
-              Off Kanakapura Rd · 10 min to Dayananda Sagar College
-            </p>
-            <ul className="rcard__tags">
-              <li>Single · Double · Triple</li>
-              <li>4 meals / day</li>
-              <li>100 Mbps Wi-Fi</li>
-            </ul>
-            <a href="#/residence/kumaraswamy-layout" onClick={(e) => handleOpenResidence("kumaraswamy-layout", e)} className="rcard__cta">Explore residence
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
-          </div>
-        </article>
-        <article className="rcard group" data-reveal data-locality="Uttarahalli">
-          <a href="#/residence/uttarahalli" onClick={(e) => handleOpenResidence("uttarahalli", e)} className="rcard__media" data-mask>
-            <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80" alt="Furnished lounge at Charla Living Uttarahalli" />
-          </a>
-          <div className="rcard__body">
-            <div className="rcard__top">
-              <h3 className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={(e) => handleOpenResidence("uttarahalli", e)}>Charla Living — Uttarahalli</h3>
-              <p className="rcard__price"><span>from</span> ₹7,500<em>/mo</em></p>
-            </div>
-            <p className="rcard__loc">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx={12} cy={10} r={3} /></svg>
-              Uttarahalli Main Rd · 8 min to Kumaran's School bus stop
-            </p>
-            <ul className="rcard__tags">
-              <li>Double · Triple</li>
-              <li>Veg &amp; non-veg plans</li>
-              <li>On-site parking</li>
-            </ul>
-            <a href="#/residence/uttarahalli" onClick={(e) => handleOpenResidence("uttarahalli", e)} className="rcard__cta">Explore residence
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
-          </div>
-        </article>
-        <article className="rcard group" data-reveal data-locality="Banashankari">
-          <a href="#/residence/banashankari" onClick={(e) => handleOpenResidence("banashankari", e)} className="rcard__media" data-mask>
-            <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=900&q=80" alt="Premium double room at Charla Living Banashankari" />
-            <span className="rcard__flag rcard__flag--orange">3 min to Metro</span>
-          </a>
-          <div className="rcard__body">
-            <div className="rcard__top">
-              <h3 className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={(e) => handleOpenResidence("banashankari", e)}>Charla Living — Banashankari</h3>
-              <p className="rcard__price"><span>from</span> ₹9,000<em>/mo</em></p>
-            </div>
-            <p className="rcard__loc">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx={12} cy={10} r={3} /></svg>
-              2nd Stage · walk to Banashankari Metro &amp; BDA Complex
-            </p>
-            <ul className="rcard__tags">
-              <li>Single · Double</li>
-              <li>AC rooms</li>
-              <li>Attached washrooms</li>
-            </ul>
-            <a href="#/residence/banashankari" onClick={(e) => handleOpenResidence("banashankari", e)} className="rcard__cta">Explore residence
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
-          </div>
-        </article>
-        <article className="rcard group" data-reveal data-locality="Padmanabhanagar">
-          <a href="#/residence/padmanabhanagar" onClick={(e) => handleOpenResidence("padmanabhanagar", e)} className="rcard__media" data-mask>
-            <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80" alt="Modern interiors at Charla Living Padmanabhanagar" />
-            <span className="rcard__flag rcard__flag--blue">Newly renovated</span>
-          </a>
-          <div className="rcard__body">
-            <div className="rcard__top">
-              <h3 className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={(e) => handleOpenResidence("padmanabhanagar", e)}>Charla Living — Padmanabhanagar</h3>
-              <p className="rcard__price"><span>from</span> ₹8,000<em>/mo</em></p>
-            </div>
-            <p className="rcard__loc">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx={12} cy={10} r={3} /></svg>
-              Near Brigade Millennium · 12 min to JP Nagar 6th Phase
-            </p>
-            <ul className="rcard__tags">
-              <li>Double · Triple</li>
-              <li>Rooftop terrace</li>
-              <li>RO drinking water</li>
-            </ul>
-            <a href="#/residence/padmanabhanagar" onClick={(e) => handleOpenResidence("padmanabhanagar", e)} className="rcard__cta">Explore residence
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
-          </div>
-        </article>
-        <article className="rcard group" data-reveal data-locality="JP Nagar">
-          <a href="#/residence/jp-nagar" onClick={(e) => handleOpenResidence("jp-nagar", e)} className="rcard__media" data-mask>
-            <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=900&q=80" alt="Hotel-style single room at Charla Living JP Nagar" />
-            <span className="rcard__flag rcard__flag--orange">Professionals' pick</span>
-          </a>
-          <div className="rcard__body">
-            <div className="rcard__top">
-              <h3 className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={(e) => handleOpenResidence("jp-nagar", e)}>Charla Living — JP Nagar</h3>
-              <p className="rcard__price"><span>from</span> ₹10,500<em>/mo</em></p>
-            </div>
-            <p className="rcard__loc">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx={12} cy={10} r={3} /></svg>
-              5th Phase · 6 min to JP Nagar Metro, near Central Mall
-            </p>
-            <ul className="rcard__tags">
-              <li>Single · Double</li>
-              <li>Work desks &amp; chair</li>
-              <li>Night-shift friendly</li>
-            </ul>
-            <a href="#/residence/jp-nagar" onClick={(e) => handleOpenResidence("jp-nagar", e)} className="rcard__cta">Explore residence
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
-          </div>
-        </article>
-        <article className="rcard group" data-reveal data-locality="Jayanagar">
-          <a href="#/residence/jayanagar" onClick={(e) => handleOpenResidence("jayanagar", e)} className="rcard__media" data-mask>
-            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=900&q=80" alt="Warm furnished bedroom at Charla Living Jayanagar" />
-            <span className="rcard__flag rcard__flag--blue">Flagship</span>
-          </a>
-          <div className="rcard__body">
-            <div className="rcard__top">
-              <h3 className="cursor-pointer hover:text-[#f97316] transition-colors" onClick={(e) => handleOpenResidence("jayanagar", e)}>Charla Living — Jayanagar</h3>
-              <p className="rcard__price"><span>from</span> ₹11,000<em>/mo</em></p>
-            </div>
-            <p className="rcard__loc">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx={12} cy={10} r={3} /></svg>
-              4th Block · 7 min to Jayanagar Metro &amp; South End Circle
-            </p>
-            <ul className="rcard__tags">
-              <li>Single · Double</li>
-              <li>Meals included*</li>
-              <li>Resident lounge</li>
-            </ul>
-            <a href="#/residence/jayanagar" onClick={(e) => handleOpenResidence("jayanagar", e)} className="rcard__cta">Explore residence
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </a>
-          </div>
-        </article>
-      </div>
-      <p className="residences__note" data-reveal>*All-inclusive covers rent, Wi-Fi, housekeeping and maintenance. Food plans optional at ₹3,200/month.</p>
     </div>
   </section>
 
@@ -567,7 +408,7 @@ export function LegacySections({ onSelectResidence }: LegacySectionsProps = {}) 
     <div className="container">
       <div className="section-head" data-reveal>
         <h2 className="h2">All of South Bengaluru, <em>within reach.</em></h2>
-        <p className="section-sub">Six residences, six pins. Tap one for directions, or call us and we'll tell you which address fits your commute best.</p>
+        <p className="section-sub">Residences pinned across South Bengaluru. Tap one for directions, or call us and we'll tell you which address fits your commute best.</p>
       </div>
       <div className="locations__layout" data-reveal>
         <div className="mapwrap">
@@ -681,7 +522,7 @@ export function LegacySections({ onSelectResidence }: LegacySectionsProps = {}) 
       </div>
     </div>
   </section>
-  <section className="stories" id="stories">
+  <section className="stories" id="reviews">
     <div className="container section-head section-head--row stories__head" data-reveal>
       <div>
         <h2 className="h2">People stay <em>longer</em> here.</h2>
