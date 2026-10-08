@@ -5,13 +5,15 @@ import { LegacySections } from "@/components/site/LegacySections";
 import { FloatingContactActions } from "@/components/site/FloatingContactActions";
 import { ResidenceDetail } from "@/components/residence/ResidenceDetail";
 import { ResidencesPage } from "@/components/residence/ResidencesPage";
+import { PartnerPage } from "@/components/partner/PartnerPage";
 import { RESIDENCES } from "@/data/residences";
 import Skiper39 from "@/components/ui/skiper39";
 import { initSiteInteractions } from "./site-interactions";
 import "./site.css";
 import "./hero.css";
+import "./partner.css";
 
-type ViewState = "home" | "residences" | "detail";
+type ViewState = "home" | "residences" | "detail" | "partner";
 
 function parseRouteFromHash(): { view: ViewState; residenceId: string | null; targetSection?: string } {
   const hash = window.location.hash;
@@ -28,6 +30,9 @@ function parseRouteFromHash(): { view: ViewState; residenceId: string | null; ta
   }
   if (hash === "#residences" || hash === "#/residences" || hash.startsWith("#/residences")) {
     return { view: "residences", residenceId: null };
+  }
+  if (hash === "#partner" || hash === "#/partner" || hash === "#partner-with-us" || hash === "#/partner-with-us") {
+    return { view: "partner", residenceId: null };
   }
   return { view: "home", residenceId: null, targetSection: hash.replace("#", "") };
 }
@@ -90,6 +95,13 @@ function App() {
     setSelectedResidenceId(null);
     setCurrentView("residences");
     window.location.hash = "#/residences";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleNavigatePartner = () => {
+    setSelectedResidenceId(null);
+    setCurrentView("partner");
+    window.location.hash = "#/partner-with-us";
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -157,8 +169,9 @@ function App() {
       <LegacyChrome 
         onNavigateHome={handleBackToHome} 
         onNavigateResidences={handleNavigateResidences}
+        onNavigatePartner={handleNavigatePartner}
         onSelectResidence={handleSelectResidence} 
-        currentPage={currentView === "detail" ? "detail" : currentView === "residences" ? "residences" : "home"}
+        currentPage={currentView === "detail" ? "detail" : currentView === "residences" ? "residences" : currentView === "partner" ? "partner" : "home"}
       />
 
       {currentView === "detail" && currentResidence ? (
@@ -180,6 +193,8 @@ function App() {
           onClearLocation={handleClearLocation}
           onBackToHome={handleBackToHome}
         />
+      ) : currentView === "partner" ? (
+        <PartnerPage onBackToHome={handleBackToHome} />
       ) : (
         <main id="home">
           <Skiper39 onSearch={handleHeroSearch} />
@@ -193,6 +208,7 @@ function App() {
       <LegacyFooter 
         onSelectResidence={handleSelectResidence} 
         onNavigateHome={handleBackToHome} 
+        onNavigatePartner={handleNavigatePartner}
       />
 
       <FloatingContactActions />

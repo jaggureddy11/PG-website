@@ -1337,6 +1337,43 @@
   .residence-floating-bar .btn {
     padding: 9px 16px;
     font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .residence-hero-title {
+    font-size: 1.35rem;
+  }
+
+  .residence-floating-bar {
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .residence-floating-bar__price {
+    font-size: 14.5px;
+  }
+
+  .residence-floating-bar__meta {
+    font-size: 9.5px;
+  }
+
+  .residence-floating-bar .btn {
+    padding: 7px 12px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .room-tab-btn {
+    padding: 5px 6px;
+  }
+
+  .room-tab-btn__name {
+    font-size: 11px;
+  }
+
+  .room-tab-btn__price {
+    font-size: 10px;
   }
 }
 

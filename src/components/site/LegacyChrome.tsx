@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 interface LegacyChromeProps {
   onNavigateHome?: (targetHash?: string) => void;
   onNavigateResidences?: () => void;
+  onNavigatePartner?: () => void;
   onSelectResidence?: (id: string) => void;
-  currentPage?: "home" | "residences" | "detail";
+  currentPage?: "home" | "residences" | "detail" | "partner";
 }
 
 interface NavItem {
@@ -16,13 +17,11 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: "residences", label: "Explore Residences", badge: "Popular" },
-  { id: "stories", label: "Why Charla" },
+  { id: "partner", label: "Partner with Us" },
   { id: "map", label: "Locations" },
-  { id: "reviews", label: "Reviews" },
-  { id: "faq", label: "FAQ" },
 ];
 
-export function LegacyChrome({ onNavigateHome, onNavigateResidences, currentPage = "home" }: LegacyChromeProps = {}) {
+export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigatePartner, currentPage = "home" }: LegacyChromeProps = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("home");
@@ -39,7 +38,7 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, currentPage
       }
 
       // Section scrollspy
-      const sections = ["home", "stories", "map", "reviews", "faq", "visit"];
+      const sections = ["home", "map", "visit"];
       for (let i = sections.length - 1; i >= 0; i--) {
         const secId = sections[i];
         const el = document.getElementById(secId);
@@ -90,6 +89,16 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, currentPage
         onNavigateResidences();
       } else {
         window.location.hash = "#/residences";
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (targetId === "partner") {
+      if (onNavigatePartner) {
+        onNavigatePartner();
+      } else {
+        window.location.hash = "#/partner-with-us";
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;

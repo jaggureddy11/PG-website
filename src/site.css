@@ -525,6 +525,13 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   gap: 10px;
 }
 
+@media (max-width: 420px) {
+  .mmenu__contact-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
 .mmenu__contact-pill {
   display: inline-flex;
   align-items: center;
@@ -2939,7 +2946,42 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
     color: var(--muted);
   }
 
-  /* ── Residences & Chips ── */
+  /* ── Residences Controls & Chips ── */
+  .residences-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .residences-pills-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+  }
+  .residences-pills-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .residences-pill {
+    flex-shrink: 0;
+    padding: 7px 15px;
+    font-size: 13px;
+  }
+  .residences-sort-wrap {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+  .residences-select-custom {
+    flex: 1;
+    max-width: 220px;
+  }
+  .residences-sort-select {
+    width: 100%;
+    font-size: 13px;
+  }
   .chips {
     display: flex;
     overflow-x: auto;
@@ -3648,23 +3690,44 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 
 @media (max-width: 768px) {
   .floating-contact-actions {
-    bottom: 22px;
-    right: 18px;
-    gap: 12px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    gap: 10px;
+  }
+
+  body.has-floating-bar .floating-contact-actions {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .floating-btn {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
   }
 
   .floating-btn svg {
-    width: 22px;
-    height: 22px;
+    width: 21px;
+    height: 21px;
   }
 
   .floating-contact-tooltip {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-contact-actions {
+    right: 12px;
+    gap: 8px;
+  }
+
+  .floating-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .floating-btn svg {
+    width: 19px;
+    height: 19px;
   }
 }
 

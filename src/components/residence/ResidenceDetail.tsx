@@ -103,7 +103,6 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
   const [isBooked, setIsBooked] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleFavorite = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -113,9 +112,15 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setIsBooked(false);
-    setIsMobileMenuOpen(false);
     setSelectedRoomId(residence.roomTypes[1]?.id || residence.roomTypes[0]?.id || "single");
   }, [residence.id]);
+
+  useEffect(() => {
+    document.body.classList.add("has-floating-bar");
+    return () => {
+      document.body.classList.remove("has-floating-bar");
+    };
+  }, []);
 
   const gallerySlides = [
     { src: residence.images.hero, label: "Master Suite & Furnished Bedroom" },
@@ -194,7 +199,6 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
   };
 
   const scrollToBooking = () => {
-    setIsMobileMenuOpen(false);
     const el = document.getElementById("booking-card");
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
@@ -203,103 +207,6 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
 
   return (
     <div className="residence-page">
-      {/* ─── MINIMAL HEADER ─── */}
-      <header className="nav" id="nav">
-        <div className="container nav__inner">
-          <a href="#home" onClick={(e) => { e.preventDefault(); onBack(); }} className="brand" aria-label="Charla Living home">
-            <img src="/assets/logo.png" alt="Charla Living" className="brand__mark" width={96} height={64} />
-          </a>
-
-          <div className="nav__cta">
-            <select
-              value={residence.id}
-              onChange={(e) => onSelectResidence?.(e.target.value)}
-              className="residence-locality-dropdown"
-              aria-label="Select locality"
-            >
-              <option value="kumaraswamy-layout">Kumaraswamy Layout</option>
-              <option value="jp-nagar">JP Nagar (5th Phase)</option>
-              <option value="jayanagar">Jayanagar (4th Block)</option>
-              <option value="banashankari">Banashankari (2nd Stage)</option>
-              <option value="padmanabhanagar">Padmanabhanagar</option>
-              <option value="uttarahalli">Uttarahalli Main Rd</option>
-            </select>
-
-            <a href="tel:+918884446093" className="nav__phone" aria-label="Call Charla Living">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
-              <span>88844 46093</span>
-            </a>
-
-            <button 
-              onClick={scrollToBooking} 
-              className="btn btn--orange"
-            >
-              Schedule visit
-            </button>
-          </div>
-
-          <button 
-            className={`nav__burger ${isMobileMenuOpen ? "open" : ""}`} 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-            aria-expanded={isMobileMenuOpen}
-          >
-            <span /><span />
-          </button>
-        </div>
-      </header>
-
-      {/* ─── MOBILE DRAWER ─── */}
-      <div className={`mmenu ${isMobileMenuOpen ? "open" : ""}`} aria-hidden={!isMobileMenuOpen}>
-        <div style={{ padding: "16px 24px", width: "100%" }}>
-          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: "6px" }}>
-            Select Locality
-          </label>
-          <select
-            value={residence.id}
-            onChange={(e) => {
-              onSelectResidence?.(e.target.value);
-              setIsMobileMenuOpen(false);
-            }}
-            className="residence-locality-dropdown"
-            style={{ width: "100%", height: "42px" }}
-          >
-            <option value="kumaraswamy-layout">Kumaraswamy Layout</option>
-            <option value="jp-nagar">JP Nagar (5th Phase)</option>
-            <option value="jayanagar">Jayanagar (4th Block)</option>
-            <option value="banashankari">Banashankari (2nd Stage)</option>
-            <option value="padmanabhanagar">Padmanabhanagar</option>
-            <option value="uttarahalli">Uttarahalli Main Rd</option>
-          </select>
-        </div>
-
-        <nav className="mmenu__links" aria-label="Mobile Navigation">
-          <a href="#rooms" onClick={(e) => { e.preventDefault(); setIsMobileMenuOpen(false); document.getElementById("rooms")?.scrollIntoView({ behavior: "smooth" }); }}>Room Types &amp; Rent</a>
-          <a href="#food" onClick={(e) => { e.preventDefault(); setIsMobileMenuOpen(false); document.getElementById("food")?.scrollIntoView({ behavior: "smooth" }); }}>Daily Meals</a>
-          <a href="#amenities" onClick={(e) => { e.preventDefault(); setIsMobileMenuOpen(false); document.getElementById("amenities")?.scrollIntoView({ behavior: "smooth" }); }}>Amenities</a>
-          <a href="#location" onClick={(e) => { e.preventDefault(); setIsMobileMenuOpen(false); document.getElementById("location")?.scrollIntoView({ behavior: "smooth" }); }}>Location</a>
-        </nav>
-        
-        <div style={{ padding: "0 24px 24px", width: "100%", maxWidth: "320px", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <button 
-            onClick={scrollToBooking} 
-            className="btn btn--orange btn--lg" 
-            style={{ width: "100%", justifyContent: "center" }}
-          >
-            Schedule a visit
-          </button>
-          <a 
-            href="tel:+918884446093" 
-            className="btn btn--ghost" 
-            style={{ width: "100%", justifyContent: "center", fontSize: "13.5px" }}
-          >
-            Call +91 88844 46093
-          </a>
-        </div>
-      </div>
-
       {/* ─── HERO & GALLERY ─── */}
       <section className="residence-hero">
         <div className="container">
@@ -318,7 +225,19 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
             <div className="residence-breadcrumbs">
               <span>Bengaluru</span>
               <span className="separator">/</span>
-              <span>{residence.locality}</span>
+              <select
+                value={residence.id}
+                onChange={(e) => onSelectResidence?.(e.target.value)}
+                className="residence-locality-dropdown"
+                aria-label="Select locality"
+              >
+                <option value="kumaraswamy-layout">Kumaraswamy Layout</option>
+                <option value="jp-nagar">JP Nagar (5th Phase)</option>
+                <option value="jayanagar">Jayanagar (4th Block)</option>
+                <option value="banashankari">Banashankari (2nd Stage)</option>
+                <option value="padmanabhanagar">Padmanabhanagar</option>
+                <option value="uttarahalli">Uttarahalli Main Rd</option>
+              </select>
             </div>
           </div>
 
