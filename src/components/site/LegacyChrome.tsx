@@ -15,7 +15,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: "residences", label: "Residences", badge: "Popular" },
+  { id: "residences", label: "Explore Residences", badge: "Popular" },
   { id: "stories", label: "Why Charla" },
   { id: "map", label: "Locations" },
   { id: "reviews", label: "Reviews" },

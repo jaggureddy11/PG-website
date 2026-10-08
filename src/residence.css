@@ -1339,3 +1339,14 @@
     font-size: 13px;
   }
 }
+
+/* ─── Banner Rolling Transition Keyframes ─── */
+@keyframes bannerProgress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+

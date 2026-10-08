@@ -284,7 +284,7 @@ function Skiper39({ onSearch }: Skiper39Props) {
         setIsLocating(false);
         setLocationStatus("success");
         setDetectedLocality(nearest);
-        setSearchQuery(`📍 Near ${nearest.name}`);
+        setSearchQuery(`Near ${nearest.name}`);
 
         if (onSearch) {
           onSearch({

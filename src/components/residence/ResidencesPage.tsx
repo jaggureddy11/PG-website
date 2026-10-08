@@ -246,7 +246,7 @@ export function ResidencesPage({
   return (
     <div className="residences-page min-h-screen bg-[#f8faf8] pt-24 pb-20">
       {/* ─── Clean Breadcrumb & Navigation Bar ─── */}
-      <div className="container mb-6">
+      <div className="container mb-8 md:mb-10">
         <div className="flex flex-wrap items-center justify-between gap-4 py-2.5 px-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/70 shadow-sm">
           <button
             type="button"
@@ -303,7 +303,7 @@ export function ResidencesPage({
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="residences-sort-select"
                 >
-                  {userCoords && <option value="nearest">📍 Nearest to Me</option>}
+                  {userCoords && <option value="nearest">Nearest to Me</option>}
                   <option value="featured">Featured</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
@@ -316,27 +316,24 @@ export function ResidencesPage({
             </div>
           </div>
 
-          {/* ─── Geolocation Proximity Notification Banner ─── */}
+          {/* ─── Minimal Geolocation Proximity Bar ─── */}
           {userCoords && detectedLocalityInfo && (
-            <div className="residences-location-banner">
-              <div className="residences-location-banner__info">
-                <span className="residences-location-banner__pulse" />
-                <div>
-                  <p className="residences-location-banner__title">
-                    Showing residences sorted by proximity to your location
-                  </p>
-                  <p className="residences-location-banner__sub">
-                    Closest PG: <strong>{detectedLocalityInfo.name}</strong> ({detectedLocalityInfo.distanceKm} km away)
-                  </p>
-                </div>
+            <div className="residences-location-bar">
+              <div className="residences-location-bar__info">
+                <span className="residences-location-bar__dot" aria-hidden="true" />
+                <span className="residences-location-bar__text">
+                  Sorted by proximity · Nearest: <strong>{detectedLocalityInfo.name}</strong> ({detectedLocalityInfo.distanceKm} km)
+                </span>
               </div>
               {onClearLocation && (
                 <button
                   type="button"
                   onClick={onClearLocation}
-                  className="residences-location-banner__btn"
+                  className="residences-location-bar__clear"
+                  title="Reset location filter"
                 >
-                  Reset Location Filter
+                  <span>Reset</span>
+                  <span className="residences-location-bar__clear-x">×</span>
                 </button>
               )}
             </div>
@@ -355,7 +352,7 @@ export function ResidencesPage({
                   <span className={`rcard__flag rcard__flag--${res.flagType}`}>{res.flag}</span>
                   {res.distanceKm !== undefined && (
                     <span className="rcard__distance-pill">
-                      📍 {res.distanceKm} km away
+                      {res.distanceKm} km away
                     </span>
                   )}
                 </a>
