@@ -903,6 +903,22 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
                   <p style={{ fontSize: "12.5px", color: "var(--muted)", lineHeight: 1.4, marginBottom: "14px" }}>
                     We booked your {tourType === "video" ? "Video Tour" : "Visit"} for <strong>{selectedRoom.name}</strong> on {date} ({timeSlot}).
                   </p>
+                  
+                  <a
+                    href={`https://wa.me/918884446093?text=${encodeURIComponent(
+                      `Hi Charla Living, I booked a walkthrough on your website!\n• Residence: ${residence.name}\n• Room: ${selectedRoom.name} (₹${selectedRoom.price.toLocaleString("en-IN")}/mo)\n• Name: ${name}\n• Phone: ${phone}\n• Tour: ${tourType === "video" ? "Video Tour" : "In-Person Visit"}\n• Date & Slot: ${date} (${timeSlot})`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn--blue"
+                    style={{ width: "100%", justifyContent: "center", marginBottom: "8px", gap: "8px", fontSize: "13px" }}
+                  >
+                    <span>Confirm on WhatsApp</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}>
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </a>
+
                   <button 
                     onClick={() => setIsBooked(false)}
                     className="btn btn--ghost"

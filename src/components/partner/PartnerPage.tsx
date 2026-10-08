@@ -239,14 +239,29 @@ export function PartnerPage({ onBackToHome }: PartnerPageProps) {
                 <div className="partner-success-icon">
                   <CheckCircle2 size={36} />
                 </div>
-                <h3>Thank You</h3>
+                <h3>Thank You, {formData.name || "Partner"}</h3>
                 <p>
-                  Your details have been received. Our partnership manager will reach out shortly.
+                  Your details have been received. Our partnership manager will review your property in {formData.locality} and get in touch within 24 hours.
                 </p>
+
+                <a
+                  href={`https://wa.me/918884446093?text=${encodeURIComponent(
+                    `Hello Charla Living! I submitted a property partnership inquiry on your website:\n• Category: ${partnerType === "owner" ? "Property Owner" : "College / Corporate Housing"}\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Locality: ${formData.locality}\n• Size: ${formData.rooms}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn--blue"
+                  style={{ width: "100%", justifyContent: "center", marginBottom: "10px", gap: "8px" }}
+                >
+                  <MessageCircle size={16} />
+                  <span>Chat with Partnership Manager on WhatsApp</span>
+                </a>
+
                 <button
                   type="button"
                   onClick={() => setIsSubmitted(false)}
                   className="btn btn--outline"
+                  style={{ width: "100%", justifyContent: "center" }}
                 >
                   Submit Another Inquiry
                 </button>

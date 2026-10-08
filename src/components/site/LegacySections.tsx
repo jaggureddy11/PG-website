@@ -615,6 +615,17 @@ export function LegacySections({
           </span>
           <h3>Done. We'll call you shortly.</h3>
           <p>Keep your phone close — a real person from our team will reach out.</p>
+          <a
+            id="visitWhatsappLink"
+            href="https://wa.me/918884446093?text=Hi%20Charla%20Living%2C%20I%20requested%20a%20callback%20on%20your%20website!"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn--blue"
+            style={{ marginTop: "14px", display: "inline-flex", alignItems: "center", gap: "8px" }}
+          >
+            <span>Message on WhatsApp for instant confirmation</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </a>
         </div>
       </div>
     </div>

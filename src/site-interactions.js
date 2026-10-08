@@ -229,6 +229,18 @@ export function initSiteInteractions() {
   if (visitForm) {
     const visitSubmit = function (e) {
       e.preventDefault();
+      const nameVal = this.querySelector('[name="name"]')?.value || "";
+      const phoneVal = this.querySelector('[name="phone"]')?.value || "";
+      const localityVal = this.querySelector('[name="locality"]')?.value || "";
+      
+      const waBtn = document.getElementById("visitWhatsappLink");
+      if (waBtn) {
+        const waText = encodeURIComponent(
+          `Hi Charla Living, I requested a callback on your website!\n• Name: ${nameVal}\n• Phone: ${phoneVal}\n• Preferred Locality: ${localityVal}`
+        );
+        waBtn.href = `https://wa.me/918884446093?text=${waText}`;
+      }
+
       this.style.display = "none";
       const altEl = document.querySelector(".visit__alt");
       if (altEl) altEl.style.display = "none";

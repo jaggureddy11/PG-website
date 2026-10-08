@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import bannerComfortablePgs from "@/assets/banners/banner_comfortable_pgs.png";
-import bannerBetterLiving from "@/assets/banners/banner_better_living.png";
-import bannerPreferredLocation from "@/assets/banners/banner_preferred_location.png";
+import bannerComfortablePgs from "@/assets/banners/banner_comfortable_pgs.webp";
+import bannerBetterLiving from "@/assets/banners/banner_better_living.webp";
+import bannerPreferredLocation from "@/assets/banners/banner_preferred_location.webp";
 
 interface BannerItem {
   id: string;
