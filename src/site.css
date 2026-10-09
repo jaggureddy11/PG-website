@@ -321,27 +321,52 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   gap: 10px;
 }
 
-.nav__mobile-call-btn {
+.nav__mobile-explore-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: rgba(0, 59, 153, 0.08);
+  height: 38px;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--blue);
-  border: 1px solid rgba(0, 59, 153, 0.15);
+  background: rgba(0, 59, 153, 0.08);
+  border: 1px solid rgba(0, 59, 153, 0.18);
+  border-radius: 100px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
   transition: all 0.2s var(--ease);
 }
 
-.nav__mobile-call-btn:hover {
+.nav__mobile-explore-btn:hover,
+.nav__mobile-explore-btn:active,
+.nav__mobile-explore-btn.is-active {
   background: var(--blue);
   color: #ffffff;
+  border-color: var(--blue);
 }
 
-.nav__mobile-call-btn svg {
-  width: 18px;
-  height: 18px;
+.nav__mobile-explore-text-short {
+  display: none;
+}
+
+@media (max-width: 380px) {
+  .nav__mobile-explore-btn {
+    padding: 0 10px;
+    font-size: 11.5px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 330px) {
+  .nav__mobile-explore-text-full {
+    display: none;
+  }
+  .nav__mobile-explore-text-short {
+    display: inline;
+  }
 }
 
 .nav__burger {
@@ -4090,9 +4115,10 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   .nav__mobile-actions {
     gap: 6px;
   }
-  .nav__mobile-call-btn {
-    width: 38px;
-    height: 38px;
+  .nav__mobile-explore-btn {
+    height: 34px;
+    padding: 0 9px;
+    font-size: 11px;
   }
   .nav__burger {
     width: 38px;
