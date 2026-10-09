@@ -185,6 +185,17 @@ export function LegacySections({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-5.6-7-10.8a7 7 0 0 1 14 0C19 15.4 12 21 12 21z" /><circle cx={12} cy={10} r="2.6" /></svg>
             </span>
           </div>
+          <div className="step__media">
+            <video
+              className="step__video"
+              src="/assets/step1-locality.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+            />
+          </div>
           <h3>Pick your locality</h3>
           <p>Browse addresses across South Bengaluru, compare room sharing options, or simply tell us your office or college location.</p>
           <div className="step__footer">
@@ -199,6 +210,17 @@ export function LegacySections({
             <span className="step__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z" /><rect x={1} y={5} width={15} height={14} rx={2} /></svg>
             </span>
+          </div>
+          <div className="step__media">
+            <video
+              className="step__video"
+              src="/assets/step2-walkthrough.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+            />
           </div>
           <h3>Take the free walkthrough</h3>
           <p>Visit in person or book a live HD video tour. See the exact room you'll get — same floor, same natural sunlight.</p>
@@ -215,7 +237,18 @@ export function LegacySections({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="15.5" r="4.5" /><path d="M10.8 12.2 21 2m-3.5 3.5L21 9" /></svg>
             </span>
           </div>
-          <h3>Move in with one bag</h3>
+          <div className="step__media">
+            <video
+              className="step__video"
+              src="/assets/step3-movein.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+            />
+          </div>
+          <h3>Move in seamlessly</h3>
           <p>Sign a simple 1-page agreement, pay a 1-month deposit, and collect your keys. Hot dinner will be waiting for you that night.</p>
           <div className="step__footer">
             <span className="step__pill">Keys in 72h</span>
