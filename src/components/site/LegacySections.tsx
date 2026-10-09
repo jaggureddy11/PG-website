@@ -169,100 +169,6 @@ export function LegacySections({
     </div>
   </section>
 
-
-  <section className="locations" id="map">
-    <div className="container">
-      <div className="section-head" data-reveal>
-        <h2 className="h2">All of South Bengaluru, <em>within reach.</em></h2>
-        <p className="section-sub">Residences pinned across South Bengaluru. Tap one for directions, or call us and we'll tell you which address fits your commute best.</p>
-      </div>
-      <div className="locations__layout" data-reveal>
-        <div className="mapwrap">
-          <iframe id="gmap" title="Charla Living residences on the map" src="https://maps.google.com/maps?q=12.9187,77.5645&z=14&hl=en&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
-          <div className="mapwrap__pins" id="mapPins">
-            <a className="pin" style={{ "--i": "0" } as CSSProperties} data-lat="12.9089" data-lng="77.5528" data-locality="Kumaraswamy Layout" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Kumaraswamy+Layout+Bengaluru" target="_blank" rel="noopener" aria-label="Charla Living Kumaraswamy Layout — open in Google Maps">
-              <svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.5 1 2 5.6 2 11.2 2 19 12 31 12 31s10-12 10-19.8C22 5.6 17.5 1 12 1z" fill="currentColor" /><circle cx={12} cy={11} r="5.8" fill="#fff" /><text x={12} y="14.4" textAnchor="middle" fontSize="8.5" fontWeight={700} fill="currentColor" fontFamily="Inter, sans-serif">1</text></svg>
-              <span className="pin__tip">Kumaraswamy Layout</span>
-            </a>
-            <a className="pin" style={{ "--i": "1" } as CSSProperties} data-lat="12.9068" data-lng="77.5440" data-locality="Uttarahalli" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Uttarahalli+Bengaluru" target="_blank" rel="noopener" aria-label="Charla Living Uttarahalli — open in Google Maps">
-              <svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.5 1 2 5.6 2 11.2 2 19 12 31 12 31s10-12 10-19.8C22 5.6 17.5 1 12 1z" fill="currentColor" /><circle cx={12} cy={11} r="5.8" fill="#fff" /><text x={12} y="14.4" textAnchor="middle" fontSize="8.5" fontWeight={700} fill="currentColor" fontFamily="Inter, sans-serif">2</text></svg>
-              <span className="pin__tip">Uttarahalli</span>
-            </a>
-            <a className="pin" style={{ "--i": "2" } as CSSProperties} data-lat="12.9252" data-lng="77.5740" data-locality="Banashankari" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Banashankari+Bengaluru" target="_blank" rel="noopener" aria-label="Charla Living Banashankari — open in Google Maps">
-              <svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.5 1 2 5.6 2 11.2 2 19 12 31 12 31s10-12 10-19.8C22 5.6 17.5 1 12 1z" fill="currentColor" /><circle cx={12} cy={11} r="5.8" fill="#fff" /><text x={12} y="14.4" textAnchor="middle" fontSize="8.5" fontWeight={700} fill="currentColor" fontFamily="Inter, sans-serif">3</text></svg>
-              <span className="pin__tip">Banashankari</span>
-            </a>
-            <a className="pin" style={{ "--i": "3" } as CSSProperties} data-lat="12.9149" data-lng="77.5610" data-locality="Padmanabhanagar" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Padmanabhanagar+Bengaluru" target="_blank" rel="noopener" aria-label="Charla Living Padmanabhanagar — open in Google Maps">
-              <svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.5 1 2 5.6 2 11.2 2 19 12 31 12 31s10-12 10-19.8C22 5.6 17.5 1 12 1z" fill="currentColor" /><circle cx={12} cy={11} r="5.8" fill="#fff" /><text x={12} y="14.4" textAnchor="middle" fontSize="8.5" fontWeight={700} fill="currentColor" fontFamily="Inter, sans-serif">4</text></svg>
-              <span className="pin__tip">Padmanabhanagar</span>
-            </a>
-            <a className="pin" style={{ "--i": "4" } as CSSProperties} data-lat="12.9070" data-lng="77.5850" data-locality="JP Nagar" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+JP+Nagar+Bengaluru" target="_blank" rel="noopener" aria-label="Charla Living JP Nagar — open in Google Maps">
-              <svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.5 1 2 5.6 2 11.2 2 19 12 31 12 31s10-12 10-19.8C22 5.6 17.5 1 12 1z" fill="currentColor" /><circle cx={12} cy={11} r="5.8" fill="#fff" /><text x={12} y="14.4" textAnchor="middle" fontSize="8.5" fontWeight={700} fill="currentColor" fontFamily="Inter, sans-serif">5</text></svg>
-              <span className="pin__tip">JP Nagar</span>
-            </a>
-            <a className="pin" style={{ "--i": "5" } as CSSProperties} data-lat="12.9305" data-lng="77.5830" data-locality="Jayanagar" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Jayanagar+Bengaluru" target="_blank" rel="noopener" aria-label="Charla Living Jayanagar — open in Google Maps">
-              <svg viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.5 1 2 5.6 2 11.2 2 19 12 31 12 31s10-12 10-19.8C22 5.6 17.5 1 12 1z" fill="currentColor" /><circle cx={12} cy={11} r="5.8" fill="#fff" /><text x={12} y="14.4" textAnchor="middle" fontSize="8.5" fontWeight={700} fill="currentColor" fontFamily="Inter, sans-serif">6</text></svg>
-              <span className="pin__tip">Jayanagar</span>
-            </a>
-          </div>
-        </div>
-        <aside className="mapcard" data-reveal>
-          <h3>Pick a pin</h3>
-          <ul className="mapcard__list">
-            <li>
-              <a className="mapcard__row" data-locality="Kumaraswamy Layout" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Kumaraswamy+Layout+Bengaluru" target="_blank" rel="noopener">
-                <span className="mapcard__num">1</span>
-                <span className="mapcard__name">Kumaraswamy Layout</span>
-                <span className="mapcard__meta">from ₹8,500 · 92 beds</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9" /></svg>
-              </a>
-            </li>
-            <li>
-              <a className="mapcard__row" data-locality="Uttarahalli" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Uttarahalli+Bengaluru" target="_blank" rel="noopener">
-                <span className="mapcard__num">2</span>
-                <span className="mapcard__name">Uttarahalli</span>
-                <span className="mapcard__meta">from ₹7,500 · 68 beds</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9" /></svg>
-              </a>
-            </li>
-            <li>
-              <a className="mapcard__row" data-locality="Banashankari" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Banashankari+Bengaluru" target="_blank" rel="noopener">
-                <span className="mapcard__num">3</span>
-                <span className="mapcard__name">Banashankari</span>
-                <span className="mapcard__meta">from ₹9,000 · 110 beds</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9" /></svg>
-              </a>
-            </li>
-            <li>
-              <a className="mapcard__row" data-locality="Padmanabhanagar" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Padmanabhanagar+Bengaluru" target="_blank" rel="noopener">
-                <span className="mapcard__num">4</span>
-                <span className="mapcard__name">Padmanabhanagar</span>
-                <span className="mapcard__meta">from ₹8,000 · 84 beds</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9" /></svg>
-              </a>
-            </li>
-            <li>
-              <a className="mapcard__row" data-locality="JP Nagar" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+JP+Nagar+Bengaluru" target="_blank" rel="noopener">
-                <span className="mapcard__num">5</span>
-                <span className="mapcard__name">JP Nagar</span>
-                <span className="mapcard__meta">from ₹10,500 · 64 beds</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9" /></svg>
-              </a>
-            </li>
-            <li>
-              <a className="mapcard__row" data-locality="Jayanagar" href="https://www.google.com/maps/search/?api=1&query=Charla+Living+Jayanagar+Bengaluru" target="_blank" rel="noopener">
-                <span className="mapcard__num">6</span>
-                <span className="mapcard__name">Jayanagar</span>
-                <span className="mapcard__meta">from ₹11,000 · 62 beds</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9" /></svg>
-              </a>
-            </li>
-          </ul>
-          <p className="mapcard__foot">Live directions open in Google Maps — distances are short, walk the route on your visit.</p>
-        </aside>
-      </div>
-    </div>
-  </section>
   <section className="how" id="how">
     <div className="container">
       <div className="section-head text-center" data-reveal>
@@ -282,7 +188,7 @@ export function LegacySections({
           <h3>Pick your locality</h3>
           <p>Browse addresses across South Bengaluru, compare room sharing options, or simply tell us your office or college location.</p>
           <div className="step__footer">
-            <span className="step__pill">6 prime locations</span>
+            <span className="step__pill">Prime locations</span>
           </div>
         </div>
 
@@ -326,7 +232,13 @@ export function LegacySections({
       <aside className="stories__rating" aria-label="Rated 4.8 out of 5 from over 1,200 resident reviews">
         <span className="stories__rating-num">4.8</span>
         <span className="stories__rating-detail">
-          <span className="stories__rating-stars" aria-hidden="true">★★★★★</span>
+          <span className="stories__rating-stars" aria-hidden="true" style={{ display: "inline-flex", gap: "3px", alignItems: "center" }}>
+            {[1, 2, 3, 4, 5].map((s) => (
+              <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#FB7009" stroke="#FB7009" strokeWidth="1">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            ))}
+          </span>
           <span className="stories__rating-copy">out of 5 · 1,200+ resident reviews</span>
         </span>
       </aside>
@@ -338,7 +250,7 @@ export function LegacySections({
           <p className="tcard__text">The food is the reason I renewed. Hot rasam on a rainy day after a 10-hour shift — my mother approves of this PG, and she approves of nothing.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#003B99" } as CSSProperties}>AS</span>
-            <div className="tcard__id"><strong>Ananya S.</strong><p>JP Nagar · 2 yrs · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Ananya S.</strong><p>JP Nagar · 2 yrs · 5.0 Rating</p></div>
             <span className="tcard__tag">Food</span>
           </div>
         </article>
@@ -347,7 +259,7 @@ export function LegacySections({
           <p className="tcard__text">Wi-Fi never died once during my GATE prep, which is more than I can say for my last place. The owner personally fixed my geyser on a Sunday.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#FB7009" } as CSSProperties}>RV</span>
-            <div className="tcard__id"><strong>Rohit V.</strong><p>Jayanagar · 14 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Rohit V.</strong><p>Jayanagar · 14 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Wi-Fi</span>
           </div>
         </article>
@@ -356,7 +268,7 @@ export function LegacySections({
           <p className="tcard__text">3-minute walk to class, laundry that comes back folded, and a strict no-nonsense guest policy. Exactly what a student needs, nothing he doesn't.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#B03A5B" } as CSSProperties}>AM</span>
-            <div className="tcard__id"><strong>Arjun M.</strong><p>Kumaraswamy Layout · 8 mo · ★★★★☆</p></div>
+            <div className="tcard__id"><strong>Arjun M.</strong><p>Kumaraswamy Layout · 8 mo · 4.8 Rating</p></div>
             <span className="tcard__tag">Walk to class</span>
           </div>
         </article>
@@ -365,7 +277,7 @@ export function LegacySections({
           <p className="tcard__text">Night-shift nurse, odd hours. They keep my dinner aside without my asking. That one small thing made me move my sister in too.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#7A5C3E" } as CSSProperties}>DR</span>
-            <div className="tcard__id"><strong>Divya R.</strong><p>Uttarahalli · 1 yr · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Divya R.</strong><p>Uttarahalli · 1 yr · 5.0 Rating</p></div>
             <span className="tcard__tag">Night shift</span>
           </div>
         </article>
@@ -374,7 +286,7 @@ export function LegacySections({
           <p className="tcard__text">My room is cleaned before I even notice it needs cleaning. Bedsheets changed twice a week, like clockwork, every single week.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#3E5F7A" } as CSSProperties}>SP</span>
-            <div className="tcard__id"><strong>Sneha P.</strong><p>Uttarahalli · 1.5 yrs · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Sneha P.</strong><p>Uttarahalli · 1.5 yrs · 5.0 Rating</p></div>
             <span className="tcard__tag">Housekeeping</span>
           </div>
         </article>
@@ -383,7 +295,7 @@ export function LegacySections({
           <p className="tcard__text">The food is the reason I renewed. Hot rasam on a rainy day after a 10-hour shift — my mother approves of this PG, and she approves of nothing.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#003B99" } as CSSProperties}>AS</span>
-            <div className="tcard__id"><strong>Ananya S.</strong><p>JP Nagar · 2 yrs · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Ananya S.</strong><p>JP Nagar · 2 yrs · 5.0 Rating</p></div>
             <span className="tcard__tag">Food</span>
           </div>
         </article>
@@ -392,7 +304,7 @@ export function LegacySections({
           <p className="tcard__text">Wi-Fi never died once during my GATE prep, which is more than I can say for my last place. The owner personally fixed my geyser on a Sunday.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#FB7009" } as CSSProperties}>RV</span>
-            <div className="tcard__id"><strong>Rohit V.</strong><p>Jayanagar · 14 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Rohit V.</strong><p>Jayanagar · 14 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Wi-Fi</span>
           </div>
         </article>
@@ -401,7 +313,7 @@ export function LegacySections({
           <p className="tcard__text">3-minute walk to class, laundry that comes back folded, and a strict no-nonsense guest policy. Exactly what a student needs, nothing he doesn't.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#B03A5B" } as CSSProperties}>AM</span>
-            <div className="tcard__id"><strong>Arjun M.</strong><p>Kumaraswamy Layout · 8 mo · ★★★★☆</p></div>
+            <div className="tcard__id"><strong>Arjun M.</strong><p>Kumaraswamy Layout · 8 mo · 4.8 Rating</p></div>
             <span className="tcard__tag">Walk to class</span>
           </div>
         </article>
@@ -410,7 +322,7 @@ export function LegacySections({
           <p className="tcard__text">Night-shift nurse, odd hours. They keep my dinner aside without my asking. That one small thing made me move my sister in too.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#7A5C3E" } as CSSProperties}>DR</span>
-            <div className="tcard__id"><strong>Divya R.</strong><p>Uttarahalli · 1 yr · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Divya R.</strong><p>Uttarahalli · 1 yr · 5.0 Rating</p></div>
             <span className="tcard__tag">Night shift</span>
           </div>
         </article>
@@ -419,7 +331,7 @@ export function LegacySections({
           <p className="tcard__text">My room is cleaned before I even notice it needs cleaning. Bedsheets changed twice a week, like clockwork, every single week.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#3E5F7A" } as CSSProperties}>SP</span>
-            <div className="tcard__id"><strong>Sneha P.</strong><p>Uttarahalli · 1.5 yrs · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Sneha P.</strong><p>Uttarahalli · 1.5 yrs · 5.0 Rating</p></div>
             <span className="tcard__tag">Housekeeping</span>
           </div>
         </article>
@@ -430,7 +342,7 @@ export function LegacySections({
           <p className="tcard__text">Rooftop terrace is where half my team now does our sprint planning. Faster internet than office, and someone always refills the chai kettle.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#3E5F7A" } as CSSProperties}>KN</span>
-            <div className="tcard__id"><strong>Karthik N.</strong><p>Padmanabhanagar · 10 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Karthik N.</strong><p>Padmanabhanagar · 10 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Rooftop</span>
           </div>
         </article>
@@ -439,7 +351,7 @@ export function LegacySections({
           <p className="tcard__text">Booked on Tuesday after a video tour, moved in on Friday. The room was exactly what they showed me — same view of the gulmohar tree outside.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#003B99" } as CSSProperties}>MT</span>
-            <div className="tcard__id"><strong>Meghana T.</strong><p>Banashankari · 6 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Meghana T.</strong><p>Banashankari · 6 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Video tour</span>
           </div>
         </article>
@@ -448,7 +360,7 @@ export function LegacySections({
           <p className="tcard__text">Parents visited for one afternoon, approved the CCTV, the visitor log and the cook's sambhar in a single sitting. That's the review that matters.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#0E7C66" } as CSSProperties}>IK</span>
-            <div className="tcard__id"><strong>Imran K.</strong><p>Jayanagar · 4 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Imran K.</strong><p>Jayanagar · 4 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Family-approved</span>
           </div>
         </article>
@@ -457,7 +369,7 @@ export function LegacySections({
           <p className="tcard__text">Two metro stops from the office and exactly zero landlord drama. I should have moved out of my old flat years ago, honestly.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#B03A5B" } as CSSProperties}>NR</span>
-            <div className="tcard__id"><strong>Navya R.</strong><p>Padmanabhanagar · 9 mo · ★★★★☆</p></div>
+            <div className="tcard__id"><strong>Navya R.</strong><p>Padmanabhanagar · 9 mo · 4.8 Rating</p></div>
             <span className="tcard__tag">Working pro</span>
           </div>
         </article>
@@ -466,7 +378,7 @@ export function LegacySections({
           <p className="tcard__text">The filter coffee at 7 a.m. is worth the rent by itself. Everything after that — the meals, the cleaning, the quiet — feels like a bonus.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#FB7009" } as CSSProperties}>VC</span>
-            <div className="tcard__id"><strong>Vivek C.</strong><p>JP Nagar · 1 yr · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Vivek C.</strong><p>JP Nagar · 1 yr · 5.0 Rating</p></div>
             <span className="tcard__tag">Filter coffee</span>
           </div>
         </article>
@@ -475,7 +387,7 @@ export function LegacySections({
           <p className="tcard__text">Rooftop terrace is where half my team now does our sprint planning. Faster internet than office, and someone always refills the chai kettle.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#3E5F7A" } as CSSProperties}>KN</span>
-            <div className="tcard__id"><strong>Karthik N.</strong><p>Padmanabhanagar · 10 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Karthik N.</strong><p>Padmanabhanagar · 10 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Rooftop</span>
           </div>
         </article>
@@ -484,7 +396,7 @@ export function LegacySections({
           <p className="tcard__text">Booked on Tuesday after a video tour, moved in on Friday. The room was exactly what they showed me — same view of the gulmohar tree outside.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#003B99" } as CSSProperties}>MT</span>
-            <div className="tcard__id"><strong>Meghana T.</strong><p>Banashankari · 6 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Meghana T.</strong><p>Banashankari · 6 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Video tour</span>
           </div>
         </article>
@@ -493,7 +405,7 @@ export function LegacySections({
           <p className="tcard__text">Parents visited for one afternoon, approved the CCTV, the visitor log and the cook's sambhar in a single sitting. That's the review that matters.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#0E7C66" } as CSSProperties}>IK</span>
-            <div className="tcard__id"><strong>Imran K.</strong><p>Jayanagar · 4 mo · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Imran K.</strong><p>Jayanagar · 4 mo · 5.0 Rating</p></div>
             <span className="tcard__tag">Family-approved</span>
           </div>
         </article>
@@ -502,7 +414,7 @@ export function LegacySections({
           <p className="tcard__text">Two metro stops from the office and exactly zero landlord drama. I should have moved out of my old flat years ago, honestly.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#B03A5B" } as CSSProperties}>NR</span>
-            <div className="tcard__id"><strong>Navya R.</strong><p>Padmanabhanagar · 9 mo · ★★★★☆</p></div>
+            <div className="tcard__id"><strong>Navya R.</strong><p>Padmanabhanagar · 9 mo · 4.8 Rating</p></div>
             <span className="tcard__tag">Working pro</span>
           </div>
         </article>
@@ -511,7 +423,7 @@ export function LegacySections({
           <p className="tcard__text">The filter coffee at 7 a.m. is worth the rent by itself. Everything after that — the meals, the cleaning, the quiet — feels like a bonus.</p>
           <div className="tcard__foot">
             <span className="tcard__avatar" style={{ "--a": "#FB7009" } as CSSProperties}>VC</span>
-            <div className="tcard__id"><strong>Vivek C.</strong><p>JP Nagar · 1 yr · ★★★★★</p></div>
+            <div className="tcard__id"><strong>Vivek C.</strong><p>JP Nagar · 1 yr · 5.0 Rating</p></div>
             <span className="tcard__tag">Filter coffee</span>
           </div>
         </article>

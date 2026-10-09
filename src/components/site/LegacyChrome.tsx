@@ -16,9 +16,9 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: "residences", label: "Explore Residences", badge: "Popular" },
+  { id: "home", label: "Home" },
+  { id: "residences", label: "Explore Residences" },
   { id: "partner", label: "Partner with Us" },
-  { id: "map", label: "Locations" },
 ];
 
 export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigatePartner, currentPage = "home" }: LegacyChromeProps = {}) {

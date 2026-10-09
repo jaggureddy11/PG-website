@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowRight, LocateFixed, Loader2, Search } from "lucide-react";
+import { ArrowRight, LocateFixed, Loader2, Search, X } from "lucide-react";
 import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { findNearestLocality } from "@/utils/location";
@@ -248,23 +248,140 @@ interface Skiper39Props {
   }) => void;
 }
 
-function resolveLocalityFromQuery(query: string): string {
+interface SearchResolution {
+  status: "matched" | "unlisted" | "all";
+  localityId?: string;
+  searchedPlace?: string;
+}
+
+function resolveSearchQuery(query: string): SearchResolution {
   const q = query.toLowerCase().trim();
-  if (!q) return "all";
-  if (q.includes("kumara") || q.includes("layout") || q.includes("ks layout")) return "kumaraswamy-layout";
-  if (q.includes("uttara") || q.includes("halli")) return "uttarahalli";
-  if (q.includes("banashankari") || q.includes("bsk")) return "banashankari";
-  if (q.includes("padmanabha") || q.includes("padman")) return "padmanabhanagar";
-  if (q.includes("jp") || q.includes("jp nagar")) return "jp-nagar";
-  if (q.includes("jaya") || q.includes("jayanagar")) return "jayanagar";
-  return "all";
+  if (!q) return { status: "all" };
+
+  // Common generalized queries meaning all South Bangalore residences
+  if (
+    q === "all" ||
+    q === "bangalore" ||
+    q === "bengaluru" ||
+    q === "south bangalore" ||
+    q === "south bengaluru" ||
+    q.includes("near me")
+  ) {
+    return { status: "all" };
+  }
+
+  // Known listed localities in South Bangalore
+  if (q.includes("kumara") || q.includes("layout") || q.includes("ks layout") || q.includes("k s layout") || q.includes("dayananda") || q.includes("dsi")) {
+    return { status: "matched", localityId: "kumaraswamy-layout" };
+  }
+  if (q.includes("uttara") || q.includes("halli") || q.includes("subramanya") || q.includes("channasandra")) {
+    return { status: "matched", localityId: "uttarahalli" };
+  }
+  if (q.includes("banashankari") || q.includes("bsk") || q.includes("kathriguppe") || q.includes("pes")) {
+    return { status: "matched", localityId: "banashankari" };
+  }
+  if (q.includes("padmanabha") || q.includes("padman") || q.includes("kadirenahalli")) {
+    return { status: "matched", localityId: "padmanabhanagar" };
+  }
+  if (q.includes("jp") || q.includes("jp nagar") || q.includes("j p nagar") || q.includes("vega city") || q.includes("bannerghatta")) {
+    return { status: "matched", localityId: "jp-nagar" };
+  }
+  if (q.includes("jaya") || q.includes("jayanagar") || q.includes("jaya nagar") || q.includes("south end")) {
+    return { status: "matched", localityId: "jayanagar" };
+  }
+
+  // Any other city, town or locality where we have NO properties listed (e.g. sindhanur, whitefield, etc.)
+  return { status: "unlisted", searchedPlace: query.trim() };
 }
 
 function Skiper39({ onSearch }: Skiper39Props) {
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [unlistedPlace, setUnlistedPlace] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationStatus, setLocationStatus] = useState<"idle" | "success" | "denied">("idle");
   const [detectedLocality, setDetectedLocality] = useState<{ id: string; name: string; distanceKm: number } | null>(null);
+
+  // ─── Hero Heart Interactive Tap Effects ───
+  const heartRef = useRef<SVGSVGElement | null>(null);
+  const ambientGlowRef = useRef<HTMLDivElement | null>(null);
+  const [badgeKey, setBadgeKey] = useState<number>(0);
+  const [showBadge, setShowBadge] = useState<boolean>(false);
+
+  const handleHeartTap = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    setBadgeKey(Date.now());
+    setShowBadge(true);
+
+    // 1. Tactile GSAP bounce on heart icon
+    if (heartRef.current) {
+      gsap.killTweensOf(heartRef.current);
+      gsap.timeline()
+        .to(heartRef.current, { scale: 1.55, rotate: -14, duration: 0.14, ease: "back.out(3)" })
+        .to(heartRef.current, { scale: 0.88, rotate: 8, duration: 0.12, ease: "power2.inOut" })
+        .to(heartRef.current, { scale: 1, rotate: 0, duration: 0.35, ease: "elastic.out(1.2, 0.45)" });
+    }
+
+    // 2. Ambient background radial ripple
+    if (ambientGlowRef.current) {
+      gsap.killTweensOf(ambientGlowRef.current);
+      gsap.fromTo(ambientGlowRef.current,
+        { opacity: 0.85, scale: 0.3 },
+        { opacity: 0, scale: 3.2, duration: 0.85, ease: "power2.out" }
+      );
+    }
+
+    // 3. Spawn 16 radiant floating heart particles from tap origin
+    const target = heartRef.current || (e.currentTarget as HTMLElement);
+    const rect = target.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+
+    const colors = ["#FB7009", "#FF385C", "#FF6B81", "#FFA502", "#FF4757", "#003B99", "#E0245E"];
+    const particleCount = 16;
+
+    for (let i = 0; i < particleCount; i++) {
+      const el = document.createElement("div");
+      el.className = "hero-particle-heart";
+
+      const size = Math.floor(14 + Math.random() * 16);
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      el.style.left = `${originX}px`;
+      el.style.top = `${originY}px`;
+
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      el.innerHTML = `
+        <svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${color}">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      `;
+
+      document.body.appendChild(el);
+
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = 55 + Math.random() * 95;
+      const destX = Math.cos(angle) * velocity;
+      // Buoyancy bias so hearts float upward
+      const destY = Math.sin(angle) * velocity - (55 + Math.random() * 85);
+      const rot = -70 + Math.random() * 140;
+
+      gsap.fromTo(el,
+        { scale: 0.2, x: 0, y: 0, opacity: 1 },
+        {
+          scale: 1 + Math.random() * 0.4,
+          x: destX,
+          y: destY,
+          rotation: rot,
+          opacity: 0,
+          duration: 0.85 + Math.random() * 0.45,
+          ease: "power2.out",
+          onComplete: () => {
+            el.remove();
+          }
+        }
+      );
+    }
+  };
 
   const handleDetectLocation = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -275,6 +392,7 @@ function Skiper39({ onSearch }: Skiper39Props) {
 
     setIsLocating(true);
     setLocationStatus("idle");
+    setUnlistedPlace(null);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -303,7 +421,7 @@ function Skiper39({ onSearch }: Skiper39Props) {
 
         if (onSearch) {
           onSearch({
-            locality: resolveLocalityFromQuery(searchQuery),
+            locality: "all",
             roomType: "any",
             userCoords: null,
             sortBy: "featured"
@@ -316,17 +434,37 @@ function Skiper39({ onSearch }: Skiper39Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const resolvedLocality = detectedLocality && searchQuery.includes(detectedLocality.name)
-      ? detectedLocality.id
-      : resolveLocalityFromQuery(searchQuery);
 
+    // If GPS locality was detected and is still in query
+    if (detectedLocality && searchQuery.includes(detectedLocality.name)) {
+      setUnlistedPlace(null);
+      if (onSearch) {
+        onSearch({
+          locality: detectedLocality.id,
+          roomType: "any",
+          userCoords: null,
+          detectedLocalityInfo: detectedLocality,
+          sortBy: "nearest"
+        });
+      }
+      return;
+    }
+
+    const resolution = resolveSearchQuery(searchQuery);
+
+    if (resolution.status === "unlisted") {
+      setUnlistedPlace(resolution.searchedPlace || searchQuery.trim() || "your location");
+      return;
+    }
+
+    setUnlistedPlace(null);
     if (onSearch) {
       onSearch({
-        locality: resolvedLocality,
+        locality: resolution.status === "matched" ? (resolution.localityId || "all") : "all",
         roomType: "any",
         userCoords: null,
-        detectedLocalityInfo: detectedLocality,
-        sortBy: detectedLocality ? "nearest" : "featured"
+        detectedLocalityInfo: null,
+        sortBy: "featured"
       });
     }
   };
@@ -335,7 +473,46 @@ function Skiper39({ onSearch }: Skiper39Props) {
     <section className="site-hero relative isolate flex w-full flex-col items-center overflow-hidden" aria-labelledby="site-hero-title">
       <div className="site-hero__copy container relative z-10 flex flex-col items-center text-center">
         <h1 className="hero-title" id="site-hero-title" data-reveal>
-          Move in today.<br />Feel at <em>home</em> tonight.
+          More than a PG.<br />
+          A space you actually{" "}
+          <span className="inline-flex items-center whitespace-nowrap">
+            <em>love</em>
+            <span className="hero-heart-wrap">
+            <div ref={ambientGlowRef} className="hero-heart-ambient-glow" aria-hidden="true" />
+            {showBadge && (
+              <span key={badgeKey} className="hero-love-pill" aria-live="polite">
+                +1 Love
+              </span>
+            )}
+            <button
+              type="button"
+              className="hero-heart-btn"
+              onClick={handleHeartTap}
+              aria-label="Tap to send love to Charla Living"
+              title="Tap for love"
+            >
+              <svg
+                ref={heartRef}
+                viewBox="0 0 24 24"
+                className="hero-heart-svg"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <defs>
+                  <linearGradient id="heroHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#FB7009" />
+                    <stop offset="45%" stopColor="#FF385C" />
+                    <stop offset="100%" stopColor="#E0245E" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  fill="url(#heroHeartGrad)"
+                />
+              </svg>
+            </button>
+          </span>
+          </span>
         </h1>
 
         {/* ── Minimalist Unified Hero Finder ── */}
@@ -349,6 +526,7 @@ function Skiper39({ onSearch }: Skiper39Props) {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
+                if (unlistedPlace) setUnlistedPlace(null);
                 if (locationStatus === "success") setLocationStatus("idle");
               }}
               aria-label="Find residences in South Bangalore"
@@ -385,6 +563,42 @@ function Skiper39({ onSearch }: Skiper39Props) {
             <ArrowRight aria-hidden="true" />
           </Button>
         </form>
+
+        {/* ── Unlisted Place Cool Notification (Matching Screenshot) ── */}
+        {unlistedPlace && (
+          <div className="hero-unlisted-alert" role="alert">
+            <button
+              type="button"
+              onClick={() => setUnlistedPlace(null)}
+              className="hero-unlisted-close"
+              aria-label="Dismiss message"
+            >
+              <X size={16} />
+            </button>
+            <h2 className="hero-unlisted-title">Sorry :(</h2>
+            <p className="hero-unlisted-text">
+              We don’t have any property near {unlistedPlace.toLowerCase()} at the moment
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setUnlistedPlace(null);
+                if (onSearch) {
+                  onSearch({
+                    locality: "all",
+                    roomType: "any",
+                    userCoords: null,
+                    sortBy: "featured"
+                  });
+                }
+              }}
+              className="hero-unlisted-btn"
+            >
+              <span>Explore all South Bangalore Residences</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
+        )}
 
         {/* ── Minimal Social Proof ── */}
         <div className="hero__proof" data-reveal>

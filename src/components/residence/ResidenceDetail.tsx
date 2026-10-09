@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
 import { type Residence, RESIDENCES } from "@/data/residences";
 import "@/residence.css";
 
@@ -213,49 +214,67 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
           {/* Back button strip */}
           <div className="residence-nav-strip">
             <button 
+              type="button"
               onClick={onBack} 
-              className="nav-back-link"
+              className="residence-back-btn"
               aria-label="Back to all residences"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
+              <div className="residence-back-icon-wrap">
+                <ArrowLeft size={14} />
+              </div>
               <span>All Residences</span>
             </button>
-            <div className="residence-breadcrumbs">
-              <span>Bengaluru</span>
-              <span className="separator">/</span>
-              <select
-                value={residence.id}
-                onChange={(e) => onSelectResidence?.(e.target.value)}
-                className="residence-locality-dropdown"
-                aria-label="Select locality"
+
+            <div className="residence-breadcrumbs-wrap">
+              <button
+                type="button"
+                className="residence-breadcrumb-link"
+                onClick={() => (window.location.hash = "#home")}
               >
-                <option value="kumaraswamy-layout">Kumaraswamy Layout</option>
-                <option value="jp-nagar">JP Nagar (5th Phase)</option>
-                <option value="jayanagar">Jayanagar (4th Block)</option>
-                <option value="banashankari">Banashankari (2nd Stage)</option>
-                <option value="padmanabhanagar">Padmanabhanagar</option>
-                <option value="uttarahalli">Uttarahalli Main Rd</option>
-              </select>
+                Home
+              </button>
+              <span className="residence-breadcrumb-sep">/</span>
+              <button
+                type="button"
+                className="residence-breadcrumb-link"
+                onClick={onBack}
+              >
+                Residences
+              </button>
+              <span className="residence-breadcrumb-sep">/</span>
+              <div className="residence-locality-select-wrap">
+                <select
+                  value={residence.id}
+                  onChange={(e) => onSelectResidence?.(e.target.value)}
+                  className="residence-locality-dropdown"
+                  aria-label="Select locality"
+                >
+                  <option value="kumaraswamy-layout">Kumaraswamy Layout</option>
+                  <option value="jp-nagar">JP Nagar (5th Phase)</option>
+                  <option value="jayanagar">Jayanagar (4th Block)</option>
+                  <option value="banashankari">Banashankari (2nd Stage)</option>
+                  <option value="padmanabhanagar">Padmanabhanagar</option>
+                  <option value="uttarahalli">Uttarahalli Main Rd</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Title Area */}
           <div className="residence-hero-header">
             <div>
+              <h1 className="residence-hero-title">{residence.name}</h1>
               <div className="residence-meta-tags">
-                <span className="residence-meta-tag residence-meta-tag--orange">
-                  {residence.tag}
-                </span>
-                <span className="residence-meta-tag residence-meta-tag--blue">
+                <span className="residence-gender-badge">
                   Boys &amp; Working Men
                 </span>
-                <span className="residence-meta-tag residence-meta-tag--rating">
-                  ★ 4.8 (40+ Reviews)
+                <span className="residence-rating-badge" aria-label="Rating 4.8">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  <span>4.8</span>
                 </span>
               </div>
-              <h1 className="residence-hero-title">{residence.headline}</h1>
               <p className="residence-hero-address">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -486,7 +505,7 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
 
                 <div className="room-active-card__footer">
                   <span className="room-active-card__note">
-                    ✨ Zero hidden fees · Electricity, Wi-Fi &amp; 3-4 daily meals included
+                    Zero hidden fees · Electricity, Wi-Fi &amp; 3-4 daily meals included
                   </span>
                   <button 
                     onClick={scrollToBooking}

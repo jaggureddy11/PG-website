@@ -61,6 +61,8 @@ function App() {
             window.scrollTo({ top: offsetPosition, behavior: "smooth" });
           }
         }, 80);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     };
 

@@ -64,6 +64,144 @@ body {
   font-style: italic;
 }
 
+/* ─── Hero Animated Heart ─── */
+.hero-heart-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-left: clamp(8px, 1.2vw, 16px);
+  position: relative;
+  transform: translateY(-4px);
+  cursor: pointer;
+}
+
+.hero-heart-svg {
+  width: clamp(36px, 4.2vw, 56px);
+  height: clamp(36px, 4.2vw, 56px);
+  display: block;
+  transform-origin: center center;
+  animation: heroHeartbeat 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  filter: drop-shadow(0 4px 14px rgba(251, 112, 9, 0.45));
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+}
+
+.hero-heart-wrap:hover .hero-heart-svg {
+  animation-play-state: paused;
+  transform: scale(1.3) rotate(-6deg);
+  filter: drop-shadow(0 8px 24px rgba(255, 56, 92, 0.7));
+}
+
+@keyframes heroHeartbeat {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  12% {
+    transform: scale(1.24) rotate(-4deg);
+  }
+  24% {
+    transform: scale(1.08) rotate(2deg);
+  }
+  36% {
+    transform: scale(1.3) rotate(-3deg);
+  }
+  55% {
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ─── Hero Heart Click Effects & Floating Badge ─── */
+.hero-heart-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  vertical-align: middle;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.hero-heart-btn:focus-visible {
+  outline: 2px solid #FB7009;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* Floating +1 Love Badge */
+.hero-love-pill {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FB7009 0%, #FF385C 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(251, 112, 9, 0.45);
+  animation: floatLovePill 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 50;
+}
+
+@keyframes floatLovePill {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -6px) scale(1.1);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -22px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -32px) scale(0.9);
+  }
+}
+
+/* Hero Ambient Glow Pulse behind Heart */
+.hero-heart-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  margin-top: -70px;
+  margin-left: -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 112, 9, 0.4) 0%, rgba(255, 56, 92, 0.18) 45%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  z-index: -1;
+}
+
+/* Global Flying Particle Heart */
+.hero-particle-heart {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.16));
+}
+
 .hero-finder {
   width: min(100%, 740px);
   max-width: 740px;
@@ -146,10 +284,11 @@ body {
     min-height: calc(100svh - 63px);
   }
   .site-hero__copy {
-    padding-top: clamp(28px, 6vh, 48px);
+    padding-top: clamp(24px, 5vh, 40px);
+    padding-inline: 16px;
   }
   .site-hero__skyline {
-    height: clamp(200px, 44svh, 360px);
+    height: clamp(180px, 40svh, 320px);
     bottom: -2px;
   }
   .site-hero__skyline-image {
@@ -157,14 +296,42 @@ body {
     transform: translateY(14px);
   }
   .hero-title {
-    font-size: clamp(34px, 8.5vw, 48px);
+    font-size: clamp(28px, 7.5vw, 42px);
+    line-height: 1.12;
+  }
+  .hero-heart-wrap {
+    margin-left: 6px;
+    transform: translateY(-2px);
+  }
+  .hero-heart-svg {
+    width: clamp(28px, 7.2vw, 42px);
+    height: clamp(28px, 7.2vw, 42px);
   }
   .hero-finder {
-    margin-top: 22px;
+    margin-top: 20px;
+    width: 100%;
   }
   .hero-finder .finder__go {
     width: 100%;
     min-width: 0;
-    min-height: 50px;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-hero__copy {
+    padding-top: 28px;
+    padding-inline: 14px;
+  }
+  .hero-title {
+    font-size: clamp(25px, 7.4vw, 34px);
+  }
+  .hero-heart-svg {
+    width: 30px;
+    height: 30px;
+  }
+  .hero__proof {
+    gap: 4px 8px;
+    font-size: 11px;
   }
 }

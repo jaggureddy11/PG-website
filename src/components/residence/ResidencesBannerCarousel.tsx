@@ -175,14 +175,14 @@ export function ResidencesBannerCarousel({ onBookVisit }: ResidencesBannerCarous
               <div
                 key={banner.id}
                 onClick={() => handleBannerClick(banner)}
-                className="w-full flex-shrink-0 relative overflow-hidden flex items-center justify-center cursor-pointer"
+                className="residences-banner-slide"
                 style={{ backgroundColor: banner.bgColor }}
               >
                 <img
                   src={banner.image}
                   alt={banner.alt}
                   draggable={false}
-                  className="w-full h-auto max-h-[220px] md:max-h-[260px] object-contain pointer-events-none transform transition-transform duration-700 group-hover:scale-[1.006]"
+                  className="residences-banner-slide-img"
                   loading={index === 0 ? "eager" : "lazy"}
                 />
               </div>
@@ -216,8 +216,8 @@ export function ResidencesBannerCarousel({ onBookVisit }: ResidencesBannerCarous
         </button>
       </div>
 
-      {/* ─── Big Pagination Dots ─── */}
-      <div className="flex items-center justify-center gap-3.5 mt-5 md:mt-6">
+      {/* ─── Compact Minimal Pagination Dots (Positioned cleanly below banner) ─── */}
+      <div className="residences-banner-dots">
         {banners.map((banner, index) => {
           const isActive = index === currentIndex;
           return (
@@ -226,14 +226,10 @@ export function ResidencesBannerCarousel({ onBookVisit }: ResidencesBannerCarous
               type="button"
               onClick={() => setCurrentIndex(index)}
               aria-label={`Go to slide ${index + 1}`}
-              className="p-1 rounded-full cursor-pointer transition-transform duration-200 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#003b99]"
+              className="residences-banner-dot-btn"
             >
               <span
-                className={`block rounded-full transition-all duration-300 ${
-                  isActive
-                    ? "w-3.5 h-3.5 bg-[#003b99] ring-4 ring-[#003b99]/20 shadow-sm"
-                    : "w-3 h-3 bg-slate-300 hover:bg-slate-400"
-                }`}
+                className={`residences-banner-dot-pill ${isActive ? "is-active" : ""}`}
               />
             </button>
           );

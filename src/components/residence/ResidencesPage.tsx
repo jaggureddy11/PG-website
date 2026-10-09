@@ -1,19 +1,35 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { 
+  ArrowLeft, 
+  Eye, 
+  Compass, 
+  Navigation, 
+  Bath, 
+  BedDouble, 
+  UserRound, 
+  Map as MapIcon, 
+  List as ListIcon 
+} from "lucide-react";
 import { calculateDistanceKm } from "@/utils/location";
 import { ResidencesBannerCarousel } from "./ResidencesBannerCarousel";
+import { ResidencesMapView } from "./ResidencesMapView";
 
-interface ResidenceItem {
+export interface ResidenceItem {
   id: string;
   name: string;
+  houseName: string;
   locality: string;
   localityId: string;
   lat: number;
   lng: number;
+  xPercent: number;
+  yPercent: number;
   price: string;
   priceNum: number;
   flag: string;
   flagType: "blue" | "orange";
+  gender: "Male" | "Female" | "Unisex";
+  viewingCount: number;
   rating: string;
   reviewsCount: string;
   locationSnippet: string;
@@ -28,123 +44,153 @@ interface ResidenceItem {
 export const RESIDENCE_ITEMS: ResidenceItem[] = [
   {
     id: "kumaraswamy-layout",
-    name: "Charla Living — Kumaraswamy Layout",
+    name: "Charla Living — Tumaco House",
+    houseName: "Tumaco House",
     locality: "Kumaraswamy Layout",
     localityId: "kumaraswamy-layout",
-    lat: 12.9056,
-    lng: 77.5612,
+    lat: 12.9089,
+    lng: 77.5528,
+    xPercent: 42,
+    yPercent: 76,
     price: "₹8,500",
     priceNum: 8500,
-    flag: "Bestseller",
-    flagType: "blue",
+    flag: "Preferred By Students",
+    flagType: "orange",
+    gender: "Male",
+    viewingCount: 7,
     rating: "4.9",
     reviewsCount: "148",
-    locationSnippet: "Off Kanakapura Rd · 10 min to Dayananda Sagar College (DSCE)",
+    locationSnippet: "0.8 km away from your location",
     proximityBadge: "Near DSCE Campus",
-    sharingTypes: ["Single", "Double", "Triple"],
+    sharingTypes: ["Triple"],
     highlights: ["4 Fresh Meals / Day", "100 Mbps Wi-Fi", "Attached Washrooms", "Daily Cleaning"],
     image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=900&q=80",
-    alt: "Charla Living Kumaraswamy Layout residence exterior"
+    alt: "Charla Living Tumaco House Kumaraswamy Layout"
   },
   {
     id: "uttarahalli",
-    name: "Charla Living — Uttarahalli",
+    name: "Charla Living — Rotherham House",
+    houseName: "Rotherham House",
     locality: "Uttarahalli",
     localityId: "uttarahalli",
-    lat: 12.9022,
-    lng: 77.5385,
+    lat: 12.9068,
+    lng: 77.5440,
+    xPercent: 18,
+    yPercent: 64,
     price: "₹7,500",
     priceNum: 7500,
-    flag: "Most Affordable",
-    flagType: "blue",
+    flag: "Preferred By Students",
+    flagType: "orange",
+    gender: "Male",
+    viewingCount: 12,
     rating: "4.8",
     reviewsCount: "96",
-    locationSnippet: "Uttarahalli Main Rd · 8 min to Kumaran's School & Bus Stop",
+    locationSnippet: "0.8 km away from your location",
     proximityBadge: "Transit Hub",
-    sharingTypes: ["Double", "Triple"],
+    sharingTypes: ["Single", "Double", "Triple"],
     highlights: ["Veg & Non-Veg Plans", "On-Site Parking", "100 Mbps Wi-Fi", "Linen & Laundry"],
     image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80",
-    alt: "Furnished lounge at Charla Living Uttarahalli"
+    alt: "Furnished lounge at Charla Living Rotherham House Uttarahalli"
   },
   {
     id: "banashankari",
-    name: "Charla Living — Banashankari",
+    name: "Charla Living — Anamur House",
+    houseName: "Anamur House",
     locality: "Banashankari",
     localityId: "banashankari",
-    lat: 12.9255,
-    lng: 77.5468,
+    lat: 12.9252,
+    lng: 77.5740,
+    xPercent: 32,
+    yPercent: 30,
     price: "₹9,000",
     priceNum: 9000,
-    flag: "3 min to Metro",
+    flag: "Preferred By Students",
     flagType: "orange",
+    gender: "Female",
+    viewingCount: 9,
     rating: "4.9",
     reviewsCount: "182",
-    locationSnippet: "2nd Stage · 3 min walk to Banashankari Green Line Metro & BDA",
+    locationSnippet: "1.5 km away from your location",
     proximityBadge: "3 Min to Metro",
-    sharingTypes: ["Single", "Double"],
+    sharingTypes: ["Double", "Triple"],
     highlights: ["AC Rooms Available", "Attached Washrooms", "4 Homestyle Meals", "Power Backup"],
     image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=900&q=80",
-    alt: "Premium double room at Charla Living Banashankari"
+    alt: "Premium double room at Charla Living Anamur House Banashankari"
   },
   {
     id: "padmanabhanagar",
-    name: "Charla Living — Padmanabhanagar",
+    name: "Charla Living — Brigade House",
+    houseName: "Brigade House",
     locality: "Padmanabhanagar",
     localityId: "padmanabhanagar",
-    lat: 12.9180,
-    lng: 77.5580,
+    lat: 12.9149,
+    lng: 77.5610,
+    xPercent: 40,
+    yPercent: 50,
     price: "₹8,000",
     priceNum: 8000,
     flag: "Newly Renovated",
     flagType: "blue",
+    gender: "Unisex",
+    viewingCount: 8,
     rating: "4.8",
     reviewsCount: "114",
-    locationSnippet: "Near Brigade Millennium · 12 min to JP Nagar 6th Phase",
+    locationSnippet: "1.1 km away from your location",
     proximityBadge: "Quiet Neighborhood",
     sharingTypes: ["Double", "Triple"],
     highlights: ["Rooftop Terrace Lounge", "RO Water Purifiers", "Biometric Entry", "Hot Water 24/7"],
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80",
-    alt: "Modern interiors at Charla Living Padmanabhanagar"
+    alt: "Modern interiors at Charla Living Brigade House Padmanabhanagar"
   },
   {
     id: "jp-nagar",
-    name: "Charla Living — JP Nagar",
+    name: "Charla Living — Cyber House",
+    houseName: "Cyber House",
     locality: "JP Nagar",
     localityId: "jp-nagar",
-    lat: 12.9077,
-    lng: 77.5855,
+    lat: 12.9070,
+    lng: 77.5850,
+    xPercent: 74,
+    yPercent: 65,
     price: "₹10,500",
     priceNum: 10500,
     flag: "Professionals' Pick",
     flagType: "orange",
+    gender: "Male",
+    viewingCount: 15,
     rating: "4.9",
     reviewsCount: "210",
-    locationSnippet: "5th Phase · 6 min to JP Nagar Metro & Central Mall Corridor",
+    locationSnippet: "0.6 km away from your location",
     proximityBadge: "Tech Corridor",
     sharingTypes: ["Single", "Double"],
     highlights: ["Ergonomic Work Desks", "Night-Shift Friendly", "Fiber Wi-Fi & Backup", "Cafeteria Meals"],
     image: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=900&q=80",
-    alt: "Hotel-style single room at Charla Living JP Nagar"
+    alt: "Hotel-style single room at Charla Living Cyber House JP Nagar"
   },
   {
     id: "jayanagar",
-    name: "Charla Living — Jayanagar",
+    name: "Charla Living — South End House",
+    houseName: "South End House",
     locality: "Jayanagar",
     localityId: "jayanagar",
-    lat: 12.9308,
-    lng: 77.5838,
+    lat: 12.9305,
+    lng: 77.5830,
+    xPercent: 76,
+    yPercent: 26,
     price: "₹11,000",
     priceNum: 11000,
     flag: "Flagship Residence",
     flagType: "blue",
+    gender: "Unisex",
+    viewingCount: 19,
     rating: "5.0",
     reviewsCount: "240",
-    locationSnippet: "4th Block · 7 min to Jayanagar Metro Station & South End Circle",
+    locationSnippet: "0.4 km away from your location",
     proximityBadge: "Flagship Location",
     sharingTypes: ["Single", "Double"],
     highlights: ["Chef-Prepared Gourmet Menu", "Resident Lounge & Gaming", "Premium Custom Beds", "Daily Room Service"],
     image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=900&q=80",
-    alt: "Warm furnished bedroom at Charla Living Jayanagar"
+    alt: "Warm furnished bedroom at Charla Living South End House Jayanagar"
   }
 ];
 
@@ -185,6 +231,10 @@ export function ResidencesPage({
 }: ResidencesPageProps) {
   const [internalLocality, setInternalLocality] = useState<string>("all");
   const [internalSortBy, setInternalSortBy] = useState<string>("featured");
+  const [activeResidenceId, setActiveResidenceId] = useState<string | null>("kumaraswamy-layout");
+  const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
+
+  const cardRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const selectedLocality = propLocality !== undefined ? propLocality : internalLocality;
   const sortBy = propSortBy !== undefined ? propSortBy : internalSortBy;
@@ -216,6 +266,30 @@ export function ResidencesPage({
     }
   };
 
+  const handleScheduleVisit = (_residenceName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onBackToHome) {
+      onBackToHome("visit");
+    } else {
+      window.location.hash = "#visit";
+    }
+  };
+
+  const handleRequestCallback = (res: ResidenceItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const msg = `Hello Charla Living! I would like to request a callback regarding ${res.houseName} (${res.name}) in ${res.locality}.`;
+    const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleSelectFromMap = (id: string) => {
+    setActiveResidenceId(id);
+    const targetCard = cardRefs.current[id];
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
   // Compute distance for all residences if user coordinates exist
   const residencesWithDistances = RESIDENCE_ITEMS.map((item) => {
     if (userCoords) {
@@ -244,30 +318,41 @@ export function ResidencesPage({
     });
 
   return (
-    <div className="residences-page min-h-screen bg-[#f8faf8] pt-24 pb-20">
+    <div className="residences-page" id="residences">
       {/* ─── Clean Breadcrumb & Navigation Bar ─── */}
-      <div className="container mb-8 md:mb-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 py-2.5 px-4 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/70 shadow-sm">
+      <div className="container residences-breadcrumb-bar">
+        <div className="residences-breadcrumb-inner">
           <button
             type="button"
             onClick={() => onBackToHome ? onBackToHome("home") : (window.location.hash = "#home")}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-[#003b99] transition-colors group cursor-pointer"
+            className="residences-back-btn"
+            aria-label="Back to Home"
           >
-            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1 text-[#003b99]" />
+            <div className="residences-back-icon-wrap">
+              <ArrowLeft size={14} />
+            </div>
             <span>Back to Home</span>
           </button>
 
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <span className="cursor-pointer hover:text-slate-800" onClick={() => onBackToHome && onBackToHome("home")}>Home</span>
-            <span>/</span>
-            <span className="text-[#003b99] bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-              Residences in South Bangalore
+          <div className="residences-breadcrumb-path">
+            <button 
+              type="button"
+              className="residences-breadcrumb-link" 
+              onClick={() => onBackToHome ? onBackToHome("home") : (window.location.hash = "#home")}
+            >
+              Home
+            </button>
+            <span className="residences-breadcrumb-sep">/</span>
+            <span className="residences-breadcrumb-badge">
+              {selectedLocality !== "all"
+                ? `PG in ${LOCALITY_FILTERS.find((l) => l.id === selectedLocality)?.label || "South Bangalore"}`
+                : "Residences in South Bangalore"}
             </span>
           </div>
         </div>
       </div>
 
-      <section className="residences" id="residences" style={{ paddingTop: 0 }}>
+      <section className="residences" style={{ paddingTop: 0 }}>
         <div className="container">
           {/* ─── Top Promotional Banner Showcase ─── */}
           <ResidencesBannerCarousel 
@@ -277,7 +362,7 @@ export function ResidencesPage({
             }}
           />
 
-          {/* ─── Clean Locality Filters & Sort ─── */}
+          {/* ─── Locality Filters & Sort Controls Bar ─── */}
           <div className="residences-controls-bar">
             <div className="residences-pills-bar">
               {LOCALITY_FILTERS.map((loc) => (
@@ -292,33 +377,59 @@ export function ResidencesPage({
               ))}
             </div>
 
-            <div className="residences-sort-wrap">
-              <label htmlFor="residences-sort" className="residences-sort-label">
-                Sort by:
-              </label>
-              <div className="residences-select-custom">
-                <select
-                  id="residences-sort"
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  className="residences-sort-select"
+            <div className="flex items-center justify-between w-full lg:w-auto lg:ml-auto gap-3 pt-1 lg:pt-0">
+              {/* Mobile View Toggle: List vs Map */}
+              <div className="view-toggle-wrap flex lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setMobileViewMode("list")}
+                  className={`view-toggle-btn ${mobileViewMode === "list" ? "is-active" : ""}`}
                 >
-                  {userCoords && <option value="nearest">Nearest to Me</option>}
-                  <option value="featured">Featured</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                </select>
-                <svg className="residences-sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
+                  <ListIcon size={13} />
+                  <span>List</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileViewMode("map");
+                    setTimeout(() => window.dispatchEvent(new Event("resize")), 80);
+                  }}
+                  className={`view-toggle-btn ${mobileViewMode === "map" ? "is-active" : ""}`}
+                >
+                  <MapIcon size={13} />
+                  <span>Map</span>
+                </button>
+              </div>
+
+              {/* Sort by dropdown */}
+              <div className="residences-sort-wrap">
+                <label htmlFor="residences-sort" className="residences-sort-label">
+                  Sort by:
+                </label>
+                <div className="residences-select-custom">
+                  <select
+                    id="residences-sort"
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="residences-sort-select"
+                  >
+                    {userCoords && <option value="nearest">Nearest to Me</option>}
+                    <option value="featured">Featured</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                  </select>
+                  <svg className="residences-sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* ─── Minimal Geolocation Proximity Bar ─── */}
+          {/* ─── Geolocation Proximity Bar ─── */}
           {userCoords && detectedLocalityInfo && (
-            <div className="residences-location-bar">
+            <div className="residences-location-bar mb-6">
               <div className="residences-location-bar__info">
                 <span className="residences-location-bar__dot" aria-hidden="true" />
                 <span className="residences-location-bar__text">
@@ -339,74 +450,185 @@ export function ResidencesPage({
             </div>
           )}
 
-          <div className="residences__grid" id="residenceGrid">
-            {filteredResidences.map((res) => (
-              <article key={res.id} className="rcard group" data-locality={res.locality}>
-                <a
-                  href={`#/residence/${res.id}`}
-                  onClick={(e) => handleOpenResidence(res.id, e)}
-                  className="rcard__media"
-                  data-mask
-                >
-                  <img src={res.image} alt={res.alt} />
-                  <span className={`rcard__flag rcard__flag--${res.flagType}`}>{res.flag}</span>
-                  {res.distanceKm !== undefined && (
-                    <span className="rcard__distance-pill">
-                      {res.distanceKm} km away
-                    </span>
-                  )}
-                </a>
-                <div className="rcard__body">
-                  <div className="rcard__top">
-                    <h3
-                      className="cursor-pointer hover:text-[#f8750b] transition-colors"
-                      onClick={(e) => handleOpenResidence(res.id, e)}
-                    >
-                      {res.name}
-                    </h3>
-                    <p className="rcard__price">
-                      <span>from</span> {res.price}<em>/mo</em>
-                    </p>
-                  </div>
-                  <p className="rcard__loc">
-                    <MapPin size={16} className="text-[#003b99] flex-shrink-0" />
-                    <span>{res.locationSnippet}</span>
-                  </p>
-                  <ul className="rcard__tags">
-                    {res.highlights.slice(0, 3).map((hl, i) => (
-                      <li key={i}>{hl}</li>
-                    ))}
-                  </ul>
-                  <a
-                    href={`#/residence/${res.id}`}
+          {/* ─── SPLIT VIEW: Horizontal Listing Cards (Left) + Sticky Interactive Map (Right) ─── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* ── LEFT COLUMN: Residence Cards (Matching Template) ── */}
+            <div className={`lg:col-span-7 xl:col-span-7 space-y-6 ${mobileViewMode === "map" ? "hidden lg:block" : "block"}`}>
+              {filteredResidences.map((res) => {
+                const isSelected = activeResidenceId === res.id;
+                const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${res.lat},${res.lng}`;
+
+                return (
+                  <article
+                    key={res.id}
+                    ref={(el) => { cardRefs.current[res.id] = el; }}
+                    data-locality={res.locality}
+                    onMouseEnter={() => setActiveResidenceId(res.id)}
+                    className={`rcard rcard-horizontal-template cursor-pointer ${
+                      isSelected ? "is-active" : ""
+                    }`}
                     onClick={(e) => handleOpenResidence(res.id, e)}
-                    className="rcard__cta"
                   >
-                    Explore residence
-                    <ArrowRight size={16} />
-                  </a>
+                    {/* Left Side: Photo with Badge & Live Viewing Overlay */}
+                    <div className="rcard-img-side">
+                      <img
+                        src={res.image}
+                        alt={res.alt}
+                        loading="eager"
+                      />
+
+                      {/* Top Status Tag Badge */}
+                      <div className="rcard-student-badge">
+                        <span>{res.flag}</span>
+                      </div>
+
+                      {/* Bottom Real-time Social Proof Viewing Overlay Bar */}
+                      <div className="rcard-viewing-bar">
+                        <Eye size={13} />
+                        <span>{res.viewingCount} People Viewing Now</span>
+                      </div>
+                    </div>
+
+                    {/* Right Side: Details & Actions */}
+                    <div className="rcard-details-side">
+                      {/* Row 1: Title, Locality & Gender Badge */}
+                      <div>
+                        <div className="flex items-start justify-between gap-3 mb-1">
+                          <div>
+                            <h3 className="rcard-house-title">
+                              {res.houseName}
+                            </h3>
+                            <p className="rcard-house-sub">
+                              PG in {res.locality}
+                            </p>
+                          </div>
+
+                          {/* Gender Tag Pill */}
+                          <span className="rcard-gender-pill">
+                            <span>{res.gender}</span>
+                            <UserRound size={12} className={res.gender === "Female" ? "text-pink-500" : "text-[#003b99]"} />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Location snippet / Distance & View Directions */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        {/* Location Proximity Pill */}
+                        <div className="rcard-proximity-pill">
+                          <Compass size={13} className="text-[#003b99]" />
+                          <span>
+                            {res.distanceKm !== undefined
+                              ? `${res.distanceKm} km away from your location`
+                              : res.locationSnippet}
+                          </span>
+                        </div>
+
+                        {/* Directions Link (Google Maps) */}
+                        <a
+                          href={directionsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="rcard-directions-link"
+                        >
+                          <Navigation size={12} className="rotate-45" />
+                          <span>View Directions</span>
+                        </a>
+                      </div>
+
+                      {/* Row 3: Attached Washroom + Bed Sharing Types */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        {/* Attached Washroom badge */}
+                        <span className="rcard-amenity-chip washroom">
+                          <Bath size={13} className="text-[#059669]" />
+                          <span>Attached Washroom</span>
+                        </span>
+
+                        {/* Room Sharing options */}
+                        {res.sharingTypes.map((type) => (
+                          <span
+                            key={type}
+                            className="rcard-amenity-chip sharing"
+                          >
+                            <BedDouble size={12} className="text-slate-400" />
+                            <span>{type}</span>
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Row 4: Pricing & Dual CTA Buttons */}
+                      <div className="rcard-action-row">
+                        {/* Pricing */}
+                        <div className="rcard-price-box">
+                          <span className="starts-text">
+                            Starts from
+                          </span>
+                          <div className="price-val">
+                            {res.price}
+                            <span>/mo*</span>
+                          </div>
+                        </div>
+
+                        {/* CTAs matching Charla Living's Brand Theme */}
+                        <div className="rcard-buttons-group">
+                          {/* Schedule a Visit (Primary Brand Navy Blue) */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleScheduleVisit(res.name, e)}
+                            className="btn-schedule-visit"
+                          >
+                            Schedule a Visit
+                          </button>
+
+                          {/* Request a Callback (Outlined Blue) */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleRequestCallback(res, e)}
+                            className="btn-request-callback"
+                          >
+                            Request a Callback
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+
+              {filteredResidences.length === 0 && (
+                <div className="residences-empty-state text-center py-14 px-6 bg-white/80 rounded-2xl border border-slate-200/80 shadow-sm">
+                  <h3 className="text-3xl font-bold text-[#FB7009] mb-3">Sorry :(</h3>
+                  <p className="text-lg font-semibold text-slate-800 mb-6">
+                    We don’t have any property near {selectedLocality} at the moment
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleLocalityChange("all");
+                      if (onClearLocation) onClearLocation();
+                    }}
+                    className="btn btn--blue px-6 py-2.5 rounded-xl font-semibold inline-flex items-center gap-2"
+                  >
+                    <span>View all South Bangalore residences</span>
+                  </button>
                 </div>
-              </article>
-            ))}
-          </div>
+              )}
 
-          {filteredResidences.length === 0 && (
-            <div className="residences-empty-state">
-              <p>No residences found for this filter combination.</p>
-              <button
-                type="button"
-                onClick={() => {
-                  handleLocalityChange("all");
-                  if (onClearLocation) onClearLocation();
-                }}
-                className="residences-reset-btn"
-              >
-                View all residences
-              </button>
+              <p className="residences__note text-xs text-slate-400 pt-2">
+                *All-inclusive covers rent, Wi-Fi, housekeeping and maintenance. Food plans optional at ₹3,200/month.
+              </p>
             </div>
-          )}
 
-          <p className="residences__note">*All-inclusive covers rent, Wi-Fi, housekeeping and maintenance. Food plans optional at ₹3,200/month.</p>
+            {/* ── RIGHT COLUMN: Sticky Interactive Map (Longer, Realistic Open-Source) ── */}
+            <div className={`lg:col-span-5 xl:col-span-5 ${mobileViewMode === "list" ? "hidden lg:block" : "block"} lg:sticky lg:top-24`}>
+              <ResidencesMapView
+                residences={RESIDENCE_ITEMS}
+                selectedId={activeResidenceId}
+                onSelectResidence={handleSelectFromMap}
+                userCoords={userCoords}
+              />
+            </div>
+          </div>
         </div>
       </section>
     </div>
