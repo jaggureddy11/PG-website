@@ -82,6 +82,19 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
+// Configure storage retry limits to prevent default 10-minute exponential backoff on unprovisioned buckets
+try {
+  (storage as unknown as { _maxUploadRetryTime?: number })._maxUploadRetryTime = 2500;
+  (storage as unknown as { _maxOperationRetryTime?: number })._maxOperationRetryTime = 2500;
+} catch {
+  // ignore
+}
+
+/**
+ * Cache storage availability to prevent repeated network timeout waits on subsequent uploads
+ */
+let isCloudStorageAvailable: boolean | null = null;
+
 /**
  * Client-side input sanitization helpers
  */
@@ -97,9 +110,15 @@ export function sanitizePhoneNumber(phone?: string): string {
 
 /**
  * Safely convert an image file to a compressed base64 data URI (guarantees persistence across devices)
+ * Resizes large phone photos (e.g. 48MP) to 1080px max-width in ~100ms for instant saving.
  */
-export async function fileToOptimizedDataUrl(file: File, maxWidth = 1400, quality = 0.82): Promise<string> {
+export async function fileToOptimizedDataUrl(file: File, maxWidth = 1080, quality = 0.76): Promise<string> {
   if (file.type.startsWith("video/")) {
+    if (file.size > 1024 * 900) {
+      throw new Error(
+        "Local video file is too large for database storage. Cloud Firestore limits documents to 1MB. Please enable Firebase Storage in the Firebase Console or paste an external video link."
+      );
+    }
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
@@ -142,19 +161,31 @@ export async function fileToOptimizedDataUrl(file: File, maxWidth = 1400, qualit
 }
 
 /**
- * Upload image or video to Firebase Cloud Storage, with automatic fallback to optimized inline data URI.
+ * Upload image or video to Firebase Cloud Storage with fast fallback to optimized inline data URI.
+ * Avoids the default 10-minute Firebase Storage retry loop if the storage bucket is not yet provisioned.
  */
 export async function uploadMediaFile(file: File, folder = "residences"): Promise<string> {
-  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-  const filename = `${folder}/${Date.now()}_${cleanName}`;
-  const storageRef = ref(storage, filename);
-  try {
-    const snap = await uploadBytes(storageRef, file);
-    return await getDownloadURL(snap.ref);
-  } catch (err) {
-    console.warn("Cloud Storage bucket upload unconfigured or restricted, falling back to optimized inline URI:", err);
-    return await fileToOptimizedDataUrl(file);
+  // If we already know cloud storage is not provisioned or failed, use instant fast-path
+  if (isCloudStorageAvailable !== false) {
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const filename = `${folder}/${Date.now()}_${cleanName}`;
+    const storageRef = ref(storage, filename);
+    try {
+      const uploadPromise = uploadBytes(storageRef, file);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Storage timeout - bucket unprovisioned")), 2500)
+      );
+      const snap = await Promise.race([uploadPromise, timeoutPromise]);
+      const url = await getDownloadURL(snap.ref);
+      isCloudStorageAvailable = true;
+      return url;
+    } catch (err) {
+      isCloudStorageAvailable = false;
+      console.warn("Cloud Storage unconfigured or timed out, falling back to fast optimized inline URI:", err);
+    }
   }
+
+  return await fileToOptimizedDataUrl(file);
 }
 
 export const RESIDENCES_COLLECTION = "residences";

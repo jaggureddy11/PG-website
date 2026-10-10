@@ -331,9 +331,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
           },
         }));
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to upload media:", err);
-      alert("Failed to process media file. Please provide a direct image/video URL instead.");
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Failed to process media file. Please provide a direct image/video URL instead.";
+      alert(msg);
     } finally {
       setIsUploadingMedia(false);
       e.target.value = "";
