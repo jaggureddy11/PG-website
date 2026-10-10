@@ -406,10 +406,10 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 .mmenu-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 75;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9998;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s var(--ease);
@@ -425,12 +425,12 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(380px, 88vw);
+  width: min(390px, 90vw);
   background: #ffffff;
-  z-index: 80;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
-  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.18);
+  box-shadow: -8px 0 36px rgba(15, 23, 42, 0.22);
   transform: translateX(100%);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
@@ -474,12 +474,13 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 }
 
 .mmenu__body {
-  padding: 24px;
+  padding: 18px 20px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   flex: 1;
-  gap: 32px;
+  gap: 18px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
 }
 
 .mmenu__links {
@@ -492,8 +493,8 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
-  font-size: 16px;
+  padding: 13px 16px;
+  font-size: 15.5px;
   font-weight: 500;
   color: var(--ink);
   border-radius: 12px;
@@ -527,9 +528,10 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 .mmenu__footer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(226, 232, 240, 0.95);
+  margin-top: auto;
 }
 
 .mmenu__cta-btn {
@@ -538,10 +540,33 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 20px;
+  padding: 13px 18px;
   font-size: 15px;
   font-weight: 600;
   border-radius: 12px;
+  background: linear-gradient(135deg, #fb7009 0%, #ea580c 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(251, 112, 9, 0.28);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mmenu__cta-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(251, 112, 9, 0.2);
+}
+
+.mmenu__cta-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.mmenu__cta-btn:hover svg,
+.mmenu__cta-btn:active svg {
+  transform: translateX(3px);
 }
 
 .mmenu__contact-row {
@@ -550,37 +575,51 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   gap: 10px;
 }
 
-@media (max-width: 420px) {
-  .mmenu__contact-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-
 .mmenu__contact-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 12.5px;
+  gap: 7px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
-  background: #f1f5f9;
+  background: #f8fafc;
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  transition: all 0.2s ease;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mmenu__contact-pill:hover {
-  background: #e2e8f0;
-  color: var(--blue);
+.mmenu__contact-pill:active {
+  transform: scale(0.97);
 }
 
 .mmenu__contact-pill svg {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.mmenu__contact-pill--call {
+  color: #0f172a;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.mmenu__contact-pill--call svg {
+  color: #003b99;
+}
+
+.mmenu__contact-pill--call:hover,
+.mmenu__contact-pill--call:active {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #003b99;
 }
 
 .mmenu__contact-pill--whatsapp {
@@ -589,20 +628,39 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   border-color: #bbf7d0;
 }
 
-.mmenu__contact-pill--whatsapp:hover {
+.mmenu__contact-pill--whatsapp svg {
+  color: #16a34a;
+}
+
+.mmenu__contact-pill--whatsapp:hover,
+.mmenu__contact-pill--whatsapp:active {
   background: #dcfce7;
-  color: #166534;
+  border-color: #86efac;
+  color: #14532d;
 }
 
 .mmenu__trust-badges {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px 6px;
   font-size: 11px;
   font-weight: 500;
   color: #64748b;
   text-align: center;
+  padding-top: 2px;
+  line-height: 1.4;
+}
+
+.mmenu__trust-badge {
+  white-space: nowrap;
+}
+
+.mmenu__trust-dot {
+  color: #cbd5e1;
+  font-size: 8px;
+  user-select: none;
 }
 
 /* ── hero ─────────────────────────────────────────── */
@@ -4429,6 +4487,17 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   gap: 14px;
   align-items: flex-end;
   pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Completely hide floating FABs when mobile drawer navigation is open */
+body.has-drawer-open .floating-contact-actions,
+body:has(.mmenu.open) .floating-contact-actions {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(24px) scale(0.8) !important;
 }
 
 .floating-contact-item {
