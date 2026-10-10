@@ -4,7 +4,7 @@ import {
   BedDouble,
   Flame,
   Lock,
-  Home,
+  Globe,
   Plus,
   Search,
   MapPin,
@@ -381,8 +381,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
         <div className="admin-header__inner">
           <div className="admin-brand">
             <img src="/assets/logo.png" alt="Charla Living" className="admin-brand__logo" />
-            <div className="admin-brand__badge">
-              ADMIN · {loggedAdminUser}
+            <div className="admin-brand__badge" title={`Signed in as ${loggedAdminUser}`}>
+              <span className="admin-brand__dot" aria-hidden="true" />
+              <span>{loggedAdminUser}</span>
             </div>
           </div>
 
@@ -391,8 +392,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               type="button"
               className="admin-btn admin-btn--secondary"
               onClick={onNavigateHome}
+              title="View live website"
             >
-              <Home size={16} strokeWidth={2} />
+              <Globe size={15} strokeWidth={2} />
               <span>View Website</span>
             </button>
 
@@ -401,7 +403,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               className="admin-btn admin-btn--primary"
               onClick={handleOpenAdd}
             >
-              <Plus size={16} strokeWidth={2.5} />
+              <Plus size={15} strokeWidth={2.5} />
               <span>Add Property</span>
             </button>
 
@@ -411,7 +413,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               onClick={handleLogout}
               title="Sign out of Admin Dashboard"
             >
-              <LogOut size={16} strokeWidth={2} />
+              <LogOut size={15} strokeWidth={2} />
               <span>Logout</span>
             </button>
           </div>

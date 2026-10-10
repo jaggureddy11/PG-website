@@ -24,40 +24,54 @@
 .admin-header__inner {
   max-width: 1380px;
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  box-sizing: border-box;
 }
 
 .admin-brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   text-decoration: none;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .admin-brand__logo {
-  height: 38px;
+  height: 36px;
   width: auto;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .admin-brand__badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: #eff6ff;
-  color: #003b99;
-  border: 1px solid #bfdbfe;
-  padding: 4px 12px;
+  gap: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  padding: 4px 10px;
   border-radius: 9999px;
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.admin-brand__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .admin-cloud-badge {
@@ -114,45 +128,53 @@
 .admin-header__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .admin-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 600;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  border: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
   text-decoration: none;
-  line-height: 1.2;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .admin-btn--primary {
   background: #fb7009;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(251, 112, 9, 0.28);
+  border-color: #fb7009;
+  box-shadow: 0 1px 3px rgba(251, 112, 9, 0.25);
+  font-weight: 600;
 }
 
 .admin-btn--primary:hover {
   background: #e46203;
+  border-color: #e46203;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(251, 112, 9, 0.36);
+  box-shadow: 0 3px 8px rgba(251, 112, 9, 0.32);
 }
 
 .admin-btn--secondary {
   background: #ffffff;
-  color: #003b99;
+  color: #334155;
   border: 1px solid #cbd5e1;
 }
 
 .admin-btn--secondary:hover {
-  background: #f1f5f9;
+  background: #f8fafc;
+  color: #0c1b34;
   border-color: #94a3b8;
 }
 
@@ -834,10 +856,26 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
   .admin-header__inner {
-    padding: 12px 16px;
+    padding: 10px 16px;
+    gap: 10px;
   }
+  .admin-brand__badge {
+    display: none;
+  }
+  .admin-header__actions {
+    gap: 8px;
+  }
+  .admin-btn {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 12.5px;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 600px) {
   .admin-main {
     padding: 18px 16px 40px;
   }
@@ -856,6 +894,23 @@
   }
   .admin-gallery-preview {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-header__inner {
+    padding: 8px 12px;
+  }
+  .admin-brand__logo {
+    height: 30px;
+  }
+  .admin-btn span {
+    display: none;
+  }
+  .admin-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
   }
 }
 
@@ -1004,13 +1059,14 @@
 /* ── Logout Button in Header ── */
 .admin-btn--logout {
   color: #dc2626;
-  background: #fef2f2;
+  background: #ffffff;
   border: 1px solid #fecaca;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  transition: all 0.18s ease;
 }
 
 .admin-btn--logout:hover {
-  background: #fee2e2;
+  background: #fef2f2;
   color: #b91c1c;
   border-color: #fca5a5;
 }
