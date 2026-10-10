@@ -12,6 +12,7 @@ import {
   MessageCircle,
   ArrowRight
 } from "lucide-react";
+import { savePartnerInquiryToFirestore } from "@/lib/firebase";
 
 interface PartnerPageProps {
   onBackToHome?: (targetHash?: string) => void;
@@ -35,13 +36,26 @@ export function PartnerPage({ onBackToHome }: PartnerPageProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim() || !formData.phone.trim()) return;
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      await savePartnerInquiryToFirestore({
+        fullName: formData.name.trim(),
+        phone: formData.phone.trim(),
+        propertyType: partnerType === "owner" ? "Property Owner" : "College / Institution",
+        locality: formData.locality,
+        roomCount: formData.rooms,
+        note: formData.note,
+        status: "new",
+      });
+    } catch (err) {
+      console.warn("Could not save partner inquiry to Firestore, recorded locally:", err);
+    } finally {
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 700);
+    }
   };
 
   const handleBack = () => {

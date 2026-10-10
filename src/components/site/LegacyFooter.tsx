@@ -89,6 +89,7 @@ export function LegacyFooter({ onSelectResidence, onNavigateHome, onNavigatePart
               <a href="#">Privacy</a>
               <a href="#">Terms</a>
               <a href="#">House rules</a>
+              <a href="#/admin" style={{ opacity: 0.7, fontSize: "12px", marginTop: "4px" }}>Admin Space</a>
               <p className="footer__disclaimer">Images shown are for representational purposes only. Amenities depicted may or may not form a part of that individual property.</p>
               <p className="footer__availability">© <span id="year">2026</span> Charla Living.<br />All rooms subject to availability.</p>
             </div>

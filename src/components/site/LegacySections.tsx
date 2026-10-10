@@ -1,5 +1,6 @@
-import { type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { CommunityLogosMarquee } from "./CommunityLogosMarquee";
+import { saveCallbackRequestToFirestore } from "@/lib/firebase";
 
 interface LegacySectionsProps {
   onSelectResidence?: (id: string) => void;
@@ -10,6 +11,31 @@ export function LegacySections({
   onSelectResidence: _onSelectResidence,
   onNavigateResidences: _onNavigateResidences
 }: LegacySectionsProps = {}) {
+  const [callbackName, setCallbackName] = useState("");
+  const [callbackPhone, setCallbackPhone] = useState("");
+  const [callbackLocality, setCallbackLocality] = useState("");
+  const [isCallbackSubmitting, setIsCallbackSubmitting] = useState(false);
+  const [isCallbackSubmitted, setIsCallbackSubmitted] = useState(false);
+
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callbackName.trim() || !callbackPhone.trim() || !callbackLocality.trim()) return;
+    setIsCallbackSubmitting(true);
+    try {
+      await saveCallbackRequestToFirestore({
+        name: callbackName.trim(),
+        phone: callbackPhone.trim(),
+        locality: callbackLocality.trim(),
+        source: "Homepage Callback Form",
+        status: "new",
+      });
+    } catch (err) {
+      console.warn("Could not save callback request to Firestore:", err);
+    } finally {
+      setIsCallbackSubmitting(false);
+      setIsCallbackSubmitted(true);
+    }
+  };
   return (
     <>
 <div>
@@ -527,51 +553,85 @@ export function LegacySections({
         <img className="visit__logo" src="/assets/logo.png" alt="Charla Living" width={180} height={120} data-reveal />
         <h2 className="visit__title" data-reveal>Your next home is closer than you think.<br />Come take a look.</h2>
         <p className="visit__sub" data-reveal>Leave your number and preferred locality. We'll call within 2 working hours and set up your walkthrough — chai included, pressure absent.</p>
-        <form className="visit__form" id="visitForm" data-reveal>
-          <div className="visit__field">
-            <label htmlFor="visit-name">Your name</label>
-            <input id="visit-name" type="text" name="name" placeholder="e.g. Ananya Rao" autoComplete="name" required />
+        {!isCallbackSubmitted ? (
+          <>
+            <form className="visit__form" id="visitForm" onSubmit={handleCallbackSubmit} data-reveal>
+              <div className="visit__field">
+                <label htmlFor="visit-name">Your name</label>
+                <input
+                  id="visit-name"
+                  type="text"
+                  name="name"
+                  placeholder="e.g. Ananya Rao"
+                  autoComplete="name"
+                  value={callbackName}
+                  onChange={(e) => setCallbackName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="visit__field">
+                <label htmlFor="visit-phone">Phone number</label>
+                <input
+                  id="visit-phone"
+                  type="tel"
+                  name="phone"
+                  placeholder="+91 98765 43210"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  pattern="[0-9+ ]{10,14}"
+                  value={callbackPhone}
+                  onChange={(e) => setCallbackPhone(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="visit__field">
+                <label htmlFor="visit-locality">Preferred locality</label>
+                <select
+                  id="visit-locality"
+                  name="locality"
+                  value={callbackLocality}
+                  onChange={(e) => setCallbackLocality(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Choose a locality</option>
+                  <option>Kumaraswamy Layout</option>
+                  <option>Uttarahalli</option>
+                  <option>Banashankari</option>
+                  <option>Padmanabhanagar</option>
+                  <option>JP Nagar</option>
+                  <option>Jayanagar</option>
+                  <option>Not sure yet — guide me</option>
+                </select>
+              </div>
+              <button type="submit" className="btn btn--orange" disabled={isCallbackSubmitting}>
+                {isCallbackSubmitting ? "Requesting..." : "Request a callback"}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </button>
+            </form>
+            <p className="visit__alt" data-reveal>Prefer talking? <a href="tel:+918884446093">+91 88844 46093</a> · Mon–Sun, 9 a.m.–8 p.m.</p>
+          </>
+        ) : (
+          <div className="visit__success" id="visitSuccess" style={{ display: "block" }}>
+            <span className="tick tick--lg" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+            </span>
+            <h3>Done. We'll call you shortly.</h3>
+            <p>Keep your phone close — a real person from our team will reach out.</p>
+            <a
+              id="visitWhatsappLink"
+              href={`https://wa.me/918884446093?text=${encodeURIComponent(
+                `Hi Charla Living, I requested a callback on your website!\n• Name: ${callbackName}\n• Phone: ${callbackPhone}\n• Preferred Locality: ${callbackLocality}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--blue"
+              style={{ marginTop: "14px", display: "inline-flex", alignItems: "center", gap: "8px" }}
+            >
+              <span>Message on WhatsApp for instant confirmation</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </a>
           </div>
-          <div className="visit__field">
-            <label htmlFor="visit-phone">Phone number</label>
-            <input id="visit-phone" type="tel" name="phone" placeholder="+91 98765 43210" inputMode="tel" autoComplete="tel" pattern="[0-9+ ]{10,14}" required />
-          </div>
-          <div className="visit__field">
-            <label htmlFor="visit-locality">Preferred locality</label>
-            <select id="visit-locality" name="locality" defaultValue="" required>
-              <option value="" disabled>Choose a locality</option>
-              <option>Kumaraswamy Layout</option>
-              <option>Uttarahalli</option>
-              <option>Banashankari</option>
-              <option>Padmanabhanagar</option>
-              <option>JP Nagar</option>
-              <option>Jayanagar</option>
-              <option>Not sure yet — guide me</option>
-            </select>
-          </div>
-          <button type="submit" className="btn btn--orange">Request a callback
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-          </button>
-        </form>
-        <p className="visit__alt" data-reveal>Prefer talking? <a href="tel:+918884446093">+91 88844 46093</a> · Mon–Sun, 9 a.m.–8 p.m.</p>
-        <div className="visit__success" id="visitSuccess" hidden>
-          <span className="tick tick--lg" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-          </span>
-          <h3>Done. We'll call you shortly.</h3>
-          <p>Keep your phone close — a real person from our team will reach out.</p>
-          <a
-            id="visitWhatsappLink"
-            href="https://wa.me/918884446093?text=Hi%20Charla%20Living%2C%20I%20requested%20a%20callback%20on%20your%20website!"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn--blue"
-            style={{ marginTop: "14px", display: "inline-flex", alignItems: "center", gap: "8px" }}
-          >
-            <span>Message on WhatsApp for instant confirmation</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-          </a>
-        </div>
+        )}
       </div>
     </div>
   </section>

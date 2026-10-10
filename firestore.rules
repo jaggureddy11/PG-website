@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /residences/{document=**} {
+      allow read, write: if true;
+    }
+    match /visit_bookings/{document=**} {
+      allow read, write: if true;
+    }
+    match /partner_inquiries/{document=**} {
+      allow read, write: if true;
+    }
+    match /callback_requests/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

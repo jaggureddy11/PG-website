@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { type Residence, RESIDENCES } from "@/data/residences";
+import { saveVisitBookingToFirestore } from "@/lib/firebase";
 import "@/residence.css";
 
 interface ResidenceDetailProps {
   residence: Residence;
+  allResidences?: Residence[];
   onBack: () => void;
   onSelectResidence?: (id: string) => void;
 }
@@ -86,7 +88,7 @@ const NEARBY_LOCATIONS_MAP: Record<string, Array<{ name: string; dist: string }>
   ]
 };
 
-export function ResidenceDetail({ residence, onBack, onSelectResidence }: ResidenceDetailProps) {
+export function ResidenceDetail({ residence, allResidences = Object.values(RESIDENCES), onBack, onSelectResidence }: ResidenceDetailProps) {
   const [selectedRoomId, setSelectedRoomId] = useState<string>(
     residence.roomTypes[1]?.id || residence.roomTypes[0]?.id || "single"
   );
@@ -102,6 +104,7 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
   });
   const [timeSlot, setTimeSlot] = useState("12:00 PM – 01:30 PM");
   const [isBooked, setIsBooked] = useState(false);
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
@@ -193,10 +196,28 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
   const selectedRoom = residence.roomTypes.find((r) => r.id === selectedRoomId) || residence.roomTypes[0];
   const galleryImages = gallerySlides.map((s) => s.src);
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return;
-    setIsBooked(true);
+    setIsSubmittingBooking(true);
+    try {
+      await saveVisitBookingToFirestore({
+        residenceId: residence.id,
+        residenceName: residence.name,
+        tourType,
+        date,
+        timeSlot,
+        name: name.trim(),
+        phone: phone.trim(),
+        sharingType: selectedRoom?.name || "Standard",
+        status: "new",
+      });
+    } catch (err) {
+      console.warn("Could not save booking to Firestore, fallback confirmed:", err);
+    } finally {
+      setIsSubmittingBooking(false);
+      setIsBooked(true);
+    }
   };
 
   const scrollToBooking = () => {
@@ -249,12 +270,11 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
                   className="residence-locality-dropdown"
                   aria-label="Select locality"
                 >
-                  <option value="kumaraswamy-layout">Kumaraswamy Layout</option>
-                  <option value="jp-nagar">JP Nagar (5th Phase)</option>
-                  <option value="jayanagar">Jayanagar (4th Block)</option>
-                  <option value="banashankari">Banashankari (2nd Stage)</option>
-                  <option value="padmanabhanagar">Padmanabhanagar</option>
-                  <option value="uttarahalli">Uttarahalli Main Rd</option>
+                  {allResidences.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.locality} — {r.name.includes("—") ? r.name.split("—")[1].trim() : r.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -831,7 +851,7 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
               </h2>
 
               <div className="nearby-props-grid">
-                {Object.values(RESIDENCES).filter((r: Residence) => r.id !== residence.id).slice(0, 4).map((prop: Residence) => (
+                {allResidences.filter((r: Residence) => r.id !== residence.id).slice(0, 4).map((prop: Residence) => (
                   <div 
                     key={prop.id} 
                     className="nearby-prop-card"
@@ -1011,12 +1031,22 @@ export function ResidenceDetail({ residence, onBack, onSelectResidence }: Reside
                   <button 
                     type="submit" 
                     className="btn btn--orange"
-                    style={{ width: "100%", justifyContent: "center", marginTop: "2px" }}
+                    disabled={isSubmittingBooking}
+                    style={{ width: "100%", justifyContent: "center", marginTop: "2px", opacity: isSubmittingBooking ? 0.7 : 1 }}
                   >
-                    <span>Confirm Free Walkthrough</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+                    {isSubmittingBooking ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Confirming your slot...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Confirm Free Walkthrough</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </>
+                    )}
                   </button>
 
                   <div className="residence-booking-sidebar__trust">

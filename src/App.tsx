@@ -6,27 +6,33 @@ import { FloatingContactActions } from "@/components/site/FloatingContactActions
 import { ResidenceDetail } from "@/components/residence/ResidenceDetail";
 import { ResidencesPage } from "@/components/residence/ResidencesPage";
 import { PartnerPage } from "@/components/partner/PartnerPage";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { RESIDENCES } from "@/data/residences";
+import { ResidencesProvider, useResidences } from "@/context/ResidencesContext";
 import Skiper39 from "@/components/ui/skiper39";
 import { initSiteInteractions } from "./site-interactions";
 import "./site.css";
 import "./hero.css";
 import "./partner.css";
+import "./admin.css";
 
-type ViewState = "home" | "residences" | "detail" | "partner";
+type ViewState = "home" | "residences" | "detail" | "partner" | "admin";
 
 function parseRouteFromHash(): { view: ViewState; residenceId: string | null; targetSection?: string } {
   const hash = window.location.hash;
   if (!hash || hash === "#" || hash === "#home" || hash === "#/home") {
     return { view: "home", residenceId: null };
   }
+  if (hash === "#admin" || hash === "#/admin" || hash.startsWith("#/admin")) {
+    return { view: "admin", residenceId: null };
+  }
   if (hash.startsWith("#/residence/")) {
     const id = hash.replace("#/residence/", "").trim();
-    if (RESIDENCES[id]) return { view: "detail", residenceId: id };
+    if (id) return { view: "detail", residenceId: id };
   }
   if (hash.startsWith("#residence/")) {
     const id = hash.replace("#residence/", "").trim();
-    if (RESIDENCES[id]) return { view: "detail", residenceId: id };
+    if (id) return { view: "detail", residenceId: id };
   }
   if (hash === "#residences" || hash === "#/residences" || hash.startsWith("#/residences")) {
     return { view: "residences", residenceId: null };
@@ -37,7 +43,8 @@ function parseRouteFromHash(): { view: ViewState; residenceId: string | null; ta
   return { view: "home", residenceId: null, targetSection: hash.replace("#", "") };
 }
 
-function App() {
+function AppContent() {
+  const { residences, residencesMap, residenceItems } = useResidences();
   const [currentView, setCurrentView] = useState<ViewState>(() => parseRouteFromHash().view);
   const [selectedResidenceId, setSelectedResidenceId] = useState<string | null>(() => parseRouteFromHash().residenceId);
   const [selectedLocality, setSelectedLocality] = useState<string>("all");
@@ -85,12 +92,10 @@ function App() {
   }, [currentView]);
 
   const handleSelectResidence = (id: string) => {
-    if (RESIDENCES[id]) {
-      setSelectedResidenceId(id);
-      setCurrentView("detail");
-      window.location.hash = `#/residence/${id}`;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    setSelectedResidenceId(id);
+    setCurrentView("detail");
+    window.location.hash = `#/residence/${id}`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleNavigateResidences = () => {
@@ -164,7 +169,18 @@ function App() {
     setRoomTypeFilter("any");
   };
 
-  const currentResidence = selectedResidenceId ? RESIDENCES[selectedResidenceId] : null;
+  const currentResidence = selectedResidenceId
+    ? (residencesMap[selectedResidenceId] || RESIDENCES[selectedResidenceId] || null)
+    : null;
+
+  if (currentView === "admin") {
+    return (
+      <AdminDashboard
+        onNavigateHome={() => handleBackToHome("home")}
+        onSelectResidence={handleSelectResidence}
+      />
+    );
+  }
 
   return (
     <>
@@ -179,11 +195,13 @@ function App() {
       {currentView === "detail" && currentResidence ? (
         <ResidenceDetail
           residence={currentResidence}
+          allResidences={residences}
           onBack={() => handleBackToHome("residences")}
           onSelectResidence={handleSelectResidence}
         />
       ) : currentView === "residences" ? (
         <ResidencesPage
+          residences={residenceItems}
           onSelectResidence={handleSelectResidence}
           selectedLocality={selectedLocality}
           onSelectLocality={setSelectedLocality}
@@ -218,5 +236,12 @@ function App() {
   );
 }
 
-export default App;
+function App() {
+  return (
+    <ResidencesProvider>
+      <AppContent />
+    </ResidencesProvider>
+  );
+}
 
+export default App;

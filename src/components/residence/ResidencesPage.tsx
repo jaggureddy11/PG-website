@@ -8,9 +8,17 @@ import {
   BedDouble, 
   UserRound, 
   Map as MapIcon, 
-  List as ListIcon 
+  List as ListIcon,
+  Phone,
+  X,
+  CheckCircle,
+  MessageCircle,
+  Loader2,
+  ShieldCheck,
+  Building2
 } from "lucide-react";
 import { calculateDistanceKm } from "@/utils/location";
+import { saveCallbackRequestToFirestore } from "@/lib/firebase";
 import { ResidencesBannerCarousel } from "./ResidencesBannerCarousel";
 import { ResidencesMapView } from "./ResidencesMapView";
 
@@ -205,6 +213,7 @@ const LOCALITY_FILTERS = [
 ];
 
 export interface ResidencesPageProps {
+  residences?: ResidenceItem[];
   onSelectResidence?: (id: string) => void;
   selectedLocality?: string;
   onSelectLocality?: (locality: string) => void;
@@ -218,6 +227,7 @@ export interface ResidencesPageProps {
 }
 
 export function ResidencesPage({
+  residences: propResidences,
   onSelectResidence,
   selectedLocality: propLocality,
   onSelectLocality,
@@ -231,13 +241,55 @@ export function ResidencesPage({
 }: ResidencesPageProps) {
   const [internalLocality, setInternalLocality] = useState<string>("all");
   const [internalSortBy, setInternalSortBy] = useState<string>("featured");
-  const [activeResidenceId, setActiveResidenceId] = useState<string | null>("kumaraswamy-layout");
+  const [selectedGender, setSelectedGender] = useState<"all" | "Male" | "Female" | "Unisex">("all");
+  const [activeResidenceId, setActiveResidenceId] = useState<string | null>(null);
   const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
+
+  // Callback Modal State
+  const [callbackModalResidence, setCallbackModalResidence] = useState<ResidenceItem | null>(null);
+  const [callbackName, setCallbackName] = useState("");
+  const [callbackPhone, setCallbackPhone] = useState("");
+  const [isSubmittingCallback, setIsSubmittingCallback] = useState(false);
+  const [callbackSuccess, setCallbackSuccess] = useState(false);
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const selectedLocality = propLocality !== undefined ? propLocality : internalLocality;
   const sortBy = propSortBy !== undefined ? propSortBy : internalSortBy;
+
+  const rawItems = propResidences && propResidences.length > 0 ? propResidences : RESIDENCE_ITEMS;
+
+  // Set default active residence on initial load
+  useEffect(() => {
+    if (!activeResidenceId && rawItems.length > 0) {
+      setActiveResidenceId(rawItems[0].id);
+    }
+  }, [rawItems, activeResidenceId]);
+
+  // Handle ESC key to close callback modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && callbackModalResidence && !isSubmittingCallback) {
+        setCallbackModalResidence(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [callbackModalResidence, isSubmittingCallback]);
+
+  // Dynamic localities derived from active residence data
+  const dynamicLocalityFilters = useRef<{ id: string; label: string }[]>(LOCALITY_FILTERS);
+  const localityList = (() => {
+    const map = new Map<string, string>();
+    map.set("all", "All Localities");
+    rawItems.forEach((item) => {
+      if (item.localityId && item.locality) {
+        map.set(item.localityId, item.locality);
+      }
+    });
+    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
+  })();
+  dynamicLocalityFilters.current = localityList;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -277,9 +329,47 @@ export function ResidencesPage({
 
   const handleRequestCallback = (res: ResidenceItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    const msg = `Hello Charla Living! I would like to request a callback regarding ${res.houseName} (${res.name}) in ${res.locality}.`;
-    const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    setCallbackModalResidence(res);
+    setCallbackName("");
+    setCallbackPhone("");
+    setCallbackSuccess(false);
+    setIsSubmittingCallback(false);
+  };
+
+  const handleModalCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callbackModalResidence || !callbackName.trim() || !callbackPhone.trim()) return;
+
+    setIsSubmittingCallback(true);
+    const targetRes = callbackModalResidence;
+    const residentName = callbackName.trim();
+    const residentPhone = callbackPhone.trim();
+
+    try {
+      await saveCallbackRequestToFirestore({
+        name: residentName,
+        phone: residentPhone,
+        locality: targetRes.locality,
+        residenceId: targetRes.id,
+        residenceName: `${targetRes.houseName} (${targetRes.name})`,
+        source: "Property Card Callback",
+        status: "new",
+      });
+    } catch (err) {
+      console.warn("Could not save callback request to Firestore:", err);
+    } finally {
+      setIsSubmittingCallback(false);
+      setCallbackSuccess(true);
+
+      const msg = `Hello Charla Living! My name is ${residentName}. I would like to request a callback regarding ${targetRes.houseName} (${targetRes.name}) in ${targetRes.locality}. My contact number is ${residentPhone}.`;
+      const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+      setTimeout(() => {
+        setCallbackModalResidence(null);
+        setCallbackSuccess(false);
+      }, 2500);
+    }
   };
 
   const handleSelectFromMap = (id: string) => {
@@ -291,7 +381,7 @@ export function ResidencesPage({
   };
 
   // Compute distance for all residences if user coordinates exist
-  const residencesWithDistances = RESIDENCE_ITEMS.map((item) => {
+  const residencesWithDistances = rawItems.map((item) => {
     if (userCoords) {
       const distanceKm = calculateDistanceKm(userCoords.lat, userCoords.lng, item.lat, item.lng);
       return { ...item, distanceKm };
@@ -305,7 +395,12 @@ export function ResidencesPage({
       const matchesRoom =
         roomTypeFilter === "any" ||
         item.sharingTypes.some((t) => t.toLowerCase().includes(roomTypeFilter.toLowerCase()));
-      return matchesLocality && matchesRoom;
+      const matchesGender =
+        selectedGender === "all" ||
+        (selectedGender === "Male" && item.gender === "Male") ||
+        (selectedGender === "Female" && item.gender === "Female") ||
+        (selectedGender === "Unisex" && (item.gender === "Unisex" || (item as any).gender === "Co-living"));
+      return matchesLocality && matchesRoom && matchesGender;
     })
     .sort((a, b) => {
       if (sortBy === "nearest") {
@@ -362,10 +457,59 @@ export function ResidencesPage({
             }}
           />
 
+          {/* ─── Category / Gender Filter Tabs ─── */}
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs font-bold tracking-wider text-slate-500 uppercase mr-1">Category:</span>
+            <button
+              type="button"
+              onClick={() => setSelectedGender("all")}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                selectedGender === "all"
+                  ? "bg-[#003B99] text-white border-[#003B99] shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              ALL
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedGender("Male")}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                selectedGender === "Male"
+                  ? "bg-[#003B99] text-white border-[#003B99] shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              MALE
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedGender("Female")}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                selectedGender === "Female"
+                  ? "bg-[#FB7009] text-white border-[#FB7009] shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              FEMALE
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedGender("Unisex")}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                selectedGender === "Unisex"
+                  ? "bg-[#0C1B34] text-white border-[#0C1B34] shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              CO-LIVING
+            </button>
+          </div>
+
           {/* ─── Locality Filters & Sort Controls Bar ─── */}
           <div className="residences-controls-bar">
             <div className="residences-pills-bar">
-              {LOCALITY_FILTERS.map((loc) => (
+              {localityList.map((loc) => (
                 <button
                   key={loc.id}
                   type="button"
@@ -622,7 +766,7 @@ export function ResidencesPage({
             {/* ── RIGHT COLUMN: Sticky Interactive Map (Longer, Realistic Open-Source) ── */}
             <div className={`lg:col-span-5 xl:col-span-5 ${mobileViewMode === "list" ? "hidden lg:block" : "block"} lg:sticky lg:top-24`}>
               <ResidencesMapView
-                residences={RESIDENCE_ITEMS}
+                residences={filteredResidences.length > 0 ? filteredResidences : rawItems}
                 selectedId={activeResidenceId}
                 onSelectResidence={handleSelectFromMap}
                 userCoords={userCoords}
@@ -631,6 +775,238 @@ export function ResidencesPage({
           </div>
         </div>
       </section>
+
+      {/* ── Callback Capture Modal ── */}
+      {callbackModalResidence && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => !isSubmittingCallback && setCallbackModalResidence(null)}
+        >
+          <div 
+            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden text-slate-800 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Brand Accent Bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#003b99] via-[#2563eb] to-[#FB7009]" />
+
+            {/* Header */}
+            <div className="p-5 pb-4 border-b border-slate-100 flex items-start justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-blue-50 text-[#003b99] border border-blue-100 mb-1.5">
+                  <Phone size={11} strokeWidth={2.5} />
+                  <span>Instant Callback</span>
+                </div>
+                <h3 className="text-lg font-bold text-[#0c1b34] tracking-tight">
+                  Request a Callback
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Leave your contact details and our manager will call you shortly.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => !isSubmittingCallback && setCallbackModalResidence(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Selected Property Preview Strip */}
+            <div className="px-5 py-3 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 border border-slate-200/80">
+                <img 
+                  src={callbackModalResidence.image} 
+                  alt={callbackModalResidence.houseName} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-[#0c1b34] truncate">
+                  {callbackModalResidence.houseName}
+                </div>
+                <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
+                  <Building2 size={11} className="text-slate-400 flex-shrink-0" />
+                  <span>{callbackModalResidence.locality}</span>
+                </div>
+                <div className="text-[11.5px] font-semibold text-[#FB7009] mt-0.5">
+                  Starting from {callbackModalResidence.price}/mo
+                </div>
+              </div>
+            </div>
+
+            {/* Body / Form */}
+            <div className="p-5">
+              {callbackSuccess ? (
+                <div className="py-6 text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle size={26} strokeWidth={2.2} />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-[#0c1b34]">
+                      Callback Request Received
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
+                      Thank you, <strong>{callbackName}</strong>. Your inquiry has been saved and routed to WhatsApp.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <a
+                      href={`https://wa.me/918884446093?text=${encodeURIComponent(
+                        `Hello Charla Living! My name is ${callbackName}. I would like to request a callback regarding ${callbackModalResidence.houseName} (${callbackModalResidence.name}) in ${callbackModalResidence.locality}. My contact number is ${callbackPhone}.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold shadow-md hover:bg-[#20ba59] transition-all"
+                    >
+                      <MessageCircle size={15} />
+                      <span>Chat Directly on WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleModalCallbackSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div>
+                    <label 
+                      htmlFor="modal-callback-name" 
+                      style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "6px" }}
+                    >
+                      Your Full Name <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                        <UserRound size={16} />
+                      </span>
+                      <input
+                        id="modal-callback-name"
+                        type="text"
+                        required
+                        autoFocus
+                        placeholder="e.g. Rahul Sharma"
+                        value={callbackName}
+                        onChange={(e) => setCallbackName(e.target.value)}
+                        style={{
+                          width: "100%",
+                          height: "44px",
+                          paddingLeft: "40px",
+                          paddingRight: "14px",
+                          borderRadius: "10px",
+                          border: "1px solid #cbd5e1",
+                          fontSize: "14px",
+                          color: "#0f172a",
+                          background: "#ffffff",
+                          boxSizing: "border-box"
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label 
+                      htmlFor="modal-callback-phone" 
+                      style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "6px" }}
+                    >
+                      Phone Number <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                        <Phone size={16} />
+                      </span>
+                      <input
+                        id="modal-callback-phone"
+                        type="tel"
+                        required
+                        placeholder="e.g. 98765 43210"
+                        value={callbackPhone}
+                        onChange={(e) => setCallbackPhone(e.target.value)}
+                        style={{
+                          width: "100%",
+                          height: "44px",
+                          paddingLeft: "40px",
+                          paddingRight: "14px",
+                          borderRadius: "10px",
+                          border: "1px solid #cbd5e1",
+                          fontSize: "14px",
+                          color: "#0f172a",
+                          background: "#ffffff",
+                          boxSizing: "border-box"
+                        }}
+                      />
+                    </div>
+                    <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0" }}>
+                      We will call or WhatsApp you on this number to coordinate your visit.
+                    </p>
+                  </div>
+
+                  {/* Trust Assurance Banner */}
+                  <div style={{ padding: "10px 12px", borderRadius: "10px", background: "#f0f9ff", border: "1px solid #e0f2fe", display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "11px", color: "#0369a1", lineHeight: 1.45 }}>
+                    <ShieldCheck size={15} style={{ flexShrink: 0, marginTop: "1px", color: "#0284c7" }} />
+                    <span>Zero spam guarantee. Your contact details are stored securely and used solely for this property inquiry.</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingTop: "4px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setCallbackModalResidence(null)}
+                      disabled={isSubmittingCallback}
+                      style={{
+                        flex: 1,
+                        height: "44px",
+                        borderRadius: "10px",
+                        border: "1px solid #cbd5e1",
+                        background: "#f8fafc",
+                        color: "#475569",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmittingCallback || !callbackName.trim() || !callbackPhone.trim()}
+                      style={{
+                        flex: 2,
+                        height: "44px",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "#FB7009",
+                        color: "#ffffff",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        cursor: isSubmittingCallback ? "not-allowed" : "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        boxShadow: "0 2px 8px rgba(251, 112, 9, 0.35)",
+                        opacity: isSubmittingCallback || !callbackName.trim() || !callbackPhone.trim() ? 0.65 : 1
+                      }}
+                    >
+                      {isSubmittingCallback ? (
+                        <>
+                          <Loader2 size={15} className="animate-spin" />
+                          <span>Requesting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle size={15} />
+                          <span>Submit &amp; Open WhatsApp</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

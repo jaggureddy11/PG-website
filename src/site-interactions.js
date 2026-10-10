@@ -224,36 +224,7 @@ export function initSiteInteractions() {
     }
   }
 
-  /* ── visit form (front-end demo) ── */
-  const visitForm = document.getElementById("visitForm");
-  if (visitForm) {
-    const visitSubmit = function (e) {
-      e.preventDefault();
-      const nameVal = this.querySelector('[name="name"]')?.value || "";
-      const phoneVal = this.querySelector('[name="phone"]')?.value || "";
-      const localityVal = this.querySelector('[name="locality"]')?.value || "";
-      
-      const waBtn = document.getElementById("visitWhatsappLink");
-      if (waBtn) {
-        const waText = encodeURIComponent(
-          `Hi Charla Living, I requested a callback on your website!\n• Name: ${nameVal}\n• Phone: ${phoneVal}\n• Preferred Locality: ${localityVal}`
-        );
-        waBtn.href = `https://wa.me/918884446093?text=${waText}`;
-      }
-
-      this.style.display = "none";
-      const altEl = document.querySelector(".visit__alt");
-      if (altEl) altEl.style.display = "none";
-      const success = document.getElementById("visitSuccess");
-      if (success) {
-        success.hidden = false;
-        if (hasGsap && !reduced) {
-          gsap.fromTo(success, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", force3D: true });
-        }
-      }
-    };
-    addTrackedListener(visitForm, "submit", visitSubmit);
-  }
+  /* ── visit form is managed reactively by React with live Cloud Firestore sync ── */
 
   /* ── amenities category filter ── */
   const amFilters = document.querySelectorAll(".am-filter");
