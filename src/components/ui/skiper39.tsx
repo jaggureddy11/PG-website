@@ -610,6 +610,41 @@ function Skiper39({ onSearch }: Skiper39Props) {
         </div>
       </div>
 
+      {/* ── Mobile-Only Scenic Wave Illustration (Untouched on Desktop) ── */}
+      <div className="site-hero__mobile-wave-wrap pointer-events-none absolute inset-x-0 bottom-0" aria-hidden="true">
+        <svg
+          viewBox="0 0 1440 600"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          className="site-hero__mobile-wave-svg"
+        >
+          <defs>
+            <linearGradient id="charlaMobileWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#e2effb" />
+              <stop offset="55%" stopColor="#d8ebfa" />
+              <stop offset="100%" stopColor="#cce3f7" />
+            </linearGradient>
+            <linearGradient id="charlaMobileWaveBack" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#edf6fe" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#dfedf9" stopOpacity="0.6" />
+            </linearGradient>
+          </defs>
+
+          {/* Ambient background curve for soft organic landscape depth */}
+          <path
+            d="M0,230 C300,160 540,290 840,220 C1100,160 1300,210 1440,190 L1440,600 L0,600 Z"
+            fill="url(#charlaMobileWaveBack)"
+          />
+
+          {/* Main scenic wave curve matching reference */}
+          <path
+            d="M0,170 C240,120 460,330 760,320 C1040,310 1180,150 1440,210 L1440,600 L0,600 Z"
+            fill="url(#charlaMobileWaveGrad)"
+          />
+        </svg>
+      </div>
+
       <div className="site-hero__skyline pointer-events-none absolute inset-x-0 bottom-0 z-0" aria-hidden="true">
         <img
           src="/bangalore-city-landscape.svg"
