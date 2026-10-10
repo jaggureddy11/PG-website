@@ -15,10 +15,15 @@ import {
   MessageCircle,
   Loader2,
   ShieldCheck,
-  Building2
+  Building2,
+  Calendar,
+  Clock,
+  Coffee,
+  Video,
+  CalendarCheck
 } from "lucide-react";
 import { calculateDistanceKm } from "@/utils/location";
-import { saveCallbackRequestToFirestore } from "@/lib/firebase";
+import { saveCallbackRequestToFirestore, saveVisitBookingToFirestore } from "@/lib/firebase";
 import { ResidencesBannerCarousel } from "./ResidencesBannerCarousel";
 import { ResidencesMapView } from "./ResidencesMapView";
 
@@ -252,6 +257,22 @@ export function ResidencesPage({
   const [isSubmittingCallback, setIsSubmittingCallback] = useState(false);
   const [callbackSuccess, setCallbackSuccess] = useState(false);
 
+  // Schedule Visit Modal State
+  const [visitModalResidence, setVisitModalResidence] = useState<ResidenceItem | null>(null);
+  const [visitTourFormat, setVisitTourFormat] = useState<"in-person" | "video">("in-person");
+  const [visitDate, setVisitDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  });
+  const [visitSlot, setVisitSlot] = useState("12:00 PM (Lunch)");
+  const [visitName, setVisitName] = useState("");
+  const [visitPhone, setVisitPhone] = useState("");
+  const [visitSharing, setVisitSharing] = useState("Single Sharing");
+  const [isSubmittingVisit, setIsSubmittingVisit] = useState(false);
+  const [visitSuccess, setVisitSuccess] = useState(false);
+  const todayStr = new Date().toISOString().split("T")[0];
+
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const selectedLocality = propLocality !== undefined ? propLocality : internalLocality;
@@ -266,16 +287,21 @@ export function ResidencesPage({
     }
   }, [rawItems, activeResidenceId]);
 
-  // Handle ESC key to close callback modal
+  // Handle ESC key to close modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && callbackModalResidence && !isSubmittingCallback) {
-        setCallbackModalResidence(null);
+      if (e.key === "Escape") {
+        if (callbackModalResidence && !isSubmittingCallback) {
+          setCallbackModalResidence(null);
+        }
+        if (visitModalResidence && !isSubmittingVisit) {
+          setVisitModalResidence(null);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [callbackModalResidence, isSubmittingCallback]);
+  }, [callbackModalResidence, isSubmittingCallback, visitModalResidence, isSubmittingVisit]);
 
   // Dynamic localities derived from active residence data
   const dynamicLocalityFilters = useRef<{ id: string; label: string }[]>(LOCALITY_FILTERS);
@@ -318,12 +344,70 @@ export function ResidencesPage({
     }
   };
 
-  const handleScheduleVisit = (_residenceName: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onBackToHome) {
-      onBackToHome("visit");
-    } else {
-      window.location.hash = "#visit";
+  const handleScheduleVisit = (res: ResidenceItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setVisitModalResidence(res);
+    setVisitTourFormat("in-person");
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    setVisitDate(d.toISOString().split("T")[0]);
+    setVisitSlot("12:00 PM (Lunch)");
+    setVisitName("");
+    setVisitPhone("");
+    setVisitSharing(res.sharingTypes?.[0] || "Single Sharing");
+    setIsSubmittingVisit(false);
+    setVisitSuccess(false);
+  };
+
+  const handleModalVisitSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!visitModalResidence || !visitName.trim() || !visitPhone.trim()) return;
+
+    setIsSubmittingVisit(true);
+    const targetRes = visitModalResidence;
+    const guestName = visitName.trim();
+    const guestPhone = visitPhone.trim();
+    const formatLabel = visitTourFormat === "in-person"
+      ? "In-Person Visit (with Chai & Food Tasting)"
+      : "Live Video Guided Walkthrough";
+
+    // Format date for Indian format DD/MM/YYYY
+    let dateDisplay = visitDate;
+    try {
+      const parts = visitDate.split("-");
+      if (parts.length === 3) {
+        dateDisplay = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+    } catch {
+      dateDisplay = visitDate;
+    }
+
+    try {
+      await saveVisitBookingToFirestore({
+        residenceId: targetRes.id,
+        residenceName: `${targetRes.houseName} (${targetRes.name})`,
+        tourType: visitTourFormat,
+        date: dateDisplay,
+        timeSlot: visitSlot,
+        name: guestName,
+        phone: guestPhone,
+        sharingType: visitSharing || "Standard",
+        status: "new",
+      });
+    } catch (err) {
+      console.warn("Could not save visit booking to Firestore:", err);
+    } finally {
+      setIsSubmittingVisit(false);
+      setVisitSuccess(true);
+
+      const msg = `Hello Charla Living! My name is ${guestName}. I would like to schedule a campus tour for ${targetRes.houseName} (${targetRes.name}) in ${targetRes.locality}.\n\n• Tour Format: ${formatLabel}\n• Preferred Date: ${dateDisplay}\n• Preferred Slot: ${visitSlot}\n• WhatsApp Phone: ${guestPhone}\n• Room Preference: ${visitSharing}\n\nPlease confirm my walkthrough slot!`;
+      const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+      setTimeout(() => {
+        setVisitModalResidence(null);
+        setVisitSuccess(false);
+      }, 3000);
     }
   };
 
@@ -452,8 +536,8 @@ export function ResidencesPage({
           {/* ─── Top Promotional Banner Showcase ─── */}
           <ResidencesBannerCarousel 
             onBookVisit={() => {
-              if (onBackToHome) onBackToHome("visit");
-              else window.location.hash = "#visit";
+              const defaultRes = rawItems.find((r) => r.id === activeResidenceId) || rawItems[0] || RESIDENCE_ITEMS[0];
+              if (defaultRes) handleScheduleVisit(defaultRes);
             }}
           />
 
@@ -718,7 +802,7 @@ export function ResidencesPage({
                           {/* Schedule a Visit (Primary Brand Navy Blue) */}
                           <button
                             type="button"
-                            onClick={(e) => handleScheduleVisit(res.name, e)}
+                            onClick={(e) => handleScheduleVisit(res, e)}
                             className="btn-schedule-visit"
                           >
                             Schedule a Visit
@@ -997,6 +1081,451 @@ export function ResidencesPage({
                         <>
                           <MessageCircle size={15} />
                           <span>Submit &amp; Open WhatsApp</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── SCHEDULE A VISIT MODAL ─── */}
+      {visitModalResidence && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
+          onClick={() => !isSubmittingVisit && setVisitModalResidence(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-visit-title"
+        >
+          <div 
+            className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxHeight: "92vh", display: "flex", flexDirection: "column" }}
+          >
+            {/* Top Brand Accent Bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#003b99] via-[#2563eb] to-[#FB7009]" />
+
+            {/* Modal Header */}
+            <div className="p-5 pb-3 border-b border-slate-100 flex items-start justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-blue-50 text-[#003b99] border border-blue-100 mb-1.5">
+                  <Coffee size={12} strokeWidth={2.5} />
+                  <span>Complimentary Chai &amp; Food Tasting</span>
+                </div>
+                <h3 id="modal-visit-title" className="text-lg font-bold text-[#0c1b34] tracking-tight">
+                  Schedule a Visit
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Select your preferred tour format, date &amp; slot. Our campus manager will welcome you.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => !isSubmittingVisit && setVisitModalResidence(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Selected Property Preview Strip */}
+            <div className="px-5 py-2.5 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 border border-slate-200/80">
+                <img 
+                  src={visitModalResidence.image} 
+                  alt={visitModalResidence.houseName} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-[#0c1b34] truncate">
+                  {visitModalResidence.houseName}
+                </div>
+                <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
+                  <Building2 size={11} className="text-slate-400 flex-shrink-0" />
+                  <span>{visitModalResidence.locality}</span>
+                </div>
+                <div className="text-[11.5px] font-semibold text-[#003b99] mt-0.5">
+                  Starting from {visitModalResidence.price}/mo
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body / Scrollable Area */}
+            <div className="p-5 overflow-y-auto" style={{ maxHeight: "calc(92vh - 160px)" }}>
+              {visitSuccess ? (
+                <div className="py-6 text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle size={26} strokeWidth={2.2} />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-[#0c1b34]">
+                      Visit Scheduled Successfully!
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 max-w-sm mx-auto leading-relaxed">
+                      Thank you, <strong>{visitName}</strong>. Your <strong>{visitTourFormat === "in-person" ? "In-Person Visit (with Chai & Food Tasting)" : "Live Video Guided Walkthrough"}</strong> for <strong>{visitModalResidence.houseName}</strong> has been confirmed for <strong>{visitDate}</strong> at <strong>{visitSlot}</strong>.
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-2">
+                      Our campus manager will coordinate your walkthrough and prepare fresh food tasting.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <a
+                      href={`https://wa.me/918884446093?text=${encodeURIComponent(
+                        `Hello Charla Living! My name is ${visitName}. I scheduled a visit for ${visitModalResidence.houseName} on ${visitDate} at ${visitSlot}. My phone is ${visitPhone}.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold shadow-md hover:bg-[#20ba59] transition-all"
+                    >
+                      <MessageCircle size={15} />
+                      <span>Chat Directly on WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleModalVisitSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {/* Tour Format */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                      Tour Format <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      {/* Option 1: In-person */}
+                      <button
+                        type="button"
+                        onClick={() => setVisitTourFormat("in-person")}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: "12px",
+                          border: visitTourFormat === "in-person" ? "2px solid #003b99" : "1.5px solid #e2e8f0",
+                          background: visitTourFormat === "in-person" ? "#eff6ff" : "#ffffff",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "5px"
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ 
+                            width: "28px", 
+                            height: "28px", 
+                            borderRadius: "8px", 
+                            background: visitTourFormat === "in-person" ? "#003b99" : "#f1f5f9", 
+                            color: visitTourFormat === "in-person" ? "#ffffff" : "#64748b",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}>
+                            <Coffee size={15} />
+                          </span>
+                          <span style={{
+                            width: "16px",
+                            height: "16px",
+                            borderRadius: "50%",
+                            border: visitTourFormat === "in-person" ? "5px solid #003b99" : "2px solid #cbd5e1",
+                            background: "#ffffff"
+                          }} />
+                        </div>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: visitTourFormat === "in-person" ? "#003b99" : "#1e293b", lineHeight: 1.25 }}>
+                          In-Person Visit (with Chai &amp; Food Tasting)
+                        </div>
+                        <div style={{ fontSize: "10.5px", color: "#64748b", lineHeight: 1.3 }}>
+                          Campus walkthrough &amp; meal tasting
+                        </div>
+                      </button>
+
+                      {/* Option 2: Live Video Guided Walkthrough */}
+                      <button
+                        type="button"
+                        onClick={() => setVisitTourFormat("video")}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: "12px",
+                          border: visitTourFormat === "video" ? "2px solid #003b99" : "1.5px solid #e2e8f0",
+                          background: visitTourFormat === "video" ? "#eff6ff" : "#ffffff",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "5px"
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ 
+                            width: "28px", 
+                            height: "28px", 
+                            borderRadius: "8px", 
+                            background: visitTourFormat === "video" ? "#003b99" : "#f1f5f9", 
+                            color: visitTourFormat === "video" ? "#ffffff" : "#64748b",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}>
+                            <Video size={15} />
+                          </span>
+                          <span style={{
+                            width: "16px",
+                            height: "16px",
+                            borderRadius: "50%",
+                            border: visitTourFormat === "video" ? "5px solid #003b99" : "2px solid #cbd5e1",
+                            background: "#ffffff"
+                          }} />
+                        </div>
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: visitTourFormat === "video" ? "#003b99" : "#1e293b", lineHeight: 1.25 }}>
+                          Live Video Guided Walkthrough
+                        </div>
+                        <div style={{ fontSize: "10.5px", color: "#64748b", lineHeight: 1.3 }}>
+                          Interactive tour over WhatsApp call
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Preferred Date & Slot */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                      Preferred Date &amp; Slot <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div>
+                        <div style={{ position: "relative" }}>
+                          <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                            <Calendar size={15} />
+                          </span>
+                          <input
+                            id="modal-visit-date"
+                            type="date"
+                            required
+                            min={todayStr}
+                            value={visitDate}
+                            onChange={(e) => setVisitDate(e.target.value)}
+                            style={{
+                              width: "100%",
+                              height: "44px",
+                              paddingLeft: "36px",
+                              paddingRight: "10px",
+                              borderRadius: "10px",
+                              border: "1px solid #cbd5e1",
+                              fontSize: "13px",
+                              color: "#0f172a",
+                              background: "#ffffff",
+                              boxSizing: "border-box"
+                            }}
+                          />
+                        </div>
+                        <p style={{ fontSize: "10.5px", color: "#64748b", margin: "3px 0 0" }}>
+                          Preferred date
+                        </p>
+                      </div>
+
+                      <div>
+                        <div style={{ position: "relative" }}>
+                          <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                            <Clock size={15} />
+                          </span>
+                          <select
+                            id="modal-visit-slot"
+                            value={visitSlot}
+                            onChange={(e) => setVisitSlot(e.target.value)}
+                            style={{
+                              width: "100%",
+                              height: "44px",
+                              paddingLeft: "36px",
+                              paddingRight: "10px",
+                              borderRadius: "10px",
+                              border: "1px solid #cbd5e1",
+                              fontSize: "13px",
+                              color: "#0f172a",
+                              background: "#ffffff",
+                              boxSizing: "border-box",
+                              cursor: "pointer"
+                            }}
+                          >
+                            <option value="12:00 PM (Lunch)">12:00 PM (Lunch)</option>
+                            <option value="10:00 AM (Morning)">10:00 AM (Morning)</option>
+                            <option value="02:00 PM (Afternoon)">02:00 PM (Afternoon)</option>
+                            <option value="04:30 PM (Evening Chai)">04:30 PM (Evening Chai)</option>
+                            <option value="07:00 PM (Dinner & Tasting)">07:00 PM (Dinner &amp; Tasting)</option>
+                          </select>
+                        </div>
+                        <p style={{ fontSize: "10.5px", color: "#64748b", margin: "3px 0 0" }}>
+                          Preferred time slot
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Your Name */}
+                  <div>
+                    <label 
+                      htmlFor="modal-visit-name" 
+                      style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}
+                    >
+                      Your Name <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                        <UserRound size={16} />
+                      </span>
+                      <input
+                        id="modal-visit-name"
+                        type="text"
+                        required
+                        placeholder="e.g. Rahul Sharma"
+                        value={visitName}
+                        onChange={(e) => setVisitName(e.target.value)}
+                        style={{
+                          width: "100%",
+                          height: "44px",
+                          paddingLeft: "40px",
+                          paddingRight: "14px",
+                          borderRadius: "10px",
+                          border: "1px solid #cbd5e1",
+                          fontSize: "14px",
+                          color: "#0f172a",
+                          background: "#ffffff",
+                          boxSizing: "border-box"
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Phone */}
+                  <div>
+                    <label 
+                      htmlFor="modal-visit-phone" 
+                      style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}
+                    >
+                      WhatsApp Phone <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                        <Phone size={16} />
+                      </span>
+                      <input
+                        id="modal-visit-phone"
+                        type="tel"
+                        required
+                        placeholder="e.g. 98765 43210"
+                        value={visitPhone}
+                        onChange={(e) => setVisitPhone(e.target.value)}
+                        style={{
+                          width: "100%",
+                          height: "44px",
+                          paddingLeft: "40px",
+                          paddingRight: "14px",
+                          borderRadius: "10px",
+                          border: "1px solid #cbd5e1",
+                          fontSize: "14px",
+                          color: "#0f172a",
+                          background: "#ffffff",
+                          boxSizing: "border-box"
+                        }}
+                      />
+                    </div>
+                    <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0" }}>
+                      We will send your tour confirmation &amp; campus manager contact here.
+                    </p>
+                  </div>
+
+                  {/* Room / Sharing Preference */}
+                  {visitModalResidence.sharingTypes && visitModalResidence.sharingTypes.length > 0 && (
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1e293b", marginBottom: "6px" }}>
+                        Room Preference
+                      </label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                        {visitModalResidence.sharingTypes.concat(["Any / Exploring"]).map((st) => (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => setVisitSharing(st)}
+                            style={{
+                              padding: "6px 12px",
+                              borderRadius: "8px",
+                              fontSize: "12px",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              border: visitSharing === st ? "1.5px solid #003b99" : "1px solid #cbd5e1",
+                              background: visitSharing === st ? "#eff6ff" : "#ffffff",
+                              color: visitSharing === st ? "#003b99" : "#475569",
+                              transition: "all 0.15s ease"
+                            }}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Trust Assurance Banner */}
+                  <div style={{ padding: "10px 12px", borderRadius: "10px", background: "#f0f9ff", border: "1px solid #e0f2fe", display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "11px", color: "#0369a1", lineHeight: 1.45 }}>
+                    <ShieldCheck size={15} style={{ flexShrink: 0, marginTop: "1px", color: "#0284c7" }} />
+                    <span>Zero broker fee &amp; complimentary food tasting. Details saved safely and synced in real-time.</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingTop: "4px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setVisitModalResidence(null)}
+                      disabled={isSubmittingVisit}
+                      style={{
+                        flex: 1,
+                        height: "44px",
+                        borderRadius: "10px",
+                        border: "1px solid #cbd5e1",
+                        background: "#f8fafc",
+                        color: "#475569",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmittingVisit || !visitName.trim() || !visitPhone.trim()}
+                      style={{
+                        flex: 2,
+                        height: "44px",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "#003b99",
+                        color: "#ffffff",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        cursor: isSubmittingVisit ? "not-allowed" : "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        boxShadow: "0 2px 8px rgba(0, 59, 153, 0.35)",
+                        opacity: isSubmittingVisit || !visitName.trim() || !visitPhone.trim() ? 0.65 : 1
+                      }}
+                    >
+                      {isSubmittingVisit ? (
+                        <>
+                          <Loader2 size={15} className="animate-spin" />
+                          <span>Scheduling...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CalendarCheck size={16} />
+                          <span>Confirm &amp; Open WhatsApp</span>
                         </>
                       )}
                     </button>
