@@ -1306,7 +1306,25 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   }
 
   .story-zigzag-thread-svg {
-    display: none;
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
+  }
+
+  .story-thread-path {
+    stroke-width: 2.8px;
+  }
+
+  .story-thread-track {
+    stroke-width: 2px;
+    stroke-dasharray: 5 7;
+    opacity: 0.24;
   }
 }
 
@@ -4040,8 +4058,17 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
     padding: 56px 0 36px;
     overflow: hidden;
   }
+  .story-zigzag-thread-svg,
   .story-thread-svg {
-    display: none !important;
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
   }
   .story-zigzag-wrap {
     gap: 44px;

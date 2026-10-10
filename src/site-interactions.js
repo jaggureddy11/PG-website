@@ -510,7 +510,7 @@ export function initSiteInteractions() {
     let pathLength = 3200;
 
     const buildStoryThread = () => {
-      if (window.innerWidth <= 900 || rows.length < 4) {
+      if (rows.length < 4) {
         if (threadTimeline) {
           threadTimeline.kill();
           threadTimeline = null;
@@ -518,60 +518,135 @@ export function initSiteInteractions() {
         return;
       }
 
-      const secRect = storySection.getBoundingClientRect();
+      const storyWrap = storySection.querySelector(".story-zigzag-wrap") || storySection;
+      const wrapRect = storyWrap.getBoundingClientRect();
       const collages = rows.map((r) => r.querySelector(".story-collage"));
-      if (collages.some((c) => !c)) return;
+      const contents = rows.map((r) => r.querySelector(".story-content"));
+      if (collages.some((c) => !c) || contents.some((c) => !c)) return;
 
       const getBox = (el) => {
         const r = el.getBoundingClientRect();
         return {
-          left: r.left - secRect.left,
-          top: r.top - secRect.top,
-          right: r.right - secRect.left,
-          bottom: r.bottom - secRect.top,
+          left: r.left - wrapRect.left,
+          top: r.top - wrapRect.top,
+          right: r.right - wrapRect.left,
+          bottom: r.bottom - wrapRect.top,
           w: r.width,
           h: r.height,
+          cx: r.left - wrapRect.left + r.width / 2,
+          cy: r.top - wrapRect.top + r.height / 2,
         };
       };
 
-      const c1 = getBox(collages[0]);
-      const c2 = getBox(collages[1]);
-      const c3 = getBox(collages[2]);
-      const c4 = getBox(collages[3]);
+      const isMobile = window.innerWidth <= 900;
+      let waypoints = [];
 
-      const waypoints = [
-        // ── Row 1: Collage 1 (Left Image - line emerges smoothly from image) ──
-        { x: c1.left + c1.w * 0.45, y: c1.top + c1.h * 0.4 },
-        { x: c1.right + 20, y: c1.top + c1.h * 0.58 },
-        { x: c1.left + c1.w * 0.7, y: c1.bottom + 30 },
-        
-        // ── Smooth Weave from Row 1 to Row 2 ──
-        { x: (c1.right + c2.left) / 2, y: (c1.bottom + c2.top) / 2 },
-        
-        // ── Row 2: Collage 2 (Right Image) ──
-        { x: c2.left - 15, y: c2.top + c2.h * 0.3 },
-        { x: c2.left + c2.w * 0.55, y: c2.top - 20 },
-        { x: c2.right + 20, y: c2.top + c2.h * 0.52 },
-        { x: c2.left + c2.w * 0.45, y: c2.bottom + 30 },
-        
-        // ── Clean, Elegant Curve from Row 2 to Row 3 ──
-        { x: (c2.left + c3.right) / 2, y: (c2.bottom + c3.top) / 2 },
-        
-        // ── Row 3: Collage 3 (Left Image) ──
-        { x: c3.right + 15, y: c3.top + c3.h * 0.28 },
-        { x: c3.left + c3.w * 0.45, y: c3.top - 20 },
-        { x: c3.left - 20, y: c3.top + c3.h * 0.5 },
-        { x: c3.left + c3.w * 0.6, y: c3.bottom + 30 },
-        
-        // ── Clean Curve from Row 3 to Row 4 ──
-        { x: (c3.right + c4.left) / 2, y: (c3.bottom + c4.top) / 2 },
-        
-        // ── Row 4: Collage 4 (Right Image) ──
-        { x: c4.left - 15, y: c4.top + c4.h * 0.3 },
-        { x: c4.left + c4.w * 0.55, y: c4.top - 20 },
-        { x: c4.right + 20, y: c4.top + c4.h * 0.52 },
-        { x: c4.left + c4.w * 0.35, y: c4.bottom + 45 },
-      ];
+      if (!isMobile) {
+        const c1 = getBox(collages[0]);
+        const c2 = getBox(collages[1]);
+        const c3 = getBox(collages[2]);
+        const c4 = getBox(collages[3]);
+
+        waypoints = [
+          // ── Row 1: Collage 1 (Left Image - line emerges smoothly from image) ──
+          { x: c1.left + c1.w * 0.45, y: c1.top + c1.h * 0.4 },
+          { x: c1.right + 20, y: c1.top + c1.h * 0.58 },
+          { x: c1.left + c1.w * 0.7, y: c1.bottom + 30 },
+          
+          // ── Smooth Weave from Row 1 to Row 2 ──
+          { x: (c1.right + c2.left) / 2, y: (c1.bottom + c2.top) / 2 },
+          
+          // ── Row 2: Collage 2 (Right Image) ──
+          { x: c2.left - 15, y: c2.top + c2.h * 0.3 },
+          { x: c2.left + c2.w * 0.55, y: c2.top - 20 },
+          { x: c2.right + 20, y: c2.top + c2.h * 0.52 },
+          { x: c2.left + c2.w * 0.45, y: c2.bottom + 30 },
+          
+          // ── Clean, Elegant Curve from Row 2 to Row 3 ──
+          { x: (c2.left + c3.right) / 2, y: (c2.bottom + c3.top) / 2 },
+          
+          // ── Row 3: Collage 3 (Left Image) ──
+          { x: c3.right + 15, y: c3.top + c3.h * 0.28 },
+          { x: c3.left + c3.w * 0.45, y: c3.top - 20 },
+          { x: c3.left - 20, y: c3.top + c3.h * 0.5 },
+          { x: c3.left + c3.w * 0.6, y: c3.bottom + 30 },
+          
+          // ── Clean Curve from Row 3 to Row 4 ──
+          { x: (c3.right + c4.left) / 2, y: (c3.bottom + c4.top) / 2 },
+          
+          // ── Row 4: Collage 4 (Right Image) ──
+          { x: c4.left - 15, y: c4.top + c4.h * 0.3 },
+          { x: c4.left + c4.w * 0.55, y: c4.top - 20 },
+          { x: c4.right + 20, y: c4.top + c4.h * 0.52 },
+          { x: c4.left + c4.w * 0.35, y: c4.bottom + 45 },
+        ];
+      } else {
+        // Mobile & Tablet Weave: Weaves between images and passes directly behind text
+        const c0 = getBox(collages[0]);
+        const t0 = getBox(contents[0]);
+        const c1 = getBox(collages[1]);
+        const t1 = getBox(contents[1]);
+        const c2 = getBox(collages[2]);
+        const t2 = getBox(contents[2]);
+        const c3 = getBox(collages[3]);
+        const t3 = getBox(contents[3]);
+
+        const clampX = (val) => Math.max(12, Math.min(wrapRect.width - 12, val));
+
+        waypoints = [
+          // ── Row 1: Collage 0 ──
+          { x: clampX(c0.right - c0.w * 0.15), y: c0.top + c0.h * 0.22 },
+          { x: clampX(c0.cx), y: c0.top + c0.h * 0.52 },
+          { x: clampX(c0.left + c0.w * 0.18), y: c0.bottom - 4 },
+
+          // ── Row 1: Behind Text 0 (sweeps Left to Right) ──
+          { x: clampX(t0.left + 16), y: t0.top + t0.h * 0.2 },
+          { x: clampX(t0.cx), y: t0.top + t0.h * 0.5 },
+          { x: clampX(t0.right - 18), y: t0.top + t0.h * 0.78 },
+
+          // ── Transition: Between Text 0 and Collage 1 (Image to Image gap) ──
+          { x: clampX((t0.right + c1.cx) / 2), y: (t0.bottom + c1.top) / 2 },
+
+          // ── Row 2: Collage 1 (Right-to-Left Weave) ──
+          { x: clampX(c1.right - c1.w * 0.15), y: c1.top + c1.h * 0.25 },
+          { x: clampX(c1.cx), y: c1.top + c1.h * 0.55 },
+          { x: clampX(c1.left + c1.w * 0.18), y: c1.bottom - 4 },
+
+          // ── Row 2: Behind Text 1 (sweeps Right to Left) ──
+          { x: clampX(t1.right - 18), y: t1.top + t1.h * 0.2 },
+          { x: clampX(t1.cx), y: t1.top + t1.h * 0.5 },
+          { x: clampX(t1.left + 18), y: t1.top + t1.h * 0.78 },
+
+          // ── Transition: Between Text 1 and Collage 2 (Image to Image gap) ──
+          { x: clampX((t1.left + c2.cx) / 2), y: (t1.bottom + c2.top) / 2 },
+
+          // ── Row 3: Collage 2 (Left-to-Right Weave) ──
+          { x: clampX(c2.left + c2.w * 0.18), y: c2.top + c2.h * 0.25 },
+          { x: clampX(c2.cx), y: c2.top + c2.h * 0.55 },
+          { x: clampX(c2.right - c2.w * 0.15), y: c2.bottom - 4 },
+
+          // ── Row 3: Behind Text 2 (sweeps Left to Right) ──
+          { x: clampX(t2.left + 18), y: t2.top + t2.h * 0.2 },
+          { x: clampX(t2.cx), y: t2.top + t2.h * 0.5 },
+          { x: clampX(t2.right - 18), y: t2.top + t2.h * 0.78 },
+
+          // ── Transition: Between Text 2 and Collage 3 (Image to Image gap) ──
+          { x: clampX((t2.right + c3.cx) / 2), y: (t2.bottom + c3.top) / 2 },
+
+          // ── Row 4: Collage 3 (Right-to-Left Weave) ──
+          { x: clampX(c3.right - c3.w * 0.15), y: c3.top + c3.h * 0.25 },
+          { x: clampX(c3.cx), y: c3.top + c3.h * 0.55 },
+          { x: clampX(c3.left + c3.w * 0.18), y: c3.bottom - 4 },
+
+          // ── Row 4: Behind Text 3 (sweeps Right to Left) ──
+          { x: clampX(t3.right - 18), y: t3.top + t3.h * 0.2 },
+          { x: clampX(t3.cx), y: t3.top + t3.h * 0.5 },
+          { x: clampX(t3.left + 22), y: t3.top + t3.h * 0.78 },
+
+          // ── Ending flourish tail ──
+          { x: clampX(t3.cx), y: t3.bottom + 32 },
+        ];
+      }
 
       function getSmoothSplinePath(pts, tension = 0.24) {
         if (!pts || pts.length < 2) return "";
@@ -592,8 +667,8 @@ export function initSiteInteractions() {
         return path;
       }
 
-      const d = getSmoothSplinePath(waypoints, 0.25);
-      threadSvg.setAttribute("viewBox", `0 0 ${secRect.width} ${secRect.height}`);
+      const d = getSmoothSplinePath(waypoints, isMobile ? 0.22 : 0.25);
+      threadSvg.setAttribute("viewBox", `0 0 ${wrapRect.width} ${wrapRect.height}`);
       threadPath.setAttribute("d", d);
       if (threadTrack) threadTrack.setAttribute("d", d);
 
@@ -612,9 +687,9 @@ export function initSiteInteractions() {
           scrollTrigger: {
             trigger: rows[0],
             endTrigger: rows[rows.length - 1],
-            start: "top 60%",
-            end: "bottom 65%",
-            scrub: true,
+            start: isMobile ? "top 85%" : "top 60%",
+            end: isMobile ? "bottom 75%" : "bottom 65%",
+            scrub: isMobile ? 0.5 : true,
             invalidateOnRefresh: true,
           }
         });
