@@ -9,16 +9,11 @@ import {
   UserRound, 
   Map as MapIcon, 
   List as ListIcon,
-  Phone,
   X,
   CheckCircle,
   MessageCircle,
   Loader2,
-  ShieldCheck,
-  Building2,
-  Calendar,
-  Clock,
-  CalendarCheck
+  Building2
 } from "lucide-react";
 import { calculateDistanceKm } from "@/utils/location";
 import { saveCallbackRequestToFirestore, saveVisitBookingToFirestore } from "@/lib/firebase";
@@ -248,15 +243,15 @@ export function ResidencesPage({
   const [activeResidenceId, setActiveResidenceId] = useState<string | null>(null);
   const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
 
-  // Callback Modal State
-  const [callbackModalResidence, setCallbackModalResidence] = useState<ResidenceItem | null>(null);
-  const [callbackName, setCallbackName] = useState("");
-  const [callbackPhone, setCallbackPhone] = useState("");
-  const [isSubmittingCallback, setIsSubmittingCallback] = useState(false);
-  const [callbackSuccess, setCallbackSuccess] = useState(false);
+  // Unified Property Interaction Modal State (Matching Stanza Reference UI)
+  const [activeModalResidence, setActiveModalResidence] = useState<ResidenceItem | null>(null);
+  const [modalTab, setModalTab] = useState<"visit" | "callback">("visit");
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
 
-  // Schedule Visit Modal State
-  const [visitModalResidence, setVisitModalResidence] = useState<ResidenceItem | null>(null);
+  // Visit-specific details
   const [visitTourFormat, setVisitTourFormat] = useState<"in-person" | "video">("in-person");
   const [visitDate, setVisitDate] = useState(() => {
     const d = new Date();
@@ -264,11 +259,11 @@ export function ResidencesPage({
     return d.toISOString().split("T")[0];
   });
   const [visitSlot, setVisitSlot] = useState("12:00 PM (Lunch)");
-  const [visitName, setVisitName] = useState("");
-  const [visitPhone, setVisitPhone] = useState("");
   const [visitSharing, setVisitSharing] = useState("Private");
-  const [isSubmittingVisit, setIsSubmittingVisit] = useState(false);
-  const [visitSuccess, setVisitSuccess] = useState(false);
+
+  // Modal Submission & Feedback states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const todayStr = new Date().toISOString().split("T")[0];
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -285,21 +280,16 @@ export function ResidencesPage({
     }
   }, [rawItems, activeResidenceId]);
 
-  // Handle ESC key to close modals
+  // Handle ESC key to close modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (callbackModalResidence && !isSubmittingCallback) {
-          setCallbackModalResidence(null);
-        }
-        if (visitModalResidence && !isSubmittingVisit) {
-          setVisitModalResidence(null);
-        }
+      if (e.key === "Escape" && activeModalResidence && !isSubmitting) {
+        setActiveModalResidence(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [callbackModalResidence, isSubmittingCallback, visitModalResidence, isSubmittingVisit]);
+  }, [activeModalResidence, isSubmitting]);
 
   // Dynamic localities derived from active residence data
   const dynamicLocalityFilters = useRef<{ id: string; label: string }[]>(LOCALITY_FILTERS);
@@ -344,113 +334,108 @@ export function ResidencesPage({
 
   const handleScheduleVisit = (res: ResidenceItem, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setVisitModalResidence(res);
+    setActiveModalResidence(res);
+    setModalTab("visit");
+    setGuestName("");
+    setGuestPhone("");
     setVisitTourFormat("in-person");
     const d = new Date();
     d.setDate(d.getDate() + 1);
     setVisitDate(d.toISOString().split("T")[0]);
     setVisitSlot("12:00 PM (Lunch)");
-    setVisitName("");
-    setVisitPhone("");
     setVisitSharing("Private");
-    setIsSubmittingVisit(false);
-    setVisitSuccess(false);
-  };
-
-  const handleModalVisitSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!visitModalResidence || !visitName.trim() || !visitPhone.trim()) return;
-
-    setIsSubmittingVisit(true);
-    const targetRes = visitModalResidence;
-    const guestName = visitName.trim();
-    const guestPhone = visitPhone.trim();
-    const formatLabel = visitTourFormat === "in-person"
-      ? "In-Person Visit"
-      : "Video Walkthrough";
-
-    // Format date for Indian format DD/MM/YYYY
-    let dateDisplay = visitDate;
-    try {
-      const parts = visitDate.split("-");
-      if (parts.length === 3) {
-        dateDisplay = `${parts[2]}/${parts[1]}/${parts[0]}`;
-      }
-    } catch {
-      dateDisplay = visitDate;
-    }
-
-    try {
-      await saveVisitBookingToFirestore({
-        residenceId: targetRes.id,
-        residenceName: `${targetRes.houseName} (${targetRes.name})`,
-        tourType: visitTourFormat,
-        date: dateDisplay,
-        timeSlot: visitSlot,
-        name: guestName,
-        phone: guestPhone,
-        sharingType: visitSharing || "Private",
-        status: "new",
-      });
-    } catch (err) {
-      console.warn("Could not save visit booking to Firestore:", err);
-    } finally {
-      setIsSubmittingVisit(false);
-      setVisitSuccess(true);
-
-      const msg = `Hello Charla Living! My name is ${guestName}. I would like to schedule a visit for ${targetRes.houseName} (${targetRes.name}) in ${targetRes.locality}.\n\n• Tour Format: ${formatLabel}\n• Preferred Date: ${dateDisplay}\n• Preferred Slot: ${visitSlot}\n• WhatsApp Phone: ${guestPhone}\n• Room Preference: ${visitSharing}\n\nPlease confirm my visit!`;
-      const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-
-      setTimeout(() => {
-        setVisitModalResidence(null);
-        setVisitSuccess(false);
-      }, 3000);
-    }
+    setIsSubmitting(false);
+    setSubmitSuccess(false);
   };
 
   const handleRequestCallback = (res: ResidenceItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    setCallbackModalResidence(res);
-    setCallbackName("");
-    setCallbackPhone("");
-    setCallbackSuccess(false);
-    setIsSubmittingCallback(false);
+    setActiveModalResidence(res);
+    setModalTab("callback");
+    setGuestName("");
+    setGuestPhone("");
+    setIsSubmitting(false);
+    setSubmitSuccess(false);
   };
 
-  const handleModalCallbackSubmit = async (e: React.FormEvent) => {
+  const handleUnifiedModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!callbackModalResidence || !callbackName.trim() || !callbackPhone.trim()) return;
+    if (!activeModalResidence || !guestName.trim() || !guestPhone.trim()) return;
 
-    setIsSubmittingCallback(true);
-    const targetRes = callbackModalResidence;
-    const residentName = callbackName.trim();
-    const residentPhone = callbackPhone.trim();
+    setIsSubmitting(true);
+    const targetRes = activeModalResidence;
+    const nameVal = guestName.trim();
+    const phoneVal = guestPhone.trim();
 
-    try {
-      await saveCallbackRequestToFirestore({
-        name: residentName,
-        phone: residentPhone,
-        locality: targetRes.locality,
-        residenceId: targetRes.id,
-        residenceName: `${targetRes.houseName} (${targetRes.name})`,
-        source: "Property Card Callback",
-        status: "new",
-      });
-    } catch (err) {
-      console.warn("Could not save callback request to Firestore:", err);
-    } finally {
-      setIsSubmittingCallback(false);
-      setCallbackSuccess(true);
+    if (modalTab === "visit") {
+      const formatLabel = visitTourFormat === "in-person"
+        ? "In-Person Visit"
+        : "Video Walkthrough";
 
-      const msg = `Hello Charla Living! My name is ${residentName}. I would like to request a callback regarding ${targetRes.houseName} (${targetRes.name}) in ${targetRes.locality}. My contact number is ${residentPhone}.`;
-      const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      let dateDisplay = visitDate;
+      try {
+        const parts = visitDate.split("-");
+        if (parts.length === 3) {
+          dateDisplay = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+      } catch {
+        dateDisplay = visitDate;
+      }
 
-      setTimeout(() => {
-        setCallbackModalResidence(null);
-        setCallbackSuccess(false);
-      }, 2500);
+      try {
+        await saveVisitBookingToFirestore({
+          residenceId: targetRes.id,
+          residenceName: `${targetRes.houseName} (${targetRes.name})`,
+          tourType: visitTourFormat,
+          date: dateDisplay,
+          timeSlot: visitSlot,
+          name: nameVal,
+          phone: phoneVal,
+          sharingType: visitSharing || "Private",
+          status: "new",
+        });
+      } catch (err) {
+        console.warn("Could not save visit booking to Firestore:", err);
+      } finally {
+        setIsSubmitting(false);
+        setSubmitSuccess(true);
+
+        const msg = `Hello Charla Living! My name is ${nameVal}. I would like to schedule a visit for ${targetRes.houseName} (${targetRes.name}) in ${targetRes.locality}.\n\n• Tour Format: ${formatLabel}\n• Preferred Date: ${dateDisplay}\n• Preferred Slot: ${visitSlot}\n• WhatsApp Phone: ${phoneVal}\n• Room Preference: ${visitSharing}\n\nPlease confirm my visit!`;
+        const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+        setTimeout(() => {
+          setActiveModalResidence(null);
+          setSubmitSuccess(false);
+        }, 3000);
+      }
+    } else {
+      // Request callback flow
+      try {
+        await saveCallbackRequestToFirestore({
+          name: nameVal,
+          phone: phoneVal,
+          locality: targetRes.locality,
+          residenceId: targetRes.id,
+          residenceName: `${targetRes.houseName} (${targetRes.name})`,
+          source: "Property Card Callback",
+          status: "new",
+        });
+      } catch (err) {
+        console.warn("Could not save callback request to Firestore:", err);
+      } finally {
+        setIsSubmitting(false);
+        setSubmitSuccess(true);
+
+        const msg = `Hello Charla Living! My name is ${nameVal}. I would like to request a callback regarding ${targetRes.houseName} (${targetRes.name}) in ${targetRes.locality}. My contact number is ${phoneVal}.`;
+        const whatsappUrl = `https://wa.me/918884446093?text=${encodeURIComponent(msg)}`;
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+        setTimeout(() => {
+          setActiveModalResidence(null);
+          setSubmitSuccess(false);
+        }, 2500);
+      }
     }
   };
 
@@ -858,650 +843,563 @@ export function ResidencesPage({
         </div>
       </section>
 
-      {/* ── Callback Capture Modal ── */}
-      {callbackModalResidence && (
+      {/* ─── UNIFIED PROPERTY MODAL (STANZA-STYLE WITH CHARLA BRAND THEME) ─── */}
+      {activeModalResidence && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => !isSubmittingCallback && setCallbackModalResidence(null)}
-        >
-          <div 
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden text-slate-800 animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Top Brand Accent Bar */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-[#003b99] via-[#2563eb] to-[#FB7009]" />
-
-            {/* Header */}
-            <div className="p-5 pb-4 border-b border-slate-100 flex items-start justify-between">
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-blue-50 text-[#003b99] border border-blue-100 mb-1.5">
-                  <Phone size={11} strokeWidth={2.5} />
-                  <span>Instant Callback</span>
-                </div>
-                <h3 className="text-lg font-bold text-[#0c1b34] tracking-tight">
-                  Request a Callback
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Leave your contact details and our manager will call you shortly.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => !isSubmittingCallback && setCallbackModalResidence(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                aria-label="Close modal"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Selected Property Preview Strip */}
-            <div className="px-5 py-3 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 border border-slate-200/80">
-                <img 
-                  src={callbackModalResidence.image} 
-                  alt={callbackModalResidence.houseName} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-[#0c1b34] truncate">
-                  {callbackModalResidence.houseName}
-                </div>
-                <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
-                  <Building2 size={11} className="text-slate-400 flex-shrink-0" />
-                  <span>{callbackModalResidence.locality}</span>
-                </div>
-                <div className="text-[11.5px] font-semibold text-[#FB7009] mt-0.5">
-                  Starting from {callbackModalResidence.price}/mo
-                </div>
-              </div>
-            </div>
-
-            {/* Body / Form */}
-            <div className="p-5">
-              {callbackSuccess ? (
-                <div className="py-6 text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                    <CheckCircle size={26} strokeWidth={2.2} />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-[#0c1b34]">
-                      Callback Request Received
-                    </h4>
-                    <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
-                      Thank you, <strong>{callbackName}</strong>. Your inquiry has been saved and routed to WhatsApp.
-                    </p>
-                  </div>
-                  <div className="pt-2">
-                    <a
-                      href={`https://wa.me/918884446093?text=${encodeURIComponent(
-                        `Hello Charla Living! My name is ${callbackName}. I would like to request a callback regarding ${callbackModalResidence.houseName} (${callbackModalResidence.name}) in ${callbackModalResidence.locality}. My contact number is ${callbackPhone}.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold shadow-md hover:bg-[#20ba59] transition-all"
-                    >
-                      <MessageCircle size={15} />
-                      <span>Chat Directly on WhatsApp</span>
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleModalCallbackSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div>
-                    <label 
-                      htmlFor="modal-callback-name" 
-                      style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "6px" }}
-                    >
-                      Your Full Name <span style={{ color: "#ef4444" }}>*</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
-                        <UserRound size={16} />
-                      </span>
-                      <input
-                        id="modal-callback-name"
-                        type="text"
-                        required
-                        autoFocus
-                        placeholder="e.g. Rahul Sharma"
-                        value={callbackName}
-                        onChange={(e) => setCallbackName(e.target.value)}
-                        style={{
-                          width: "100%",
-                          height: "44px",
-                          paddingLeft: "40px",
-                          paddingRight: "14px",
-                          borderRadius: "10px",
-                          border: "1px solid #cbd5e1",
-                          fontSize: "14px",
-                          color: "#0f172a",
-                          background: "#ffffff",
-                          boxSizing: "border-box"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label 
-                      htmlFor="modal-callback-phone" 
-                      style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "6px" }}
-                    >
-                      Phone Number <span style={{ color: "#ef4444" }}>*</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
-                        <Phone size={16} />
-                      </span>
-                      <input
-                        id="modal-callback-phone"
-                        type="tel"
-                        required
-                        placeholder="e.g. 98765 43210"
-                        value={callbackPhone}
-                        onChange={(e) => setCallbackPhone(e.target.value)}
-                        style={{
-                          width: "100%",
-                          height: "44px",
-                          paddingLeft: "40px",
-                          paddingRight: "14px",
-                          borderRadius: "10px",
-                          border: "1px solid #cbd5e1",
-                          fontSize: "14px",
-                          color: "#0f172a",
-                          background: "#ffffff",
-                          boxSizing: "border-box"
-                        }}
-                      />
-                    </div>
-                    <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0" }}>
-                      We will call or WhatsApp you on this number to coordinate your visit.
-                    </p>
-                  </div>
-
-                  {/* Trust Assurance Banner */}
-                  <div style={{ padding: "10px 12px", borderRadius: "10px", background: "#f0f9ff", border: "1px solid #e0f2fe", display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "11px", color: "#0369a1", lineHeight: 1.45 }}>
-                    <ShieldCheck size={15} style={{ flexShrink: 0, marginTop: "1px", color: "#0284c7" }} />
-                    <span>Zero spam guarantee. Your contact details are stored securely and used solely for this property inquiry.</span>
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingTop: "4px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setCallbackModalResidence(null)}
-                      disabled={isSubmittingCallback}
-                      style={{
-                        flex: 1,
-                        height: "44px",
-                        borderRadius: "10px",
-                        border: "1px solid #cbd5e1",
-                        background: "#f8fafc",
-                        color: "#475569",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmittingCallback || !callbackName.trim() || !callbackPhone.trim()}
-                      style={{
-                        flex: 2,
-                        height: "44px",
-                        borderRadius: "10px",
-                        border: "none",
-                        background: "#FB7009",
-                        color: "#ffffff",
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        cursor: isSubmittingCallback ? "not-allowed" : "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px",
-                        boxShadow: "0 2px 8px rgba(251, 112, 9, 0.35)",
-                        opacity: isSubmittingCallback || !callbackName.trim() || !callbackPhone.trim() ? 0.65 : 1
-                      }}
-                    >
-                      {isSubmittingCallback ? (
-                        <>
-                          <Loader2 size={15} className="animate-spin" />
-                          <span>Requesting...</span>
-                        </>
-                      ) : (
-                        <>
-                          <MessageCircle size={15} />
-                          <span>Submit &amp; Open WhatsApp</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── SCHEDULE A VISIT MODAL ─── */}
-      {visitModalResidence && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
-          onClick={() => !isSubmittingVisit && setVisitModalResidence(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+          onClick={() => !isSubmitting && setActiveModalResidence(null)}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="modal-visit-title"
         >
+          {/* Relative Wrapper with unclipped close button */}
           <div 
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150"
+            className="relative w-full max-w-md my-auto"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxHeight: "92vh", display: "flex", flexDirection: "column" }}
           >
-            {/* Top Brand Accent Bar */}
-            <div className="h-1.5 w-full bg-[#003B99]" />
+            {/* Floating Top-Right Circular Close Button (matching reference image) */}
+            <button
+              type="button"
+              onClick={() => !isSubmitting && setActiveModalResidence(null)}
+              style={{
+                position: "absolute",
+                top: "-14px",
+                right: "-12px",
+                zIndex: 60,
+                width: "38px",
+                height: "38px",
+                borderRadius: "50%",
+                backgroundColor: "#ffffff",
+                color: "#1e293b",
+                border: "1px solid #cbd5e1",
+                boxShadow: "0 6px 16px rgba(0, 0, 0, 0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "transform 0.15s ease"
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              aria-label="Close modal"
+            >
+              <X size={18} strokeWidth={2.5} />
+            </button>
 
-            {/* Modal Header */}
-            <div className="px-5 py-4 border-b border-slate-100 flex items-start justify-between">
-              <div>
-                <h3 id="modal-visit-title" className="text-lg font-bold text-[#0c1b34] tracking-tight">
-                  Schedule a Visit
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Choose your preferred tour format, date and time slot.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => !isSubmittingVisit && setVisitModalResidence(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                aria-label="Close modal"
+            {/* Modal Card */}
+            <div
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: "24px",
+                boxShadow: "0 24px 48px -12px rgba(0, 0, 0, 0.3)",
+                border: "1px solid #e2e8f0",
+                padding: "22px 20px",
+                maxHeight: "90vh",
+                overflowY: "auto"
+              }}
+            >
+              {/* Top Pill Segmented Switcher (as in reference image) */}
+              <div 
+                style={{
+                  display: "flex",
+                  padding: "4px",
+                  backgroundColor: "#f1f5f9",
+                  borderRadius: "9999px",
+                  border: "1px solid #e2e8f0",
+                  marginBottom: "14px"
+                }}
               >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Selected Property Preview Strip */}
-            <div className="px-5 py-2.5 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 border border-slate-200/80">
-                <img 
-                  src={visitModalResidence.image} 
-                  alt={visitModalResidence.houseName} 
-                  className="w-full h-full object-cover"
-                />
+                <button
+                  type="button"
+                  onClick={() => setModalTab("visit")}
+                  style={{
+                    flex: 1,
+                    padding: "9px 14px",
+                    borderRadius: "9999px",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    backgroundColor: modalTab === "visit" ? "#003B99" : "transparent",
+                    color: modalTab === "visit" ? "#ffffff" : "#475569",
+                    boxShadow: modalTab === "visit" ? "0 2px 8px rgba(0, 59, 153, 0.25)" : "none"
+                  }}
+                >
+                  Schedule a Visit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalTab("callback")}
+                  style={{
+                    flex: 1,
+                    padding: "9px 14px",
+                    borderRadius: "9999px",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    backgroundColor: modalTab === "callback" ? "#003B99" : "transparent",
+                    color: modalTab === "callback" ? "#ffffff" : "#475569",
+                    boxShadow: modalTab === "callback" ? "0 2px 8px rgba(0, 59, 153, 0.25)" : "none"
+                  }}
+                >
+                  Request a callback
+                </button>
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-[#0c1b34] truncate">
-                  {visitModalResidence.houseName}
+
+              {/* Selected Property Preview Strip */}
+              <div 
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "10px 12px",
+                  backgroundColor: "#f0f7ff",
+                  borderRadius: "14px",
+                  border: "1px solid #dbeafe",
+                  marginBottom: "14px"
+                }}
+              >
+                <div 
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    backgroundColor: "#e2e8f0",
+                    border: "1px solid #cbd5e1"
+                  }}
+                >
+                  <img 
+                    src={activeModalResidence.image} 
+                    alt={activeModalResidence.houseName} 
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
                 </div>
-                <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
-                  <Building2 size={11} className="text-slate-400 flex-shrink-0" />
-                  <span>{visitModalResidence.locality}</span>
-                </div>
-                <div className="text-[11.5px] font-semibold text-[#003B99] mt-0.5">
-                  Starting from {visitModalResidence.price}/mo
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#0c1b34", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {activeModalResidence.houseName}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Building2 size={11} style={{ color: "#94a3b8", flexShrink: 0 }} />
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeModalResidence.locality}</span>
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#FB7009", marginTop: "1px" }}>
+                    Starts from {activeModalResidence.price}/mo
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Modal Body / Scrollable Area */}
-            <div className="p-5 overflow-y-auto" style={{ maxHeight: "calc(92vh - 160px)" }}>
-              {visitSuccess ? (
-                <div className="py-6 text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                    <CheckCircle size={26} strokeWidth={2.2} />
+              {/* Body */}
+              {submitSuccess ? (
+                <div style={{ padding: "24px 8px", textAlign: "center" }}>
+                  <div 
+                    style={{
+                      width: "56px",
+                      height: "56px",
+                      margin: "0 auto 14px",
+                      borderRadius: "50%",
+                      backgroundColor: "#dcfce7",
+                      color: "#16a34a",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    <CheckCircle size={32} strokeWidth={2.2} />
                   </div>
-                  <div>
-                    <h4 className="text-base font-bold text-[#0c1b34]">
-                      Visit Scheduled Successfully!
-                    </h4>
-                    <p className="text-xs text-slate-600 mt-1 max-w-sm mx-auto leading-relaxed">
-                      Thank you, <strong>{visitName}</strong>. Your <strong>{visitTourFormat === "in-person" ? "In-Person Visit" : "Video Walkthrough"}</strong> for <strong>{visitModalResidence.houseName}</strong> is reserved for <strong>{visitDate}</strong> at <strong>{visitSlot}</strong>.
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-2">
-                      Our campus manager will coordinate your walkthrough and room viewing.
-                    </p>
-                  </div>
-                  <div className="pt-2">
-                    <a
-                      href={`https://wa.me/918884446093?text=${encodeURIComponent(
-                        `Hello Charla Living! My name is ${visitName}. I scheduled a visit for ${visitModalResidence.houseName} on ${visitDate} at ${visitSlot}. My phone is ${visitPhone}.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-bold shadow-md hover:bg-[#20ba59] transition-all"
-                    >
-                      <MessageCircle size={15} />
-                      <span>Chat Directly on WhatsApp</span>
-                    </a>
-                  </div>
+                  <h4 style={{ fontSize: "17px", fontWeight: 700, color: "#0c1b34", marginBottom: "6px" }}>
+                    {modalTab === "visit" ? "Visit Scheduled Successfully!" : "Callback Request Sent!"}
+                  </h4>
+                  <p style={{ fontSize: "12.5px", color: "#64748b", lineHeight: 1.5, maxWidth: "340px", margin: "0 auto 16px" }}>
+                    {modalTab === "visit"
+                      ? `Thank you, ${guestName}! Your ${visitTourFormat === "in-person" ? "In-Person Visit" : "Video Walkthrough"} for ${activeModalResidence.houseName} has been recorded. Opening WhatsApp...`
+                      : `Thank you, ${guestName}! Our manager for ${activeModalResidence.houseName} will call you shortly.`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveModalResidence(null);
+                      setSubmitSuccess(false);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "10px",
+                      backgroundColor: "#f1f5f9",
+                      color: "#334155",
+                      fontSize: "12.5px",
+                      fontWeight: 700,
+                      border: "none",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Done
+                  </button>
                 </div>
               ) : (
-                <form onSubmit={handleModalVisitSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  {/* Tour Format */}
-                  <div>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                      Tour Format <span style={{ color: "#ef4444" }}>*</span>
-                    </label>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                      {/* Option 1: In-person */}
-                      <button
-                        type="button"
-                        onClick={() => setVisitTourFormat("in-person")}
-                        style={{
-                          padding: "10px 12px",
-                          borderRadius: "10px",
-                          border: visitTourFormat === "in-person" ? "2px solid #003B99" : "1px solid #cbd5e1",
-                          background: visitTourFormat === "in-person" ? "#eff6ff" : "#ffffff",
-                          textAlign: "left",
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px"
-                        }}
-                      >
-                        <span style={{
-                          width: "16px",
-                          height: "16px",
-                          borderRadius: "50%",
-                          border: visitTourFormat === "in-person" ? "5px solid #003B99" : "2px solid #cbd5e1",
-                          background: "#ffffff",
-                          flexShrink: 0
-                        }} />
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: "12.5px", fontWeight: 700, color: visitTourFormat === "in-person" ? "#003B99" : "#1e293b", lineHeight: 1.2 }}>
-                            In-Person Visit
-                          </div>
-                          <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
-                            Physical campus tour
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Option 2: Live Video Walkthrough */}
-                      <button
-                        type="button"
-                        onClick={() => setVisitTourFormat("video")}
-                        style={{
-                          padding: "10px 12px",
-                          borderRadius: "10px",
-                          border: visitTourFormat === "video" ? "2px solid #003B99" : "1px solid #cbd5e1",
-                          background: visitTourFormat === "video" ? "#eff6ff" : "#ffffff",
-                          textAlign: "left",
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px"
-                        }}
-                      >
-                        <span style={{
-                          width: "16px",
-                          height: "16px",
-                          borderRadius: "50%",
-                          border: visitTourFormat === "video" ? "5px solid #003B99" : "2px solid #cbd5e1",
-                          background: "#ffffff",
-                          flexShrink: 0
-                        }} />
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: "12.5px", fontWeight: 700, color: visitTourFormat === "video" ? "#003B99" : "#1e293b", lineHeight: 1.2 }}>
-                            Video Walkthrough
-                          </div>
-                          <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
-                            Live on WhatsApp call
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Preferred Date & Slot */}
-                  <div>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                      Preferred Date &amp; Slot <span style={{ color: "#ef4444" }}>*</span>
-                    </label>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                      <div style={{ position: "relative" }}>
-                        <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
-                          <Calendar size={15} />
-                        </span>
-                        <input
-                          id="modal-visit-date"
-                          type="date"
-                          required
-                          min={todayStr}
-                          value={visitDate}
-                          onChange={(e) => setVisitDate(e.target.value)}
-                          style={{
-                            width: "100%",
-                            height: "42px",
-                            paddingLeft: "36px",
-                            paddingRight: "8px",
-                            borderRadius: "10px",
-                            border: "1px solid #cbd5e1",
-                            fontSize: "13px",
-                            color: "#0f172a",
-                            background: "#ffffff",
-                            boxSizing: "border-box"
-                          }}
-                        />
-                      </div>
-
-                      <div style={{ position: "relative" }}>
-                        <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
-                          <Clock size={15} />
-                        </span>
-                        <select
-                          id="modal-visit-slot"
-                          value={visitSlot}
-                          onChange={(e) => setVisitSlot(e.target.value)}
-                          style={{
-                            width: "100%",
-                            height: "42px",
-                            paddingLeft: "36px",
-                            paddingRight: "8px",
-                            borderRadius: "10px",
-                            border: "1px solid #cbd5e1",
-                            fontSize: "13px",
-                            color: "#0f172a",
-                            background: "#ffffff",
-                            boxSizing: "border-box",
-                            cursor: "pointer"
-                          }}
-                        >
-                          <option value="12:00 PM (Lunch)">12:00 PM (Lunch)</option>
-                          <option value="10:00 AM (Morning)">10:00 AM (Morning)</option>
-                          <option value="02:00 PM (Afternoon)">02:00 PM (Afternoon)</option>
-                          <option value="04:30 PM (Evening)">04:30 PM (Evening)</option>
-                          <option value="07:00 PM (Dinner)">07:00 PM (Dinner)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Your Name */}
-                  <div>
-                    <label 
-                      htmlFor="modal-visit-name" 
-                      style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}
-                    >
-                      Your Name <span style={{ color: "#ef4444" }}>*</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
-                        <UserRound size={16} />
-                      </span>
+                <form onSubmit={handleUnifiedModalSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {/* Inner Card Grouping Fields (matching reference image) */}
+                  <div 
+                    style={{
+                      borderRadius: "16px",
+                      border: "1.5px solid #dbeafe",
+                      backgroundColor: "#f8fafc",
+                      padding: "14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "11px"
+                    }}
+                  >
+                    {/* Name Input */}
+                    <div>
                       <input
-                        id="modal-visit-name"
                         type="text"
+                        placeholder="Name"
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
                         required
-                        placeholder="e.g. Rahul Sharma"
-                        value={visitName}
-                        onChange={(e) => setVisitName(e.target.value)}
                         style={{
                           width: "100%",
-                          height: "42px",
-                          paddingLeft: "40px",
-                          paddingRight: "14px",
-                          borderRadius: "10px",
+                          height: "46px",
+                          padding: "0 16px",
+                          borderRadius: "12px",
                           border: "1px solid #cbd5e1",
+                          backgroundColor: "#ffffff",
                           fontSize: "13.5px",
                           color: "#0f172a",
-                          background: "#ffffff",
-                          boxSizing: "border-box"
+                          boxSizing: "border-box",
+                          outline: "none"
                         }}
                       />
                     </div>
-                  </div>
 
-                  {/* WhatsApp Phone */}
-                  <div>
-                    <label 
-                      htmlFor="modal-visit-phone" 
-                      style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}
-                    >
-                      WhatsApp Phone <span style={{ color: "#ef4444" }}>*</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#94a3b8", display: "flex", alignItems: "center" }}>
-                        <Phone size={16} />
-                      </span>
-                      <input
-                        id="modal-visit-phone"
-                        type="tel"
-                        required
-                        placeholder="e.g. 98765 43210"
-                        value={visitPhone}
-                        onChange={(e) => setVisitPhone(e.target.value)}
-                        style={{
-                          width: "100%",
-                          height: "42px",
-                          paddingLeft: "40px",
-                          paddingRight: "14px",
-                          borderRadius: "10px",
-                          border: "1px solid #cbd5e1",
-                          fontSize: "13.5px",
-                          color: "#0f172a",
-                          background: "#ffffff",
-                          boxSizing: "border-box"
-                        }}
-                      />
-                    </div>
-                    <p style={{ fontSize: "11px", color: "#64748b", margin: "4px 0 0" }}>
-                      We will send your tour confirmation &amp; campus manager contact here.
-                    </p>
-                  </div>
-
-                  {/* Room Preference: Private, Double, Triple, Any */}
-                  <div>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                      Room Preference
-                    </label>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
-                      {["Private", "Double", "Triple", "Any"].map((st) => {
-                        const isSelected = visitSharing === st;
-                        return (
-                          <button
-                            key={st}
-                            type="button"
-                            onClick={() => setVisitSharing(st)}
-                            style={{
-                              height: "36px",
-                              borderRadius: "8px",
-                              fontSize: "12.5px",
-                              fontWeight: isSelected ? 700 : 500,
-                              cursor: "pointer",
-                              border: isSelected ? "1.5px solid #003B99" : "1px solid #cbd5e1",
-                              background: isSelected ? "#003B99" : "#ffffff",
-                              color: isSelected ? "#ffffff" : "#475569",
-                              transition: "all 0.15s ease",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center"
-                            }}
-                          >
-                            {st}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Trust line */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#64748b", paddingTop: "2px" }}>
-                    <ShieldCheck size={14} style={{ color: "#003B99", flexShrink: 0 }} />
-                    <span>Zero brokerage. Stored securely and synced in real-time.</span>
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingTop: "6px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setVisitModalResidence(null)}
-                      disabled={isSubmittingVisit}
+                    {/* Phone Input with 🇮🇳 +91 | Prefix (matching reference image) */}
+                    <div 
                       style={{
-                        flex: 1,
-                        height: "44px",
-                        borderRadius: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                        height: "46px",
+                        borderRadius: "12px",
                         border: "1px solid #cbd5e1",
-                        background: "#ffffff",
-                        color: "#475569",
-                        fontSize: "13px",
+                        backgroundColor: "#ffffff",
+                        overflow: "hidden",
+                        boxSizing: "border-box"
+                      }}
+                    >
+                      <div 
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          paddingLeft: "14px",
+                          paddingRight: "10px",
+                          fontSize: "13.5px",
+                          fontWeight: 600,
+                          color: "#334155",
+                          userSelect: "none"
+                        }}
+                      >
+                        <span style={{ fontSize: "16px", lineHeight: 1 }}>🇮🇳</span>
+                        <span>+91</span>
+                        <span style={{ color: "#cbd5e1", marginLeft: "4px" }}>|</span>
+                      </div>
+                      <input
+                        type="tel"
+                        placeholder="Mobile Number"
+                        value={guestPhone}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                          setGuestPhone(val);
+                        }}
+                        required
+                        maxLength={10}
+                        style={{
+                          flex: 1,
+                          height: "100%",
+                          paddingRight: "16px",
+                          border: "none",
+                          backgroundColor: "transparent",
+                          fontSize: "13.5px",
+                          color: "#0f172a",
+                          outline: "none"
+                        }}
+                      />
+                    </div>
+
+                    {/* Visit-Specific Details (Only if modalTab === "visit") */}
+                    {modalTab === "visit" && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "11px", paddingTop: "6px", borderTop: "1px solid #e2e8f0" }}>
+                        {/* Tour Format */}
+                        <div>
+                          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                            Tour Format
+                          </label>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                            <button
+                              type="button"
+                              onClick={() => setVisitTourFormat("in-person")}
+                              style={{
+                                height: "38px",
+                                padding: "0 10px",
+                                borderRadius: "10px",
+                                border: visitTourFormat === "in-person" ? "2px solid #003B99" : "1px solid #cbd5e1",
+                                backgroundColor: visitTourFormat === "in-person" ? "#eff6ff" : "#ffffff",
+                                color: visitTourFormat === "in-person" ? "#003B99" : "#334155",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                transition: "all 0.15s ease"
+                              }}
+                            >
+                              In-Person Visit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setVisitTourFormat("video")}
+                              style={{
+                                height: "38px",
+                                padding: "0 10px",
+                                borderRadius: "10px",
+                                border: visitTourFormat === "video" ? "2px solid #003B99" : "1px solid #cbd5e1",
+                                backgroundColor: visitTourFormat === "video" ? "#eff6ff" : "#ffffff",
+                                color: visitTourFormat === "video" ? "#003B99" : "#334155",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                transition: "all 0.15s ease"
+                              }}
+                            >
+                              Video Walkthrough
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Preferred Date & Slot */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                          <div>
+                            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+                              Preferred Date
+                            </label>
+                            <input
+                              type="date"
+                              min={todayStr}
+                              value={visitDate}
+                              onChange={(e) => setVisitDate(e.target.value)}
+                              required
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                padding: "0 8px",
+                                borderRadius: "10px",
+                                border: "1px solid #cbd5e1",
+                                backgroundColor: "#ffffff",
+                                fontSize: "12px",
+                                color: "#0f172a",
+                                boxSizing: "border-box",
+                                outline: "none"
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+                              Preferred Slot
+                            </label>
+                            <select
+                              value={visitSlot}
+                              onChange={(e) => setVisitSlot(e.target.value)}
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                padding: "0 8px",
+                                borderRadius: "10px",
+                                border: "1px solid #cbd5e1",
+                                backgroundColor: "#ffffff",
+                                fontSize: "12px",
+                                color: "#0f172a",
+                                boxSizing: "border-box",
+                                outline: "none",
+                                cursor: "pointer"
+                              }}
+                            >
+                              <option value="10:00 AM (Morning)">10:00 AM (Morning)</option>
+                              <option value="12:00 PM (Lunch)">12:00 PM (Lunch)</option>
+                              <option value="03:00 PM (Afternoon)">03:00 PM (Afternoon)</option>
+                              <option value="05:30 PM (Evening)">05:30 PM (Evening)</option>
+                              <option value="07:30 PM (Night)">07:30 PM (Night)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Room Preference: Private, Double, Triple, Any */}
+                        <div>
+                          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                            Room Preference
+                          </label>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
+                            {(["Private", "Double", "Triple", "Any"] as const).map((sharing) => {
+                              const isSelected = visitSharing === sharing;
+                              return (
+                                <button
+                                  key={sharing}
+                                  type="button"
+                                  onClick={() => setVisitSharing(sharing)}
+                                  style={{
+                                    height: "34px",
+                                    borderRadius: "8px",
+                                    fontSize: "11.5px",
+                                    fontWeight: isSelected ? 700 : 500,
+                                    border: isSelected ? "1.5px solid #003B99" : "1px solid #cbd5e1",
+                                    backgroundColor: isSelected ? "#003B99" : "#ffffff",
+                                    color: isSelected ? "#ffffff" : "#475569",
+                                    cursor: "pointer",
+                                    transition: "all 0.15s ease"
+                                  }}
+                                >
+                                  {sharing}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Minimum stay notice pill (matching reference image) */}
+                    <div 
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "10px",
+                        border: "1px solid #a7f3d0",
+                        backgroundColor: "#ecfdf5",
+                        color: "#047857",
+                        fontSize: "11.5px",
                         fontWeight: 600,
+                        textAlign: "center"
+                      }}
+                    >
+                      We accept bookings with a minimum stay of 3 months.
+                    </div>
+                  </div>
+
+                  {/* WhatsApp updates toggle (matching reference image) */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 2px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div 
+                        style={{
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "50%",
+                          backgroundColor: "#22C55E",
+                          color: "#ffffff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 2px 6px rgba(34, 197, 94, 0.35)"
+                        }}
+                      >
+                        <MessageCircle size={16} fill="currentColor" />
+                      </div>
+                      <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#1e293b" }}>
+                        Get updates over WhatsApp
+                      </span>
+                    </div>
+
+                    {/* iOS style toggle switch */}
+                    <div
+                      role="switch"
+                      aria-checked={whatsappOptIn}
+                      onClick={() => setWhatsappOptIn(!whatsappOptIn)}
+                      style={{
+                        width: "44px",
+                        height: "24px",
+                        borderRadius: "9999px",
+                        backgroundColor: whatsappOptIn ? "#22C55E" : "#cbd5e1",
+                        position: "relative",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s ease"
+                      }}
+                    >
+                      <div 
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "50%",
+                          backgroundColor: "#ffffff",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+                          position: "absolute",
+                          top: "2px",
+                          left: whatsappOptIn ? "22px" : "2px",
+                          transition: "left 0.2s ease"
+                        }} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Terms and Privacy Checkbox (matching reference image) */}
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "0 2px", cursor: "pointer", userSelect: "none" }}>
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      style={{
+                        marginTop: "2px",
+                        width: "16px",
+                        height: "16px",
+                        accentColor: "#003B99",
                         cursor: "pointer"
                       }}
-                    >
-                      Cancel
-                    </button>
+                    />
+                    <span style={{ fontSize: "12px", color: "#475569", lineHeight: 1.5 }}>
+                      I have read and agreed to the{" "}
+                      <a href="#/terms" style={{ color: "#003B99", textDecoration: "underline", fontWeight: 600 }}>terms and conditions</a>{" "}
+                      and{" "}
+                      <a href="#/privacy" style={{ color: "#003B99", textDecoration: "underline", fontWeight: 600 }}>privacy policy</a>{" "}
+                      and hereby confirm to proceed.
+                    </span>
+                  </label>
 
-                    <button
-                      type="submit"
-                      disabled={isSubmittingVisit}
-                      style={{
-                        flex: 2,
-                        height: "44px",
-                        borderRadius: "10px",
-                        border: "none",
-                        background: "#003B99",
-                        color: "#ffffff",
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        cursor: isSubmittingVisit ? "not-allowed" : "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px",
-                        boxShadow: "0 2px 8px rgba(0, 59, 153, 0.25)",
-                        opacity: isSubmittingVisit ? 0.7 : 1
-                      }}
-                    >
-                      {isSubmittingVisit ? (
-                        <>
-                          <Loader2 size={15} className="animate-spin" />
-                          <span>Scheduling...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CalendarCheck size={16} />
-                          <span>Confirm &amp; Open WhatsApp</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  {/* Full-width Primary CTA Button in Brand Navy #003B99 */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms}
+                    style={{
+                      width: "100%",
+                      height: "48px",
+                      borderRadius: "12px",
+                      border: "none",
+                      backgroundColor: "#003B99",
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      cursor: isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms ? "not-allowed" : "pointer",
+                      opacity: isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms ? 0.6 : 1,
+                      boxShadow: "0 4px 14px rgba(0, 59, 153, 0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>{modalTab === "visit" ? "Scheduling Visit..." : "Requesting Callback..."}</span>
+                      </>
+                    ) : (
+                      <span>{modalTab === "visit" ? "Schedule a Visit" : "Request a callback"}</span>
+                    )}
+                  </button>
                 </form>
               )}
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
