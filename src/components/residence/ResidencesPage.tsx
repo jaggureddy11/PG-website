@@ -841,42 +841,62 @@ export function ResidencesPage({
         </div>
       </section>
 
-      {/* ─── UNIFIED PROPERTY MODAL (STANZA-STYLE WITH CHARLA BRAND THEME & FULL MOBILE COMPATIBILITY) ─── */}
+      {/* ─── UNIFIED PROPERTY MODAL (STANZA-STYLE WITH CHARLA BRAND THEME) ─── */}
       {activeModalResidence && (
         <div 
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto overscroll-contain"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
           onClick={() => !isSubmitting && setActiveModalResidence(null)}
           role="dialog"
           aria-modal="true"
         >
           {/* Relative Wrapper with unclipped close button */}
           <div 
-            className="relative w-full max-w-md mx-auto my-0 sm:my-auto"
+            className="relative w-full my-auto"
             onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "430px" }}
           >
-            {/* Top-Right Circular Close Button (Adaptive: neatly pinned inside top-right on mobile, floating outside on desktop) */}
+            {/* Floating Top-Right Circular Close Button */}
             <button
               type="button"
               onClick={() => !isSubmitting && setActiveModalResidence(null)}
-              className="absolute top-3 right-3 sm:-top-3.5 sm:-right-3 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-slate-700 border border-slate-200 shadow-md flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all"
+              style={{
+                position: "absolute",
+                top: "-14px",
+                right: "-10px",
+                zIndex: 60,
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                backgroundColor: "#ffffff",
+                color: "#1e293b",
+                border: "1px solid #cbd5e1",
+                boxShadow: "0 6px 16px rgba(0, 0, 0, 0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "transform 0.15s ease"
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
               aria-label="Close modal"
             >
-              <X size={17} strokeWidth={2.5} />
+              <X size={18} strokeWidth={2.5} />
             </button>
 
-            {/* Modal Card with Bottom Sheet pattern on mobile, rounded card on desktop */}
+            {/* Modal Card */}
             <div
-              className="w-full bg-white rounded-t-[26px] sm:rounded-[24px] shadow-2xl border border-slate-200/90 p-4 sm:p-6 overflow-y-auto overscroll-contain"
               style={{
-                maxHeight: "calc(100dvh - 24px)",
-                WebkitOverflowScrolling: "touch",
-                boxSizing: "border-box",
-                paddingBottom: "max(18px, env(safe-area-inset-bottom))"
+                backgroundColor: "#ffffff",
+                borderRadius: "24px",
+                boxShadow: "0 24px 48px -12px rgba(0, 0, 0, 0.35)",
+                border: "1px solid #e2e8f0",
+                padding: "20px 18px",
+                maxHeight: "min(92vh, calc(100dvh - 28px))",
+                overflowY: "auto",
+                boxSizing: "border-box"
               }}
             >
-              {/* Mobile Drag Indicator Bar */}
-              <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-3 sm:hidden" />
-
               {/* Top Pill Segmented Switcher */}
               <div 
                 style={{
@@ -885,7 +905,7 @@ export function ResidencesPage({
                   backgroundColor: "#f1f5f9",
                   borderRadius: "9999px",
                   border: "1px solid #e2e8f0",
-                  marginBottom: "12px",
+                  marginBottom: "14px",
                   width: "100%",
                   boxSizing: "border-box"
                 }}
@@ -895,9 +915,9 @@ export function ResidencesPage({
                   onClick={() => setModalTab("visit")}
                   style={{
                     flex: 1,
-                    padding: "8px 6px",
+                    padding: "8px 10px",
                     borderRadius: "9999px",
-                    fontSize: "12.5px",
+                    fontSize: "13px",
                     fontWeight: 700,
                     border: "none",
                     cursor: "pointer",
@@ -916,9 +936,9 @@ export function ResidencesPage({
                   onClick={() => setModalTab("callback")}
                   style={{
                     flex: 1,
-                    padding: "8px 6px",
+                    padding: "8px 10px",
                     borderRadius: "9999px",
-                    fontSize: "12.5px",
+                    fontSize: "13px",
                     fontWeight: 700,
                     border: "none",
                     cursor: "pointer",
@@ -939,18 +959,18 @@ export function ResidencesPage({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "10px",
-                  padding: "8px 10px",
+                  gap: "12px",
+                  padding: "10px 12px",
                   backgroundColor: "#f0f7ff",
                   borderRadius: "14px",
                   border: "1px solid #dbeafe",
-                  marginBottom: "12px"
+                  marginBottom: "14px"
                 }}
               >
                 <div 
                   style={{
-                    width: "42px",
-                    height: "42px",
+                    width: "44px",
+                    height: "44px",
                     borderRadius: "10px",
                     overflow: "hidden",
                     flexShrink: 0,
@@ -965,14 +985,14 @@ export function ResidencesPage({
                   />
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#0c1b34", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#0c1b34", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {activeModalResidence.houseName}
                   </div>
                   <div style={{ fontSize: "11px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px" }}>
                     <Building2 size={11} style={{ color: "#94a3b8", flexShrink: 0 }} />
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeModalResidence.locality}</span>
                   </div>
-                  <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#FB7009", marginTop: "1px" }}>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#FB7009", marginTop: "1px" }}>
                     Starts from {activeModalResidence.price}/mo
                   </div>
                 </div>
@@ -1026,35 +1046,35 @@ export function ResidencesPage({
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleUnifiedModalSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {/* Inner Card Grouping Fields */}
+                <form onSubmit={handleUnifiedModalSubmit} style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                  {/* Inner Card Grouping Fields (matching reference image) */}
                   <div 
                     style={{
                       borderRadius: "16px",
                       border: "1.5px solid #dbeafe",
                       backgroundColor: "#f8fafc",
-                      padding: "12px",
+                      padding: "14px",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "10px"
+                      gap: "11px"
                     }}
                   >
-                    {/* Name Input (16px font on mobile to prevent iOS auto-zoom) */}
+                    {/* Name Input */}
                     <div>
                       <input
                         type="text"
-                        placeholder="Your Name"
+                        placeholder="Name"
                         value={guestName}
                         onChange={(e) => setGuestName(e.target.value)}
                         required
-                        className="text-base sm:text-sm"
                         style={{
                           width: "100%",
-                          height: "44px",
-                          padding: "0 14px",
+                          height: "46px",
+                          padding: "0 16px",
                           borderRadius: "12px",
                           border: "1px solid #cbd5e1",
                           backgroundColor: "#ffffff",
+                          fontSize: "14px",
                           color: "#0f172a",
                           boxSizing: "border-box",
                           outline: "none"
@@ -1062,12 +1082,12 @@ export function ResidencesPage({
                       />
                     </div>
 
-                    {/* Phone Input with 🇮🇳 +91 | Prefix (16px font on mobile to prevent iOS auto-zoom) */}
+                    {/* Phone Input with 🇮🇳 +91 | Prefix (matching reference image) */}
                     <div 
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        height: "44px",
+                        height: "46px",
                         borderRadius: "12px",
                         border: "1px solid #cbd5e1",
                         backgroundColor: "#ffffff",
@@ -1080,9 +1100,9 @@ export function ResidencesPage({
                           display: "flex",
                           alignItems: "center",
                           gap: "6px",
-                          paddingLeft: "12px",
-                          paddingRight: "8px",
-                          fontSize: "13px",
+                          paddingLeft: "14px",
+                          paddingRight: "10px",
+                          fontSize: "13.5px",
                           fontWeight: 600,
                           color: "#334155",
                           userSelect: "none",
@@ -1091,7 +1111,7 @@ export function ResidencesPage({
                       >
                         <span style={{ fontSize: "16px", lineHeight: 1 }}>🇮🇳</span>
                         <span>+91</span>
-                        <span style={{ color: "#cbd5e1", marginLeft: "2px" }}>|</span>
+                        <span style={{ color: "#cbd5e1", marginLeft: "4px" }}>|</span>
                       </div>
                       <input
                         type="tel"
@@ -1103,13 +1123,13 @@ export function ResidencesPage({
                         }}
                         required
                         maxLength={10}
-                        className="text-base sm:text-sm"
                         style={{
                           flex: 1,
                           height: "100%",
-                          paddingRight: "14px",
+                          paddingRight: "16px",
                           border: "none",
                           backgroundColor: "transparent",
+                          fontSize: "14px",
                           color: "#0f172a",
                           outline: "none",
                           minWidth: 0
@@ -1119,31 +1139,31 @@ export function ResidencesPage({
 
                     {/* Visit-Specific Details (Only if modalTab === "visit") */}
                     {modalTab === "visit" && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingTop: "8px", borderTop: "1px solid #e2e8f0" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "11px", paddingTop: "6px", borderTop: "1px solid #e2e8f0" }}>
                         {/* Tour Format */}
                         <div>
-                          <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "5px" }}>
+                          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                             Tour Format
                           </label>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                             <button
                               type="button"
                               onClick={() => setVisitTourFormat("in-person")}
                               style={{
                                 height: "38px",
-                                padding: "0 6px",
+                                padding: "0 10px",
                                 borderRadius: "10px",
                                 border: visitTourFormat === "in-person" ? "2px solid #003B99" : "1px solid #cbd5e1",
                                 backgroundColor: visitTourFormat === "in-person" ? "#eff6ff" : "#ffffff",
                                 color: visitTourFormat === "in-person" ? "#003B99" : "#334155",
-                                fontSize: "11.5px",
+                                fontSize: "12px",
                                 fontWeight: 700,
                                 cursor: "pointer",
+                                transition: "all 0.15s ease",
                                 whiteSpace: "nowrap",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease"
+                                justifyContent: "center"
                               }}
                             >
                               In-Person Visit
@@ -1153,19 +1173,19 @@ export function ResidencesPage({
                               onClick={() => setVisitTourFormat("video")}
                               style={{
                                 height: "38px",
-                                padding: "0 6px",
+                                padding: "0 10px",
                                 borderRadius: "10px",
                                 border: visitTourFormat === "video" ? "2px solid #003B99" : "1px solid #cbd5e1",
                                 backgroundColor: visitTourFormat === "video" ? "#eff6ff" : "#ffffff",
                                 color: visitTourFormat === "video" ? "#003B99" : "#334155",
-                                fontSize: "11.5px",
+                                fontSize: "12px",
                                 fontWeight: 700,
                                 cursor: "pointer",
+                                transition: "all 0.15s ease",
                                 whiteSpace: "nowrap",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease"
+                                justifyContent: "center"
                               }}
                             >
                               Video Walkthrough
@@ -1174,9 +1194,9 @@ export function ResidencesPage({
                         </div>
 
                         {/* Preferred Date & Slot */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                           <div>
-                            <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+                            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
                               Preferred Date
                             </label>
                             <input
@@ -1185,7 +1205,6 @@ export function ResidencesPage({
                               value={visitDate}
                               onChange={(e) => setVisitDate(e.target.value)}
                               required
-                              className="text-base sm:text-xs"
                               style={{
                                 width: "100%",
                                 height: "38px",
@@ -1193,6 +1212,7 @@ export function ResidencesPage({
                                 borderRadius: "10px",
                                 border: "1px solid #cbd5e1",
                                 backgroundColor: "#ffffff",
+                                fontSize: "12.5px",
                                 color: "#0f172a",
                                 boxSizing: "border-box",
                                 outline: "none",
@@ -1201,13 +1221,12 @@ export function ResidencesPage({
                             />
                           </div>
                           <div>
-                            <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+                            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
                               Preferred Slot
                             </label>
                             <select
                               value={visitSlot}
                               onChange={(e) => setVisitSlot(e.target.value)}
-                              className="text-base sm:text-xs"
                               style={{
                                 width: "100%",
                                 height: "38px",
@@ -1215,6 +1234,7 @@ export function ResidencesPage({
                                 borderRadius: "10px",
                                 border: "1px solid #cbd5e1",
                                 backgroundColor: "#ffffff",
+                                fontSize: "12px",
                                 color: "#0f172a",
                                 boxSizing: "border-box",
                                 outline: "none",
@@ -1232,10 +1252,10 @@ export function ResidencesPage({
 
                         {/* Room Preference: Private, Double, Triple, Any */}
                         <div>
-                          <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "5px" }}>
+                          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                             Room Preference
                           </label>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "4px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
                             {(["Private", "Double", "Triple", "Any"] as const).map((sharing) => {
                               const isSelected = visitSharing === sharing;
                               return (
@@ -1246,7 +1266,7 @@ export function ResidencesPage({
                                   style={{
                                     height: "34px",
                                     borderRadius: "8px",
-                                    fontSize: "11px",
+                                    fontSize: "11.5px",
                                     fontWeight: isSelected ? 700 : 500,
                                     border: isSelected ? "1.5px solid #003B99" : "1px solid #cbd5e1",
                                     backgroundColor: isSelected ? "#003B99" : "#ffffff",
@@ -1269,26 +1289,25 @@ export function ResidencesPage({
                       </div>
                     )}
 
-                    {/* Minimum stay notice pill */}
+                    {/* Minimum stay notice pill (matching reference image) */}
                     <div 
                       style={{
-                        padding: "7px 10px",
+                        padding: "8px 12px",
                         borderRadius: "10px",
                         border: "1px solid #a7f3d0",
                         backgroundColor: "#ecfdf5",
                         color: "#047857",
-                        fontSize: "11px",
+                        fontSize: "11.5px",
                         fontWeight: 600,
-                        textAlign: "center",
-                        lineHeight: 1.35
+                        textAlign: "center"
                       }}
                     >
                       We accept bookings with a minimum stay of 3 months.
                     </div>
                   </div>
 
-                  {/* Terms and Privacy Checkbox */}
-                  <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "0 2px", cursor: "pointer", userSelect: "none" }}>
+                  {/* Terms and Privacy Checkbox (matching reference image) */}
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "0 2px", cursor: "pointer", userSelect: "none" }}>
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
@@ -1302,7 +1321,7 @@ export function ResidencesPage({
                         flexShrink: 0
                       }}
                     />
-                    <span style={{ fontSize: "11.5px", color: "#475569", lineHeight: 1.45 }}>
+                    <span style={{ fontSize: "12px", color: "#475569", lineHeight: 1.5 }}>
                       I have read and agreed to the{" "}
                       <a href="#/terms" style={{ color: "#003B99", textDecoration: "underline", fontWeight: 600 }}>terms and conditions</a>{" "}
                       and{" "}
@@ -1317,7 +1336,7 @@ export function ResidencesPage({
                     disabled={isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms}
                     style={{
                       width: "100%",
-                      height: "46px",
+                      height: "48px",
                       borderRadius: "12px",
                       border: "none",
                       backgroundColor: "#003B99",
