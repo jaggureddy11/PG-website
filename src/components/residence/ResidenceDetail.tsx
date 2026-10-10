@@ -975,8 +975,8 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
                       value={tourType}
                       onChange={(e) => setTourType(e.target.value as "in-person" | "video")}
                     >
-                      <option value="in-person">In-Person Visit (with Chai &amp; Food Tasting)</option>
-                      <option value="video">WhatsApp Live Video Walkthrough</option>
+                      <option value="in-person">In-Person Visit</option>
+                      <option value="video">Live Video Walkthrough</option>
                     </select>
                   </div>
 

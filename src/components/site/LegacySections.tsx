@@ -552,7 +552,7 @@ export function LegacySections({
         <div className="visit__glow" aria-hidden="true" />
         <img className="visit__logo" src="/assets/logo.png" alt="Charla Living" width={180} height={120} data-reveal />
         <h2 className="visit__title" data-reveal>Your next home is closer than you think.<br />Come take a look.</h2>
-        <p className="visit__sub" data-reveal>Leave your number and preferred locality. We'll call within 2 working hours and set up your walkthrough — chai included, pressure absent.</p>
+        <p className="visit__sub" data-reveal>Leave your number and preferred locality. We'll call within 2 working hours and set up your walkthrough — zero pressure.</p>
         {!isCallbackSubmitted ? (
           <>
             <form className="visit__form" id="visitForm" onSubmit={handleCallbackSubmit} data-reveal>
