@@ -12,7 +12,8 @@ import {
   X,
   CheckCircle,
   Loader2,
-  Building2
+  Building2,
+  Layers
 } from "lucide-react";
 import { calculateDistanceKm } from "@/utils/location";
 import { saveCallbackRequestToFirestore, saveVisitBookingToFirestore } from "@/lib/firebase";
@@ -522,52 +523,39 @@ export function ResidencesPage({
             }}
           />
 
-          {/* ─── Category / Gender Filter Tabs ─── */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-bold tracking-wider text-slate-500 uppercase mr-1">Category:</span>
+          {/* ─── Category / Gender Filter Tabs (Properly Styled with Dedicated CSS) ─── */}
+          <div className="charla-category-bar">
+            <div className="charla-category-label">
+              <Layers size={13} className="text-[#003B99]" />
+              <span>Category:</span>
+            </div>
             <button
               type="button"
               onClick={() => setSelectedGender("all")}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                selectedGender === "all"
-                  ? "bg-[#003B99] text-white border-[#003B99] shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-              }`}
+              className={`charla-category-pill ${selectedGender === "all" ? "active" : ""}`}
             >
-              ALL
+              All
             </button>
             <button
               type="button"
               onClick={() => setSelectedGender("Male")}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                selectedGender === "Male"
-                  ? "bg-[#003B99] text-white border-[#003B99] shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-              }`}
+              className={`charla-category-pill ${selectedGender === "Male" ? "active" : ""}`}
             >
-              MALE
+              Male
             </button>
             <button
               type="button"
               onClick={() => setSelectedGender("Female")}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                selectedGender === "Female"
-                  ? "bg-[#FB7009] text-white border-[#FB7009] shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-              }`}
+              className={`charla-category-pill pill-female ${selectedGender === "Female" ? "active" : ""}`}
             >
-              FEMALE
+              Female
             </button>
             <button
               type="button"
               onClick={() => setSelectedGender("Unisex")}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                selectedGender === "Unisex"
-                  ? "bg-[#0C1B34] text-white border-[#0C1B34] shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-              }`}
+              className={`charla-category-pill pill-coliving ${selectedGender === "Unisex" ? "active" : ""}`}
             >
-              CO-LIVING
+              Co-Living
             </button>
           </div>
 
