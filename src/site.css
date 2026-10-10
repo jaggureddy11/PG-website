@@ -2196,8 +2196,11 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
     text-align: center !important;
     justify-content: center !important;
     padding: 10px 4px !important;
-    font-size: 10px !important;
+    font-size: 10.5px !important;
     letter-spacing: 0.02em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 }
 
