@@ -204,6 +204,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
+  // Hassle-Free Inline Delete States (zero browser popups)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [modalConfirmDelete, setModalConfirmDelete] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+
   // Form State for Add / Edit
   const [formData, setFormData] = useState<Partial<ExtendedResidence>>(EMPTY_FORM_STATE);
 
@@ -231,6 +237,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
 
   const handleOpenAdd = () => {
     setEditingId(null);
+    setModalConfirmDelete(false);
     setFormData({
       ...EMPTY_FORM_STATE,
       id: "residence-" + Date.now(),
@@ -244,6 +251,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
 
   const handleOpenEdit = (res: ExtendedResidence) => {
     setEditingId(res.id);
+    setModalConfirmDelete(false);
     setFormData({
       ...res,
       additionalPhotos: res.additionalPhotos || [],
@@ -294,9 +302,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to remove "${name}" from listings?`)) {
+  // Completely Hassle-Free Deletion (No blocked browser pop-ups, instant sync)
+  const executeDelete = async (id: string, name?: string) => {
+    setDeletingId(id);
+    try {
       await deleteResidence(id);
+      setDeleteNotice(name ? `"${name}" was successfully removed.` : "Property was removed.");
+      setTimeout(() => setDeleteNotice(null), 4000);
+    } catch (err) {
+      console.error("Failed to delete residence:", err);
+      alert("Failed to delete residence. Please check your connection.");
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -506,6 +524,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
             </div>
           </div>
         </div>
+
+        {/* ── Deletion Success Notice ── */}
+        {deleteNotice && (
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "10px",
+              padding: "12px 18px",
+              marginBottom: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              color: "#991b1b",
+              fontSize: "13.5px",
+              fontWeight: 600,
+              boxShadow: "0 2px 8px rgba(239, 68, 68, 0.08)",
+            }}
+          >
+            <span>{deleteNotice}</span>
+            <button
+              type="button"
+              onClick={() => setDeleteNotice(null)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#991b1b",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: 700,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* ── Toolbar: Search & Filters ── */}
         <div className="admin-toolbar">
@@ -756,15 +810,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                           Edit
                         </button>
 
-                        <button
-                          type="button"
-                          className="admin-btn admin-btn--danger"
-                          style={{ padding: "6px 10px" }}
-                          onClick={() => handleDelete(res.id, res.name)}
-                          title="Delete residence"
-                        >
-                          <Trash2 size={14} strokeWidth={2} />
-                        </button>
+                        {confirmDeleteId === res.id ? (
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--danger"
+                              style={{
+                                padding: "6px 12px",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                background: "#dc2626",
+                                color: "#ffffff",
+                                border: "none",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                              }}
+                              disabled={deletingId === res.id}
+                              onClick={() => executeDelete(res.id, res.name)}
+                            >
+                              <Trash2 size={13} strokeWidth={2.5} />
+                              {deletingId === res.id ? "Deleting..." : "Confirm Delete"}
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--ghost"
+                              style={{ padding: "6px 8px", fontSize: "12px", cursor: "pointer" }}
+                              onClick={() => setConfirmDeleteId(null)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn--danger"
+                            style={{ padding: "6px 10px", cursor: "pointer" }}
+                            onClick={() => setConfirmDeleteId(res.id)}
+                            title="Delete residence"
+                          >
+                            <Trash2 size={14} strokeWidth={2} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1927,17 +2016,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               </div>
 
               {/* Modal Footer */}
-              <div className="admin-modal__footer">
-                <button
-                  type="button"
-                  className="admin-btn admin-btn--secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="admin-btn admin-btn--primary">
-                  {editingId ? "Save Changes" : "Publish Residence"}
-                </button>
+              <div
+                className="admin-modal__footer"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                }}
+              >
+                {editingId ? (
+                  modalConfirmDelete ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "12.5px", color: "#dc2626", fontWeight: 600 }}>Remove property?</span>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--danger"
+                        style={{ padding: "6px 12px", fontSize: "12px", background: "#dc2626", color: "#fff" }}
+                        onClick={async () => {
+                          if (editingId) {
+                            await executeDelete(editingId, formData.name);
+                            setIsModalOpen(false);
+                            setModalConfirmDelete(false);
+                          }
+                        }}
+                      >
+                        Yes, Delete
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--ghost"
+                        style={{ padding: "6px 10px", fontSize: "12px" }}
+                        onClick={() => setModalConfirmDelete(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--danger"
+                      style={{
+                        padding: "7px 14px",
+                        fontSize: "13px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setModalConfirmDelete(true)}
+                    >
+                      <Trash2 size={14} />
+                      Delete Listing
+                    </button>
+                  )
+                ) : (
+                  <div />
+                )}
+
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--secondary"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setModalConfirmDelete(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="admin-btn admin-btn--primary">
+                    {editingId ? "Save Changes" : "Publish Residence"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
