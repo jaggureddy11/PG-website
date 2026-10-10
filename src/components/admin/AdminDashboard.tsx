@@ -19,7 +19,9 @@ import {
   Users,
   MessageCircle,
   Phone,
+  LogOut,
 } from "lucide-react";
+import { AdminLogin } from "./AdminLogin";
 import {
   type ExtendedResidence,
 } from "@/lib/firebase";
@@ -135,6 +137,38 @@ const EMPTY_FORM_STATE: Partial<ExtendedResidence> = {
 };
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, onSelectResidence }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      const session = sessionStorage.getItem("charla_admin_auth") || localStorage.getItem("charla_admin_auth");
+      if (!session) return false;
+      const parsed = JSON.parse(session);
+      return Boolean(parsed?.authenticated);
+    } catch {
+      return false;
+    }
+  });
+
+  const [loggedAdminUser, setLoggedAdminUser] = useState<string>(() => {
+    try {
+      const session = sessionStorage.getItem("charla_admin_auth") || localStorage.getItem("charla_admin_auth");
+      if (!session) return "Admin";
+      const parsed = JSON.parse(session);
+      return parsed?.username || "Admin";
+    } catch {
+      return "Admin";
+    }
+  });
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem("charla_admin_auth");
+      localStorage.removeItem("charla_admin_auth");
+    } catch (e) {
+      console.warn("Error removing auth:", e);
+    }
+    setIsAuthenticated(false);
+  };
+
   const {
     residences,
     saveResidence,
@@ -289,6 +323,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <AdminLogin
+        onLoginSuccess={(user) => {
+          setLoggedAdminUser(user);
+          setIsAuthenticated(true);
+        }}
+        onNavigateHome={onNavigateHome}
+      />
+    );
+  }
+
   return (
     <div className="admin-layout">
       {/* ── Top Header ── */}
@@ -297,7 +343,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
           <div className="admin-brand">
             <img src="/assets/logo.png" alt="Charla Living" className="admin-brand__logo" />
             <div className="admin-brand__badge">
-              ADMIN SPACE
+              ADMIN · {loggedAdminUser}
             </div>
           </div>
 
@@ -308,7 +354,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               onClick={onNavigateHome}
             >
               <Home size={16} strokeWidth={2} />
-              View Website
+              <span>View Website</span>
             </button>
 
             <button
@@ -317,7 +363,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               onClick={handleOpenAdd}
             >
               <Plus size={16} strokeWidth={2.5} />
-              Add Property
+              <span>Add Property</span>
+            </button>
+
+            <button
+              type="button"
+              className="admin-btn admin-btn--logout"
+              onClick={handleLogout}
+              title="Sign out of Admin Dashboard"
+            >
+              <LogOut size={16} strokeWidth={2} />
+              <span>Logout</span>
             </button>
           </div>
         </div>

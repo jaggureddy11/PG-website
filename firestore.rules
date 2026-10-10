@@ -14,5 +14,8 @@ service cloud.firestore {
     match /callback_requests/{document=**} {
       allow read, write: if true;
     }
+    match /admin_credentials/{document=**} {
+      allow read, write: if true;
+    }
   }
 }

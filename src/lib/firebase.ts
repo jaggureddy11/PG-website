@@ -314,3 +314,83 @@ export async function updateCallbackRequestStatus(
   await updateDoc(docRef, { status });
 }
 
+export const ADMIN_CREDENTIALS_COLLECTION = "admin_credentials";
+
+export interface AdminCredentialDoc {
+  username?: string;
+  phone?: string;
+  password?: string;
+  role?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Verify admin credentials against environment variables and/or Firestore database.
+ * Supports login via either username OR registered phone number.
+ */
+export async function verifyAdminCredentials(
+  identifier: string,
+  passwordAttempt: string
+): Promise<{ success: boolean; error?: string; username?: string }> {
+  const trimmedId = identifier.trim();
+  const trimmedPass = passwordAttempt.trim();
+
+  if (!trimmedId || !trimmedPass) {
+    return { success: false, error: "Please enter both identifier (username/phone) and password." };
+  }
+
+  // 1. Check against Environment variables (.env)
+  const envUsername = (import.meta.env.VITE_ADMIN_USERNAME || "admin").toString().trim().toLowerCase();
+  const envPhone = (import.meta.env.VITE_ADMIN_PHONE || "8884446093").toString().trim().replace(/\D/g, "");
+  const envPassword = (import.meta.env.VITE_ADMIN_PASSWORD || "CharlaAdmin@2026").toString().trim();
+
+  const inputRawLower = trimmedId.toLowerCase();
+  const inputDigits = trimmedId.replace(/\D/g, "");
+
+  const matchesEnvUsername = inputRawLower === envUsername;
+  const matchesEnvPhone =
+    Boolean(envPhone) &&
+    (inputDigits === envPhone ||
+      (inputDigits.length >= 10 && inputDigits.endsWith(envPhone)) ||
+      (envPhone.length >= 10 && envPhone.endsWith(inputDigits)));
+
+  if ((matchesEnvUsername || matchesEnvPhone) && trimmedPass === envPassword) {
+    return {
+      success: true,
+      username: matchesEnvUsername ? envUsername : `Admin (${envPhone})`,
+    };
+  }
+
+  // 2. Check against Firestore database (admin_credentials collection)
+  try {
+    const colRef = collection(db, ADMIN_CREDENTIALS_COLLECTION);
+    const snap = await getDocs(colRef);
+    if (!snap.empty) {
+      for (const d of snap.docs) {
+        const data = d.data() as AdminCredentialDoc;
+        const dbUser = (data.username || "").toString().trim().toLowerCase();
+        const dbPhone = (data.phone || "").toString().trim().replace(/\D/g, "");
+        const dbPass = (data.password || "").toString().trim();
+
+        const matchesDbUsername = Boolean(dbUser) && inputRawLower === dbUser;
+        const matchesDbPhone =
+          Boolean(dbPhone) &&
+          (inputDigits === dbPhone ||
+            (inputDigits.length >= 10 && inputDigits.endsWith(dbPhone)) ||
+            (dbPhone.length >= 10 && dbPhone.endsWith(inputDigits)));
+
+        if ((matchesDbUsername || matchesDbPhone) && trimmedPass === dbPass) {
+          return {
+            success: true,
+            username: dbUser || `Admin (${dbPhone})`,
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Firestore admin credentials check fallback:", err);
+  }
+
+  return { success: false, error: "Invalid username/phone number or password." };
+}
+
