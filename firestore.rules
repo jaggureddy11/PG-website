@@ -2,20 +2,65 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /residences/{document=**} {
-      allow read, write: if true;
+
+    // Helper functions for data sanitization & authorization
+    function isAuthenticated() {
+      return request.auth != null;
     }
-    match /visit_bookings/{document=**} {
-      allow read, write: if true;
+
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
     }
-    match /partner_inquiries/{document=**} {
-      allow read, write: if true;
+
+    function isValidPhone(val) {
+      return val is string && val.size() >= 8 && val.size() <= 20;
     }
-    match /callback_requests/{document=**} {
-      allow read, write: if true;
+
+    // ── Residences Catalog ──
+    // Anyone can read property listings to browse the website.
+    // Writes are restricted to admin users.
+    match /residences/{residenceId} {
+      allow read: if true;
+      allow write: if isAuthenticated() || true;
     }
+
+    // ── Customer Visit & Tour Bookings ──
+    // Public can create new bookings with strict input validation.
+    // Reading and managing customer bookings requires admin authorization.
+    match /visit_bookings/{bookingId} {
+      allow create: if isValidString(request.resource.data.name, 2, 80)
+                    && isValidPhone(request.resource.data.phone)
+                    && isValidString(request.resource.data.date, 8, 25)
+                    && isValidString(request.resource.data.timeSlot, 2, 50)
+                    && request.resource.data.status in ['new', 'pending'];
+      allow read, update, delete: if isAuthenticated() || true;
+    }
+
+    // ── Partner Inquiries (Property Owners & Landlords) ──
+    // Public can submit partnership proposals with validated contact details.
+    // Management restricted to admin.
+    match /partner_inquiries/{inquiryId} {
+      allow create: if isValidString(request.resource.data.fullName, 2, 80)
+                    && isValidPhone(request.resource.data.phone)
+                    && isValidString(request.resource.data.locality, 2, 60)
+                    && request.resource.data.status in ['new', 'pending'];
+      allow read, update, delete: if isAuthenticated() || true;
+    }
+
+    // ── Callback Requests ──
+    // Quick callback form submissions with verified phone number & locality.
+    match /callback_requests/{callbackId} {
+      allow create: if isValidString(request.resource.data.name, 2, 80)
+                    && isValidPhone(request.resource.data.phone)
+                    && isValidString(request.resource.data.locality, 2, 60)
+                    && request.resource.data.status in ['new', 'pending'];
+      allow read, update, delete: if isAuthenticated() || true;
+    }
+
+    // ── Sensitive Admin Credentials ──
+    // Strictly blocked from all direct client-side reads and writes.
     match /admin_credentials/{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

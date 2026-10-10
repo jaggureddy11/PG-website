@@ -1,4 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, signOut as fbSignOut, onAuthStateChanged, type User } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   getFirestore,
   collection,
@@ -77,6 +79,83 @@ export const firebaseConfig = {
 
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const storage = getStorage(app);
+
+/**
+ * Client-side input sanitization helpers
+ */
+export function sanitizeText(val?: string): string {
+  if (!val) return "";
+  return val.trim().replace(/[<>]/g, "");
+}
+
+export function sanitizePhoneNumber(phone?: string): string {
+  if (!phone) return "";
+  return phone.trim().replace(/[^\d+]/g, "");
+}
+
+/**
+ * Safely convert an image file to a compressed base64 data URI (guarantees persistence across devices)
+ */
+export async function fileToOptimizedDataUrl(file: File, maxWidth = 1400, quality = 0.82): Promise<string> {
+  if (file.type.startsWith("video/")) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(e.target?.result as string);
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Upload image or video to Firebase Cloud Storage, with automatic fallback to optimized inline data URI.
+ */
+export async function uploadMediaFile(file: File, folder = "residences"): Promise<string> {
+  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+  const filename = `${folder}/${Date.now()}_${cleanName}`;
+  const storageRef = ref(storage, filename);
+  try {
+    const snap = await uploadBytes(storageRef, file);
+    return await getDownloadURL(snap.ref);
+  } catch (err) {
+    console.warn("Cloud Storage bucket upload unconfigured or restricted, falling back to optimized inline URI:", err);
+    return await fileToOptimizedDataUrl(file);
+  }
+}
 
 export const RESIDENCES_COLLECTION = "residences";
 export const BOOKINGS_COLLECTION = "visit_bookings";
@@ -159,6 +238,13 @@ export async function saveVisitBookingToFirestore(
   const colRef = collection(db, BOOKINGS_COLLECTION);
   const docData: VisitBooking = {
     ...booking,
+    name: sanitizeText(booking.name),
+    phone: sanitizePhoneNumber(booking.phone),
+    residenceName: sanitizeText(booking.residenceName),
+    timeSlot: sanitizeText(booking.timeSlot),
+    date: sanitizeText(booking.date),
+    tourType: booking.tourType === "video" ? "video" : "in-person",
+    sharingType: sanitizeText(booking.sharingType || "Standard"),
     status: booking.status || "new",
     createdAt: booking.createdAt || new Date().toISOString(),
   };
@@ -213,6 +299,13 @@ export async function savePartnerInquiryToFirestore(
   const colRef = collection(db, PARTNER_COLLECTION);
   const docData: PartnerInquiry = {
     ...inquiry,
+    fullName: sanitizeText(inquiry.fullName),
+    phone: sanitizePhoneNumber(inquiry.phone),
+    email: sanitizeText(inquiry.email),
+    propertyType: sanitizeText(inquiry.propertyType),
+    locality: sanitizeText(inquiry.locality),
+    roomCount: sanitizeText(inquiry.roomCount),
+    note: sanitizeText(inquiry.note),
     status: inquiry.status || "new",
     createdAt: inquiry.createdAt || new Date().toISOString(),
   };
@@ -272,6 +365,11 @@ export async function saveCallbackRequestToFirestore(
   const colRef = collection(db, CALLBACK_COLLECTION);
   const docData: CallbackRequest = {
     ...callback,
+    name: sanitizeText(callback.name),
+    phone: sanitizePhoneNumber(callback.phone),
+    locality: sanitizeText(callback.locality),
+    residenceName: sanitizeText(callback.residenceName),
+    source: sanitizeText(callback.source || "Website Callback"),
     status: callback.status || "new",
     createdAt: callback.createdAt || new Date().toISOString(),
   };
@@ -325,21 +423,58 @@ export interface AdminCredentialDoc {
 }
 
 /**
- * Verify admin credentials against environment variables and/or Firestore database.
- * Supports login via either username OR registered phone number.
+ * Safely sign out admin from Firebase Auth
+ */
+export async function signOutAdmin(): Promise<void> {
+  try {
+    await fbSignOut(auth);
+  } catch (err) {
+    console.warn("Firebase sign out note:", err);
+  }
+}
+
+/**
+ * Listen to Firebase Auth state changes
+ */
+export function subscribeToAuthState(callback: (user: User | null) => void) {
+  return onAuthStateChanged(auth, callback);
+}
+
+/**
+ * Verify admin credentials against Firebase Auth, environment variables, or fallback store.
+ * Supports login via Email, Username, or Registered Phone.
  */
 export async function verifyAdminCredentials(
   identifier: string,
   passwordAttempt: string
-): Promise<{ success: boolean; error?: string; username?: string }> {
+): Promise<{ success: boolean; error?: string; username?: string; firebaseUser?: User }> {
   const trimmedId = identifier.trim();
   const trimmedPass = passwordAttempt.trim();
 
   if (!trimmedId || !trimmedPass) {
-    return { success: false, error: "Please enter both identifier (username/phone) and password." };
+    return { success: false, error: "Please enter both identifier (username/phone/email) and password." };
   }
 
-  // 1. Check against Environment variables (.env)
+  // 1. Try Firebase Authentication if an email format is supplied
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedId);
+  if (isEmail) {
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, trimmedId, trimmedPass);
+      return {
+        success: true,
+        username: userCred.user.displayName || userCred.user.email || trimmedId,
+        firebaseUser: userCred.user,
+      };
+    } catch (fbErr: unknown) {
+      const errCode = (fbErr as { code?: string })?.code;
+      if (errCode === "auth/invalid-credential" || errCode === "auth/wrong-password") {
+        return { success: false, error: "Invalid password for this account." };
+      }
+      // If Firebase Auth is not yet provisioned, proceed seamlessly to credentials verification
+    }
+  }
+
+  // 2. Check against Environment variables (.env)
   const envUsername = (import.meta.env.VITE_ADMIN_USERNAME || "admin").toString().trim().toLowerCase();
   const envPhone = (import.meta.env.VITE_ADMIN_PHONE || "8884446093").toString().trim().replace(/\D/g, "");
   const envPassword = (import.meta.env.VITE_ADMIN_PASSWORD || "CharlaAdmin@2026").toString().trim();
@@ -359,36 +494,6 @@ export async function verifyAdminCredentials(
       success: true,
       username: matchesEnvUsername ? envUsername : `Admin (${envPhone})`,
     };
-  }
-
-  // 2. Check against Firestore database (admin_credentials collection)
-  try {
-    const colRef = collection(db, ADMIN_CREDENTIALS_COLLECTION);
-    const snap = await getDocs(colRef);
-    if (!snap.empty) {
-      for (const d of snap.docs) {
-        const data = d.data() as AdminCredentialDoc;
-        const dbUser = (data.username || "").toString().trim().toLowerCase();
-        const dbPhone = (data.phone || "").toString().trim().replace(/\D/g, "");
-        const dbPass = (data.password || "").toString().trim();
-
-        const matchesDbUsername = Boolean(dbUser) && inputRawLower === dbUser;
-        const matchesDbPhone =
-          Boolean(dbPhone) &&
-          (inputDigits === dbPhone ||
-            (inputDigits.length >= 10 && inputDigits.endsWith(dbPhone)) ||
-            (dbPhone.length >= 10 && dbPhone.endsWith(inputDigits)));
-
-        if ((matchesDbUsername || matchesDbPhone) && trimmedPass === dbPass) {
-          return {
-            success: true,
-            username: dbUser || `Admin (${dbPhone})`,
-          };
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("Firestore admin credentials check fallback:", err);
   }
 
   return { success: false, error: "Invalid username/phone number or password." };

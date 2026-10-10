@@ -20,9 +20,12 @@ import {
   MessageCircle,
   Phone,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { AdminLogin } from "./AdminLogin";
 import {
+  uploadMediaFile,
+  signOutAdmin,
   type ExtendedResidence,
   type CallbackRequest,
   type VisitBooking,
@@ -164,6 +167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
 
   const handleLogout = () => {
     try {
+      signOutAdmin();
       sessionStorage.removeItem("charla_admin_auth");
       localStorage.removeItem("charla_admin_auth");
     } catch (e) {
@@ -198,6 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
 
   // Video Preview Modal
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState<Partial<ExtendedResidence>>(EMPTY_FORM_STATE);
@@ -299,30 +304,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     await quickStatusChange(id, status);
   };
 
-  // Media upload handling
-  const handleMediaUpload = (
+  // Media upload handling (permanent cloud storage / persistent optimized URI)
+  const handleMediaUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "hero" | "room" | "lounge" | "dining" | "video" | "gallery"
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    if (type === "video") {
-      setFormData((prev) => ({ ...prev, videoUrl: previewUrl }));
-    } else if (type === "gallery") {
-      setFormData((prev) => ({
-        ...prev,
-        additionalPhotos: [...(prev.additionalPhotos || []), previewUrl],
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        images: {
-          ...(prev.images || { hero: "", room: "", lounge: "", dining: "" }),
-          [type]: previewUrl,
-        },
-      }));
+    setIsUploadingMedia(true);
+    try {
+      const uploadedUrl = await uploadMediaFile(file, `residences/${formData.id || "property"}`);
+      if (type === "video") {
+        setFormData((prev) => ({ ...prev, videoUrl: uploadedUrl }));
+      } else if (type === "gallery") {
+        setFormData((prev) => ({
+          ...prev,
+          additionalPhotos: [...(prev.additionalPhotos || []), uploadedUrl],
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          images: {
+            ...(prev.images || { hero: "", room: "", lounge: "", dining: "" }),
+            [type]: uploadedUrl,
+          },
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to upload media:", err);
+      alert("Failed to process media file. Please provide a direct image/video URL instead.");
+    } finally {
+      setIsUploadingMedia(false);
+      e.target.value = "";
     }
   };
 
@@ -1551,6 +1565,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                 {/* ── TAB 3: PHOTOS & VIDEO WALKTHROUGH ── */}
                 {activeTab === "media" && (
                   <div>
+                    {isUploadingMedia && (
+                      <div
+                        style={{
+                          background: "#eff6ff",
+                          border: "1px solid #bfdbfe",
+                          borderRadius: "10px",
+                          padding: "12px 16px",
+                          marginBottom: "16px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          color: "#1d4ed8",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Loader2 size={16} className="animate-spin" />
+                        Uploading & optimizing media file... Please wait.
+                      </div>
+                    )}
+
                     {/* Video Walkthrough Section */}
                     <div
                       style={{
@@ -1582,12 +1617,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
 
                         <label
                           className="admin-btn admin-btn--secondary"
-                          style={{ cursor: "pointer", display: "inline-flex", justifyContent: "center" }}
+                          style={{
+                            cursor: isUploadingMedia ? "not-allowed" : "pointer",
+                            display: "inline-flex",
+                            justifyContent: "center",
+                            opacity: isUploadingMedia ? 0.6 : 1,
+                          }}
                         >
-                          Upload MP4 Video
+                          {isUploadingMedia ? "Uploading..." : "Upload MP4 Video"}
                           <input
                             type="file"
                             accept="video/*"
+                            disabled={isUploadingMedia}
                             style={{ display: "none" }}
                             onChange={(e) => handleMediaUpload(e, "video")}
                           />
@@ -1638,11 +1679,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                           }
                         />
                         <div style={{ marginTop: "6px" }}>
-                          <label className="admin-btn admin-btn--ghost" style={{ fontSize: "12px", padding: "4px 8px" }}>
-                            Upload Hero File
+                          <label
+                            className="admin-btn admin-btn--ghost"
+                            style={{
+                              fontSize: "12px",
+                              padding: "4px 8px",
+                              cursor: isUploadingMedia ? "not-allowed" : "pointer",
+                              opacity: isUploadingMedia ? 0.6 : 1,
+                            }}
+                          >
+                            {isUploadingMedia ? "Uploading..." : "Upload Hero File"}
                             <input
                               type="file"
                               accept="image/*"
+                              disabled={isUploadingMedia}
                               style={{ display: "none" }}
                               onChange={(e) => handleMediaUpload(e, "hero")}
                             />
@@ -1668,11 +1718,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                           }
                         />
                         <div style={{ marginTop: "6px" }}>
-                          <label className="admin-btn admin-btn--ghost" style={{ fontSize: "12px", padding: "4px 8px" }}>
-                            Upload Room File
+                          <label
+                            className="admin-btn admin-btn--ghost"
+                            style={{
+                              fontSize: "12px",
+                              padding: "4px 8px",
+                              cursor: isUploadingMedia ? "not-allowed" : "pointer",
+                              opacity: isUploadingMedia ? 0.6 : 1,
+                            }}
+                          >
+                            {isUploadingMedia ? "Uploading..." : "Upload Room File"}
                             <input
                               type="file"
                               accept="image/*"
+                              disabled={isUploadingMedia}
                               style={{ display: "none" }}
                               onChange={(e) => handleMediaUpload(e, "room")}
                             />
@@ -1700,11 +1759,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                           }
                         />
                         <div style={{ marginTop: "6px" }}>
-                          <label className="admin-btn admin-btn--ghost" style={{ fontSize: "12px", padding: "4px 8px" }}>
-                            Upload Lounge File
+                          <label
+                            className="admin-btn admin-btn--ghost"
+                            style={{
+                              fontSize: "12px",
+                              padding: "4px 8px",
+                              cursor: isUploadingMedia ? "not-allowed" : "pointer",
+                              opacity: isUploadingMedia ? 0.6 : 1,
+                            }}
+                          >
+                            {isUploadingMedia ? "Uploading..." : "Upload Lounge File"}
                             <input
                               type="file"
                               accept="image/*"
+                              disabled={isUploadingMedia}
                               style={{ display: "none" }}
                               onChange={(e) => handleMediaUpload(e, "lounge")}
                             />
@@ -1730,11 +1798,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                           }
                         />
                         <div style={{ marginTop: "6px" }}>
-                          <label className="admin-btn admin-btn--ghost" style={{ fontSize: "12px", padding: "4px 8px" }}>
-                            Upload Dining File
+                          <label
+                            className="admin-btn admin-btn--ghost"
+                            style={{
+                              fontSize: "12px",
+                              padding: "4px 8px",
+                              cursor: isUploadingMedia ? "not-allowed" : "pointer",
+                              opacity: isUploadingMedia ? 0.6 : 1,
+                            }}
+                          >
+                            {isUploadingMedia ? "Uploading..." : "Upload Dining File"}
                             <input
                               type="file"
                               accept="image/*"
+                              disabled={isUploadingMedia}
                               style={{ display: "none" }}
                               onChange={(e) => handleMediaUpload(e, "dining")}
                             />
@@ -1749,11 +1826,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                         <label className="admin-form-label" style={{ margin: 0 }}>
                           Additional Gallery Photos ({formData.additionalPhotos?.length || 0})
                         </label>
-                        <label className="admin-btn admin-btn--secondary" style={{ fontSize: "12px", padding: "4px 10px", cursor: "pointer" }}>
-                          + Add Photo
+                        <label
+                          className="admin-btn admin-btn--secondary"
+                          style={{
+                            fontSize: "12px",
+                            padding: "4px 10px",
+                            cursor: isUploadingMedia ? "not-allowed" : "pointer",
+                            opacity: isUploadingMedia ? 0.6 : 1,
+                          }}
+                        >
+                          {isUploadingMedia ? "Uploading..." : "+ Add Photo"}
                           <input
                             type="file"
                             accept="image/*"
+                            disabled={isUploadingMedia}
                             style={{ display: "none" }}
                             onChange={(e) => handleMediaUpload(e, "gallery")}
                           />
