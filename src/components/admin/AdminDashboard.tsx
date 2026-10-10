@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Building2,
   BedDouble,
   Flame,
   Lock,
   Globe,
+  Bell,
   Plus,
   Search,
   MapPin,
@@ -21,6 +22,8 @@ import {
   Phone,
   LogOut,
   Loader2,
+  ChevronRight,
+  CheckCircle2,
 } from "lucide-react";
 import { AdminLogin } from "./AdminLogin";
 import {
@@ -235,6 +238,119 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
   const fastFillingCount = residences.filter((r) => r.status === "fast-filling").length;
   const soldOutCount = residences.filter((r) => r.status === "sold-out").length;
 
+  // Notification Center State
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    }
+    if (isNotificationsOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isNotificationsOpen]);
+
+  // Aggregate and sort all customer notifications (callbacks, bookings, partner inquiries)
+  const notificationsList = useMemo(() => {
+    const list: Array<{
+      id: string;
+      type: "callback" | "booking" | "partner";
+      title: string;
+      detail: string;
+      time: string;
+      rawDate: number;
+      isNew: boolean;
+      status: string;
+      tab: "callbacks" | "bookings" | "partner";
+    }> = [];
+
+    callbackRequests.forEach((c, idx) => {
+      const rawDate = c.createdAt ? new Date(c.createdAt).getTime() : 0;
+      const timeFormatted = c.createdAt
+        ? new Date(c.createdAt).toLocaleDateString("en-IN", {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "Just now";
+      list.push({
+        id: c.id || `cb-${idx}`,
+        type: "callback",
+        title: c.name ? `${c.name} (Callback)` : "Callback Request",
+        detail: c.locality ? `${c.locality} • ${c.phone}` : c.phone,
+        time: timeFormatted,
+        rawDate,
+        isNew: (c.status || "new") === "new",
+        status: c.status || "new",
+        tab: "callbacks",
+      });
+    });
+
+    visitBookings.forEach((b, idx) => {
+      const rawDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const timeFormatted = b.createdAt
+        ? new Date(b.createdAt).toLocaleDateString("en-IN", {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "Just now";
+      list.push({
+        id: b.id || `vb-${idx}`,
+        type: "booking",
+        title: `${b.name} (Tour Visit)`,
+        detail: `${b.residenceName || "Residence"} • ${b.date || "Scheduled"} (${b.timeSlot || ""})`,
+        time: timeFormatted,
+        rawDate,
+        isNew: (b.status || "new") === "new",
+        status: b.status || "new",
+        tab: "bookings",
+      });
+    });
+
+    partnerInquiries.forEach((p, idx) => {
+      const rawDate = p.createdAt ? new Date(p.createdAt).getTime() : 0;
+      const timeFormatted = p.createdAt
+        ? new Date(p.createdAt).toLocaleDateString("en-IN", {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "Just now";
+      list.push({
+        id: p.id || `pi-${idx}`,
+        type: "partner",
+        title: `${p.fullName || "Partner"} (Inquiry)`,
+        detail: `${p.propertyType || "Property"} • ${p.locality || "Bangalore"}`,
+        time: timeFormatted,
+        rawDate,
+        isNew: (p.status || "new") === "new",
+        status: p.status || "new",
+        tab: "partner",
+      });
+    });
+
+    return list.sort((a, b) => {
+      if (a.isNew !== b.isNew) {
+        return a.isNew ? -1 : 1;
+      }
+      return b.rawDate - a.rawDate;
+    });
+  }, [callbackRequests, visitBookings, partnerInquiries]);
+
+  const totalNewNotifications = notificationsList.filter((n) => n.isNew).length;
+
   const handleOpenAdd = () => {
     setEditingId(null);
     setModalConfirmDelete(false);
@@ -393,15 +509,139 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               className="admin-btn admin-btn--secondary"
               onClick={onNavigateHome}
               title="View live website"
+              aria-label="View live website"
             >
               <Globe size={15} strokeWidth={2} />
               <span>View Website</span>
             </button>
 
+            {/* Notification Center */}
+            <div className="admin-notif-wrap" ref={notifRef}>
+              <button
+                type="button"
+                className={`admin-btn admin-btn--secondary admin-notif-btn ${isNotificationsOpen ? "active" : ""}`}
+                onClick={() => setIsNotificationsOpen((prev) => !prev)}
+                title={`Notifications (${totalNewNotifications} new)`}
+                aria-label="View notifications"
+                aria-expanded={isNotificationsOpen}
+              >
+                <Bell size={15} strokeWidth={2} />
+                {totalNewNotifications > 0 && (
+                  <span className="admin-notif-badge">
+                    {totalNewNotifications > 9 ? "9+" : totalNewNotifications}
+                  </span>
+                )}
+              </button>
+
+              {isNotificationsOpen && (
+                <>
+                  <div
+                    className="admin-notif-backdrop"
+                    onClick={() => setIsNotificationsOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="admin-notif-dropdown">
+                    <div className="admin-notif-header">
+                      <div className="admin-notif-header__title">
+                        <Bell size={15} />
+                        <span>Notifications</span>
+                        <span className={`admin-notif-pill ${totalNewNotifications > 0 ? "admin-notif-pill--orange" : ""}`}>
+                          {totalNewNotifications > 0 ? `${totalNewNotifications} New` : "All Caught Up"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="admin-notif-close"
+                        onClick={() => setIsNotificationsOpen(false)}
+                        title="Close"
+                        aria-label="Close notifications"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+
+                    <div className="admin-notif-list">
+                      {notificationsList.length === 0 ? (
+                        <div className="admin-notif-empty">
+                          <CheckCircle2 size={32} strokeWidth={1.5} style={{ color: "#16a34a" }} />
+                          <h4>All caught up!</h4>
+                          <p>No customer requests or inquiries yet.</p>
+                        </div>
+                      ) : (
+                        notificationsList.slice(0, 20).map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={`admin-notif-item ${item.isNew ? "is-new" : ""}`}
+                            onClick={() => {
+                              setCurrentAdminTab(item.tab);
+                              setIsNotificationsOpen(false);
+                            }}
+                          >
+                            <div className={`admin-notif-item__icon admin-notif-item__icon--${item.type}`}>
+                              {item.type === "callback" && <Phone size={14} />}
+                              {item.type === "booking" && <CalendarCheck size={14} />}
+                              {item.type === "partner" && <Users size={14} />}
+                            </div>
+                            <div className="admin-notif-item__body">
+                              <div className="admin-notif-item__top">
+                                <span className="admin-notif-item__title">{item.title}</span>
+                                <span className={`admin-lead-badge admin-lead-badge--${item.status} admin-notif-item__status`}>
+                                  {item.status}
+                                </span>
+                              </div>
+                              <div className="admin-notif-item__detail">{item.detail}</div>
+                              <div className="admin-notif-item__time">{item.time}</div>
+                            </div>
+                            <ChevronRight size={14} style={{ color: "#94a3b8", flexShrink: 0, marginTop: "8px" }} />
+                          </button>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="admin-notif-footer">
+                      <button
+                        type="button"
+                        className="admin-notif-footer-btn"
+                        onClick={() => {
+                          setCurrentAdminTab("callbacks");
+                          setIsNotificationsOpen(false);
+                        }}
+                      >
+                        Callbacks ({callbackRequests.length})
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-notif-footer-btn"
+                        onClick={() => {
+                          setCurrentAdminTab("bookings");
+                          setIsNotificationsOpen(false);
+                        }}
+                      >
+                        Tours ({visitBookings.length})
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-notif-footer-btn"
+                        onClick={() => {
+                          setCurrentAdminTab("partner");
+                          setIsNotificationsOpen(false);
+                        }}
+                      >
+                        Partners ({partnerInquiries.length})
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <button
               type="button"
               className="admin-btn admin-btn--primary"
               onClick={handleOpenAdd}
+              title="Add Property"
+              aria-label="Add Property"
             >
               <Plus size={15} strokeWidth={2.5} />
               <span>Add Property</span>
@@ -412,6 +652,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               className="admin-btn admin-btn--logout"
               onClick={handleLogout}
               title="Sign out of Admin Dashboard"
+              aria-label="Sign out of Admin Dashboard"
             >
               <LogOut size={15} strokeWidth={2} />
               <span>Logout</span>
