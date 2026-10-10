@@ -192,9 +192,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     updateCallbackStatus,
     updateBookingStatus,
     updateInquiryStatus,
-    firebaseStatus,
     isSyncing,
-    lastSyncedAt,
     syncDatabase,
   } = useResidences();
 
@@ -226,10 +224,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     message: string;
   } | null>(null);
 
-  const formattedLastSync = useMemo(() => {
-    if (!lastSyncedAt) return null;
-    return lastSyncedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  }, [lastSyncedAt]);
 
   const handleManualSync = async (forceSeed = false) => {
     try {
@@ -582,26 +576,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               <span className="admin-brand__dot" aria-hidden="true" />
               <span>{loggedAdminUser}</span>
             </div>
-            <button
-              type="button"
-              className={`admin-cloud-sync-btn admin-cloud-sync-btn--${isSyncing ? "connecting" : firebaseStatus}`}
-              onClick={() => handleManualSync(false)}
-              disabled={isSyncing}
-              title={`Cloud Database: ${
-                firebaseStatus === "synced"
-                  ? "Live Synced with Firestore"
-                  : isSyncing
-                  ? "Syncing with cloud..."
-                  : "Offline mode"
-              }${formattedLastSync ? ` · Last synced: ${formattedLastSync}` : ""}. Click to re-sync.`}
-              aria-label="Sync Database with Cloud Firestore"
-            >
-              <span className={`admin-cloud-dot admin-cloud-dot--${isSyncing ? "connecting" : firebaseStatus}`} />
-              <RefreshCw size={11} className={isSyncing ? "admin-spin" : ""} />
-              <span className="admin-cloud-sync-btn__text">
-                {isSyncing ? "Syncing..." : firebaseStatus === "synced" ? "Cloud Synced" : "Offline"}
-              </span>
-            </button>
           </div>
 
           <div className="admin-header__actions">
