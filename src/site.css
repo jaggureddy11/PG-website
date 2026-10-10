@@ -3241,6 +3241,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 .stories__row--a { animation: marquee 64s linear infinite; }
 .stories__row--b { animation: marquee-r 64s linear infinite; }
 .stories__row:hover { animation-play-state: paused; }
+@keyframes marquee-l { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 @keyframes marquee-r { from { transform: translate3d(-50%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 
 .tcard {
@@ -4326,19 +4327,41 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
     line-height: 1.4;
   }
   .stories__marquee {
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    overflow: hidden;
+    padding: 6px 0;
   }
   .stories__marquee--columns {
     grid-template-columns: 1fr;
     height: 480px;
   }
   .stories__row {
-    animation-duration: 48s;
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  .stories__row--a {
+    animation: marquee-r 42s linear infinite;
+  }
+  .stories__row--b {
+    animation: marquee-l 42s linear infinite;
   }
   .stories__row:hover,
   .stories__row:active,
   .stories__row:focus-within {
     animation-play-state: paused;
+  }
+  .stories__row .tcard {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .stories__row .tcard__text {
+    flex: 1;
   }
   .tcard {
     width: min(300px, 82vw);

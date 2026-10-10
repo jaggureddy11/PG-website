@@ -180,12 +180,34 @@ export function initSiteInteractions() {
   /* ── rolling resident stories ── */
   const storiesMarquee = document.querySelector(".stories__marquee");
   if (storiesMarquee) {
+    let originalRows = [...storiesMarquee.querySelectorAll(".stories__row")].map((row) => row.cloneNode(true));
     const reviews = [...storiesMarquee.querySelectorAll('.tcard:not([aria-hidden="true"])')].map((card) => card.cloneNode(true));
+    if (originalRows.length === 0 && reviews.length > 0) {
+      const rowA = document.createElement("div");
+      rowA.className = "stories__row stories__row--a";
+      const rowB = document.createElement("div");
+      rowB.className = "stories__row stories__row--b";
+      const half = Math.ceil(reviews.length / 2);
+      const revA = reviews.slice(0, half);
+      const revB = reviews.slice(half);
+      [...revA, ...revA.map((r) => { const c = r.cloneNode(true); c.setAttribute("aria-hidden", "true"); return c; })].forEach((r) => rowA.append(r));
+      [...revB, ...revB.map((r) => { const c = r.cloneNode(true); c.setAttribute("aria-hidden", "true"); return c; })].forEach((r) => rowB.append(r));
+      originalRows = [rowA, rowB];
+    }
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let storiesResizeTimer;
 
-    const buildStoryColumns = () => {
-      const columnCount = reducedMotion.matches || window.innerWidth <= 720 ? 1 : window.innerWidth <= 1080 ? 2 : 3;
+    const buildStoryDisplay = () => {
+      // Mobile screen (<= 768px): Horizontal bidirectional marquee (left-to-right and right-to-left)
+      // Desktop screen (> 768px): Untouched 3 vertical rolling columns layout
+      if (window.innerWidth <= 768) {
+        storiesMarquee.classList.remove("stories__marquee--columns");
+        storiesMarquee.classList.toggle("stories__marquee--static", reducedMotion.matches);
+        storiesMarquee.replaceChildren(...originalRows.map((row) => row.cloneNode(true)));
+        return;
+      }
+
+      const columnCount = reducedMotion.matches ? 1 : window.innerWidth <= 1080 ? 2 : 3;
       const columns = Array.from({ length: columnCount }, () => []);
       reviews.forEach((review, index) => columns[index % columnCount].push(review));
 
@@ -213,14 +235,14 @@ export function initSiteInteractions() {
       storiesMarquee.classList.toggle("stories__marquee--static", reducedMotion.matches);
     };
 
-    buildStoryColumns();
+    buildStoryDisplay();
     const resizeHandler = () => {
       clearTimeout(storiesResizeTimer);
-      storiesResizeTimer = setTimeout(buildStoryColumns, 180);
+      storiesResizeTimer = setTimeout(buildStoryDisplay, 180);
     };
     addTrackedListener(window, "resize", resizeHandler);
     if (reducedMotion.addEventListener) {
-      addTrackedListener(reducedMotion, "change", buildStoryColumns);
+      addTrackedListener(reducedMotion, "change", buildStoryDisplay);
     }
   }
 
