@@ -24,6 +24,9 @@ import {
 import { AdminLogin } from "./AdminLogin";
 import {
   type ExtendedResidence,
+  type CallbackRequest,
+  type VisitBooking,
+  type PartnerInquiry,
 } from "@/lib/firebase";
 import { useResidences } from "@/context/ResidencesContext";
 
@@ -34,7 +37,7 @@ interface AdminDashboardProps {
   onSelectResidence?: (id: string) => void;
 }
 
-export function extractCoordsFromGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
+function extractCoordsFromGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
   if (!url) return null;
   // Match @lat,lng e.g. https://www.google.com/maps/@12.9234,77.5843,17z
   const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
@@ -799,7 +802,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                     </tr>
                   </thead>
                   <tbody>
-                    {callbackRequests.map((c) => {
+                    {callbackRequests.map((c, index) => {
                       const dateFormatted = c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", {
                         month: "short",
                         day: "numeric",
@@ -813,7 +816,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                         : `Hello ${c.name}, this is Charla Living following up on your callback request for ${c.locality}. When would be a convenient time to speak?`;
 
                       return (
-                        <tr key={c.id || Math.random()}>
+                        <tr key={c.id || `callback-${index}`}>
                           <td>
                             <strong style={{ fontWeight: 700, fontSize: "14px", color: "#0c1b34" }}>{c.name}</strong>
                           </td>
@@ -845,7 +848,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                               value={c.status || "new"}
                               onChange={(e) => {
                                 if (c.id) {
-                                  updateCallbackStatus(c.id, e.target.value as any);
+                                  updateCallbackStatus(c.id, e.target.value as CallbackRequest["status"]);
                                 }
                               }}
                               className="admin-status-select"
@@ -944,7 +947,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                     </tr>
                   </thead>
                   <tbody>
-                    {visitBookings.map((b) => {
+                    {visitBookings.map((b, index) => {
                       const dateFormatted = b.createdAt ? new Date(b.createdAt).toLocaleDateString("en-IN", {
                         month: "short",
                         day: "numeric",
@@ -956,7 +959,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                       const waMsg = `Hello ${b.name}, this is Charla Living regarding your ${b.tourType === "in-person" ? "in-person visit" : "video walkthrough"} for ${b.residenceName} on ${b.date}.`;
 
                       return (
-                        <tr key={b.id || Math.random()}>
+                        <tr key={b.id || `booking-${index}`}>
                           <td>
                             <strong style={{ fontWeight: 700 }}>{b.name}</strong>
                           </td>
@@ -994,7 +997,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                               value={b.status || "new"}
                               onChange={(e) => {
                                 if (b.id) {
-                                  updateBookingStatus(b.id, e.target.value as any);
+                                  updateBookingStatus(b.id, e.target.value as VisitBooking["status"]);
                                 }
                               }}
                               className="admin-status-select"
@@ -1093,7 +1096,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                     </tr>
                   </thead>
                   <tbody>
-                    {partnerInquiries.map((p) => {
+                    {partnerInquiries.map((p, index) => {
                       const dateFormatted = p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-IN", {
                         month: "short",
                         day: "numeric",
@@ -1105,7 +1108,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                       const waMsg = `Hello ${p.fullName}, this is Charla Living following up on your partnership proposal for property in ${p.locality}.`;
 
                       return (
-                        <tr key={p.id || Math.random()}>
+                        <tr key={p.id || `partner-${index}`}>
                           <td>
                             <strong style={{ fontWeight: 700 }}>{p.fullName}</strong>
                           </td>
@@ -1140,7 +1143,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                               value={p.status || "new"}
                               onChange={(e) => {
                                 if (p.id) {
-                                  updateInquiryStatus(p.id, e.target.value as any);
+                                  updateInquiryStatus(p.id, e.target.value as PartnerInquiry["status"]);
                                 }
                               }}
                               className="admin-status-select"

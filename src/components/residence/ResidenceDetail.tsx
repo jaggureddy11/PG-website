@@ -115,8 +115,6 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setIsBooked(false);
-    setSelectedRoomId(residence.roomTypes[1]?.id || residence.roomTypes[0]?.id || "single");
   }, [residence.id]);
 
   useEffect(() => {

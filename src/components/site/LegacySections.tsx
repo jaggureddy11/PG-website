@@ -2,15 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { CommunityLogosMarquee } from "./CommunityLogosMarquee";
 import { saveCallbackRequestToFirestore } from "@/lib/firebase";
 
-interface LegacySectionsProps {
-  onSelectResidence?: (id: string) => void;
-  onNavigateResidences?: () => void;
-}
-
-export function LegacySections({
-  onSelectResidence: _onSelectResidence,
-  onNavigateResidences: _onNavigateResidences
-}: LegacySectionsProps = {}) {
+export function LegacySections() {
   const [callbackName, setCallbackName] = useState("");
   const [callbackPhone, setCallbackPhone] = useState("");
   const [callbackLocality, setCallbackLocality] = useState("");

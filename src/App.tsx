@@ -194,6 +194,7 @@ function AppContent() {
 
       {currentView === "detail" && currentResidence ? (
         <ResidenceDetail
+          key={currentResidence.id}
           residence={currentResidence}
           allResidences={residences}
           onBack={() => handleBackToHome("residences")}
@@ -218,10 +219,7 @@ function AppContent() {
       ) : (
         <main id="home">
           <Skiper39 onSearch={handleHeroSearch} />
-          <LegacySections
-            onSelectResidence={handleSelectResidence}
-            onNavigateResidences={handleNavigateResidences}
-          />
+          <LegacySections />
         </main>
       )}
 

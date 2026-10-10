@@ -47,7 +47,7 @@ export interface ResidenceItem {
   distanceKm?: number;
 }
 
-export const RESIDENCE_ITEMS: ResidenceItem[] = [
+const RESIDENCE_ITEMS: ResidenceItem[] = [
   {
     id: "kumaraswamy-layout",
     name: "Charla Living — Tumaco House",
@@ -240,7 +240,9 @@ export function ResidencesPage({
   const [internalLocality, setInternalLocality] = useState<string>("all");
   const [internalSortBy, setInternalSortBy] = useState<string>("featured");
   const [selectedGender, setSelectedGender] = useState<"all" | "Male" | "Female" | "Unisex">("all");
-  const [activeResidenceId, setActiveResidenceId] = useState<string | null>(null);
+  const [activeResidenceId, setActiveResidenceId] = useState<string | null>(() => {
+    return (propResidences && propResidences.length > 0 ? propResidences[0].id : RESIDENCE_ITEMS[0]?.id) || null;
+  });
   const [mobileViewMode, setMobileViewMode] = useState<"list" | "map">("list");
 
   // Unified Property Interaction Modal State (Matching Stanza Reference UI)
@@ -272,13 +274,6 @@ export function ResidencesPage({
 
   const rawItems = propResidences && propResidences.length > 0 ? propResidences : RESIDENCE_ITEMS;
 
-  // Set default active residence on initial load
-  useEffect(() => {
-    if (!activeResidenceId && rawItems.length > 0) {
-      setActiveResidenceId(rawItems[0].id);
-    }
-  }, [rawItems, activeResidenceId]);
-
   // Handle ESC key to close modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -289,20 +284,6 @@ export function ResidencesPage({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeModalResidence, isSubmitting]);
-
-  // Dynamic localities derived from active residence data
-  const dynamicLocalityFilters = useRef<{ id: string; label: string }[]>(LOCALITY_FILTERS);
-  const localityList = (() => {
-    const map = new Map<string, string>();
-    map.set("all", "All Localities");
-    rawItems.forEach((item) => {
-      if (item.localityId && item.locality) {
-        map.set(item.localityId, item.locality);
-      }
-    });
-    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
-  })();
-  dynamicLocalityFilters.current = localityList;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -465,7 +446,7 @@ export function ResidencesPage({
         selectedGender === "all" ||
         (selectedGender === "Male" && item.gender === "Male") ||
         (selectedGender === "Female" && item.gender === "Female") ||
-        (selectedGender === "Unisex" && (item.gender === "Unisex" || (item as any).gender === "Co-living"));
+        (selectedGender === "Unisex" && (item.gender === "Unisex" || (item.gender as string) === "Co-living"));
       return matchesLocality && matchesRoom && matchesGender;
     })
     .sort((a, b) => {
@@ -562,7 +543,7 @@ export function ResidencesPage({
           {/* ─── Locality Filters & Sort Controls Bar ─── */}
           <div className="residences-controls-bar">
             <div className="residences-pills-bar">
-              {localityList.map((loc) => (
+              {LOCALITY_FILTERS.map((loc) => (
                 <button
                   key={loc.id}
                   type="button"

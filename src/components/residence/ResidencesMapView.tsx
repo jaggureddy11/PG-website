@@ -34,6 +34,14 @@ export function ResidencesMapView({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const onSelectRef = useRef(onSelectResidence);
+  const selectedIdRef = useRef(selectedId);
+
+  useEffect(() => {
+    onSelectRef.current = onSelectResidence;
+    selectedIdRef.current = selectedId;
+  }, [onSelectResidence, selectedId]);
+
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 
   const effectiveActiveId = hoveredPinId || selectedId;
@@ -108,7 +116,7 @@ export function ResidencesMapView({
     markersRef.current.clear();
 
     residences.forEach((res, idx) => {
-      const isLit = res.id === effectiveActiveId;
+      const isLit = res.id === selectedIdRef.current;
       const marker = L.marker([res.lat, res.lng], {
         icon: createCustomIcon(res, isLit),
         zIndexOffset: isLit ? 1000 : 100 + idx,
@@ -129,7 +137,7 @@ export function ResidencesMapView({
       );
 
       marker.on("click", () => {
-        onSelectResidence(res.id);
+        onSelectRef.current(res.id);
         map.flyTo([res.lat, res.lng], 15, { animate: true, duration: 0.5 });
       });
 
@@ -140,7 +148,7 @@ export function ResidencesMapView({
 
       marker.on("mouseout", () => {
         setHoveredPinId(null);
-        if (res.id !== selectedId) {
+        if (res.id !== selectedIdRef.current) {
           marker.closeTooltip();
         }
       });
@@ -190,7 +198,7 @@ export function ResidencesMapView({
         }
       }
     }
-  }, [effectiveActiveId, activeResidence, residences]);
+  }, [effectiveActiveId, activeResidence, residences, hoveredPinId]);
 
   const handleResetOverview = () => {
     setHoveredPinId(null);
