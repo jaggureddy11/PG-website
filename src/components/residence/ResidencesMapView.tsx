@@ -249,29 +249,6 @@ export function ResidencesMapView({
         </a>
       </div>
 
-      {/* ─── Bottom-Left Locality Quick-Pills ─── */}
-      <div className="absolute bottom-3.5 left-3.5 z-[1000] hidden sm:flex items-center gap-1.5 flex-wrap max-w-[85%] pointer-events-none">
-        {residences.map((res) => {
-          const isActive = res.id === effectiveActiveId;
-          return (
-            <button
-              key={res.id}
-              type="button"
-              onClick={() => {
-                onSelectResidence(res.id);
-                mapInstanceRef.current?.flyTo([res.lat, res.lng], 15, { animate: true, duration: 0.5 });
-              }}
-              className={`pointer-events-auto text-[11px] font-semibold px-2.5 py-1 rounded-xl shadow-sm border transition-all ${
-                isActive
-                  ? "bg-[#FB7009] text-white border-[#FB7009] shadow-md scale-105"
-                  : "bg-white/95 text-slate-700 border-slate-200 hover:bg-white hover:text-[#003B99]"
-              }`}
-            >
-              {res.locality}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
