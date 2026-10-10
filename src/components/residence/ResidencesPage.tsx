@@ -11,7 +11,6 @@ import {
   List as ListIcon,
   X,
   CheckCircle,
-  MessageCircle,
   Loader2,
   Building2
 } from "lucide-react";
@@ -248,7 +247,6 @@ export function ResidencesPage({
   const [modalTab, setModalTab] = useState<"visit" | "callback">("visit");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
   const [agreedToTerms, setAgreedToTerms] = useState(true);
 
   // Visit-specific details
@@ -1281,60 +1279,6 @@ export function ResidencesPage({
                       }}
                     >
                       We accept bookings with a minimum stay of 3 months.
-                    </div>
-                  </div>
-
-                  {/* WhatsApp updates toggle (matching reference image) */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 2px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div 
-                        style={{
-                          width: "28px",
-                          height: "28px",
-                          borderRadius: "50%",
-                          backgroundColor: "#22C55E",
-                          color: "#ffffff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: "0 2px 6px rgba(34, 197, 94, 0.35)"
-                        }}
-                      >
-                        <MessageCircle size={16} fill="currentColor" />
-                      </div>
-                      <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#1e293b" }}>
-                        Get updates over WhatsApp
-                      </span>
-                    </div>
-
-                    {/* iOS style toggle switch */}
-                    <div
-                      role="switch"
-                      aria-checked={whatsappOptIn}
-                      onClick={() => setWhatsappOptIn(!whatsappOptIn)}
-                      style={{
-                        width: "44px",
-                        height: "24px",
-                        borderRadius: "9999px",
-                        backgroundColor: whatsappOptIn ? "#22C55E" : "#cbd5e1",
-                        position: "relative",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s ease"
-                      }}
-                    >
-                      <div 
-                        style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "50%",
-                          backgroundColor: "#ffffff",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
-                          position: "absolute",
-                          top: "2px",
-                          left: whatsappOptIn ? "22px" : "2px",
-                          transition: "left 0.2s ease"
-                        }} 
-                      />
                     </div>
                   </div>
 
