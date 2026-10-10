@@ -480,52 +480,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
       <main className="admin-main">
         {currentAdminTab === "properties" && (
           <>
-            {/* ── Metric Stats Bento ── */}
+            {/* ── Metric Stats Bar ── */}
             <div className="admin-stats-grid">
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon admin-stat-icon--blue">
-              <Building2 size={24} strokeWidth={2.2} />
-            </div>
-            <div className="admin-stat-info">
-              <span className="admin-stat-label">Total Properties</span>
-              <span className="admin-stat-value">{totalCount}</span>
-              <span className="admin-stat-subtext">Across Bengaluru</span>
-            </div>
-          </div>
+              <div className="admin-stat-card" title="Total properties across Bengaluru">
+                <div className="admin-stat-icon admin-stat-icon--blue">
+                  <Building2 size={16} strokeWidth={2.2} />
+                </div>
+                <div className="admin-stat-info">
+                  <span className="admin-stat-label">
+                    <span className="admin-stat-label-full">Total Properties</span>
+                    <span className="admin-stat-label-short">Total</span>
+                  </span>
+                  <span className="admin-stat-value admin-stat-value--blue">{totalCount}</span>
+                </div>
+              </div>
 
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon admin-stat-icon--green">
-              <BedDouble size={24} strokeWidth={2.2} />
-            </div>
-            <div className="admin-stat-info">
-              <span className="admin-stat-label">Available for Move-in</span>
-              <span className="admin-stat-value">{availableCount}</span>
-              <span className="admin-stat-subtext">Ready for move-in</span>
-            </div>
-          </div>
+              <div className="admin-stat-card" title="Properties ready for move-in">
+                <div className="admin-stat-icon admin-stat-icon--green">
+                  <BedDouble size={16} strokeWidth={2.2} />
+                </div>
+                <div className="admin-stat-info">
+                  <span className="admin-stat-label">
+                    <span className="admin-stat-label-full">Available for Move-in</span>
+                    <span className="admin-stat-label-short">Available</span>
+                  </span>
+                  <span className="admin-stat-value admin-stat-value--green">{availableCount}</span>
+                </div>
+              </div>
 
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon admin-stat-icon--amber">
-              <Flame size={24} strokeWidth={2.2} />
-            </div>
-            <div className="admin-stat-info">
-              <span className="admin-stat-label">Fast Filling (High Demand)</span>
-              <span className="admin-stat-value">{fastFillingCount}</span>
-              <span className="admin-stat-subtext">High demand surge</span>
-            </div>
-          </div>
+              <div className="admin-stat-card" title="High demand surge properties">
+                <div className="admin-stat-icon admin-stat-icon--amber">
+                  <Flame size={16} strokeWidth={2.2} />
+                </div>
+                <div className="admin-stat-info">
+                  <span className="admin-stat-label">
+                    <span className="admin-stat-label-full">Fast Filling</span>
+                    <span className="admin-stat-label-short">Fast Filling</span>
+                  </span>
+                  <span className="admin-stat-value admin-stat-value--amber">{fastFillingCount}</span>
+                </div>
+              </div>
 
-          <div className="admin-stat-card">
-            <div className="admin-stat-icon admin-stat-icon--purple">
-              <Lock size={24} strokeWidth={2.2} />
+              <div className="admin-stat-card" title="100% capacity · waitlist properties">
+                <div className="admin-stat-icon admin-stat-icon--purple">
+                  <Lock size={16} strokeWidth={2.2} />
+                </div>
+                <div className="admin-stat-info">
+                  <span className="admin-stat-label">
+                    <span className="admin-stat-label-full">Sold Out / Waitlist</span>
+                    <span className="admin-stat-label-short">Sold Out</span>
+                  </span>
+                  <span className="admin-stat-value admin-stat-value--purple">{soldOutCount}</span>
+                </div>
+              </div>
             </div>
-            <div className="admin-stat-info">
-              <span className="admin-stat-label">Sold Out / Waitlist</span>
-              <span className="admin-stat-value">{soldOutCount}</span>
-              <span className="admin-stat-subtext">100% capacity · waitlist</span>
-            </div>
-          </div>
-        </div>
 
         {/* ── Deletion Success Notice ── */}
         {deleteNotice && (
