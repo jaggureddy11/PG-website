@@ -2204,6 +2204,273 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   }
 }
 
+/* ── Unified Booking Modal (Desktop & Compact Mobile) ── */
+.charla-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: rgba(12, 27, 52, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  overflow-y: auto;
+}
+
+.charla-modal-shell {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  margin: auto;
+}
+
+.charla-modal-close {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  z-index: 60;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.charla-modal-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.35);
+  border: 1px solid #e2e8f0;
+  padding: 15px 13px;
+  max-height: min(92vh, calc(100dvh - 24px));
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.charla-modal-tab-container {
+  display: flex;
+  padding: 3px;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.charla-modal-tab-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.charla-modal-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background-color: #f0f7ff;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  margin-bottom: 10px;
+}
+
+.charla-modal-preview-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: #e2e8f0;
+  border: 1px solid #cbd5e1;
+}
+
+.charla-modal-inner-card {
+  border-radius: 14px;
+  border: 1.5px solid #dbeafe;
+  background-color: #f8fafc;
+  padding: 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.charla-modal-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 13.5px;
+  color: #0f172a;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.charla-modal-phone-box {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.charla-modal-tour-btn {
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.charla-modal-date-input,
+.charla-modal-slot-select {
+  width: 100%;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 11.5px;
+  color: #0f172a;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.charla-modal-sharing-btn {
+  height: 30px;
+  border-radius: 7px;
+  font-size: 10.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.charla-modal-cta {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  border: none;
+  background-color: #003B99;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 59, 153, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+/* Desktop expansions */
+@media (min-width: 640px) {
+  .charla-modal-backdrop {
+    padding: 16px;
+  }
+  .charla-modal-shell {
+    max-width: 430px;
+  }
+  .charla-modal-close {
+    top: -14px;
+    right: -10px;
+    width: 36px;
+    height: 36px;
+  }
+  .charla-modal-card {
+    border-radius: 24px;
+    padding: 20px 18px;
+    max-height: min(92vh, calc(100dvh - 28px));
+  }
+  .charla-modal-tab-container {
+    padding: 4px;
+    margin-bottom: 14px;
+  }
+  .charla-modal-tab-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .charla-modal-preview {
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+  .charla-modal-preview-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+  .charla-modal-inner-card {
+    border-radius: 16px;
+    padding: 14px;
+    gap: 11px;
+  }
+  .charla-modal-input {
+    height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .charla-modal-phone-box {
+    height: 46px;
+    border-radius: 12px;
+  }
+  .charla-modal-tour-btn {
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+  .charla-modal-date-input,
+  .charla-modal-slot-select {
+    height: 38px;
+    border-radius: 10px;
+    font-size: 12.5px;
+  }
+  .charla-modal-sharing-btn {
+    height: 34px;
+    border-radius: 8px;
+    font-size: 11.5px;
+  }
+  .charla-modal-cta {
+    height: 48px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+}
+
 .map-zoom-btn {
   width: 32px !important;
   height: 32px !important;

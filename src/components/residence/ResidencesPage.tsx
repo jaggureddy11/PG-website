@@ -844,89 +844,40 @@ export function ResidencesPage({
       {/* ─── UNIFIED PROPERTY MODAL (STANZA-STYLE WITH CHARLA BRAND THEME) ─── */}
       {activeModalResidence && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+          className="charla-modal-backdrop"
           onClick={() => !isSubmitting && setActiveModalResidence(null)}
           role="dialog"
           aria-modal="true"
         >
           {/* Relative Wrapper with unclipped close button */}
           <div 
-            className="relative w-full my-auto"
+            className="charla-modal-shell"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "430px" }}
           >
             {/* Floating Top-Right Circular Close Button */}
             <button
               type="button"
+              className="charla-modal-close"
               onClick={() => !isSubmitting && setActiveModalResidence(null)}
-              style={{
-                position: "absolute",
-                top: "-14px",
-                right: "-10px",
-                zIndex: 60,
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                backgroundColor: "#ffffff",
-                color: "#1e293b",
-                border: "1px solid #cbd5e1",
-                boxShadow: "0 6px 16px rgba(0, 0, 0, 0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "transform 0.15s ease"
-              }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
               aria-label="Close modal"
             >
-              <X size={18} strokeWidth={2.5} />
+              <X size={17} strokeWidth={2.5} />
             </button>
 
             {/* Modal Card */}
-            <div
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "24px",
-                boxShadow: "0 24px 48px -12px rgba(0, 0, 0, 0.35)",
-                border: "1px solid #e2e8f0",
-                padding: "20px 18px",
-                maxHeight: "min(92vh, calc(100dvh - 28px))",
-                overflowY: "auto",
-                boxSizing: "border-box"
-              }}
-            >
+            <div className="charla-modal-card">
               {/* Top Pill Segmented Switcher */}
-              <div 
-                style={{
-                  display: "flex",
-                  padding: "4px",
-                  backgroundColor: "#f1f5f9",
-                  borderRadius: "9999px",
-                  border: "1px solid #e2e8f0",
-                  marginBottom: "14px",
-                  width: "100%",
-                  boxSizing: "border-box"
-                }}
-              >
+              <div className="charla-modal-tab-container">
                 <button
                   type="button"
                   onClick={() => setModalTab("visit")}
+                  className="charla-modal-tab-btn"
                   style={{
-                    flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: "9999px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
                     backgroundColor: modalTab === "visit" ? "#003B99" : "transparent",
                     color: modalTab === "visit" ? "#ffffff" : "#475569",
                     boxShadow: modalTab === "visit" ? "0 2px 8px rgba(0, 59, 153, 0.25)" : "none",
-                    whiteSpace: "nowrap",
-                    textAlign: "center"
                   }}
                 >
                   Schedule a Visit
@@ -934,20 +885,11 @@ export function ResidencesPage({
                 <button
                   type="button"
                   onClick={() => setModalTab("callback")}
+                  className="charla-modal-tab-btn"
                   style={{
-                    flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: "9999px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
                     backgroundColor: modalTab === "callback" ? "#003B99" : "transparent",
                     color: modalTab === "callback" ? "#ffffff" : "#475569",
                     boxShadow: modalTab === "callback" ? "0 2px 8px rgba(0, 59, 153, 0.25)" : "none",
-                    whiteSpace: "nowrap",
-                    textAlign: "center"
                   }}
                 >
                   Request a callback
@@ -955,29 +897,8 @@ export function ResidencesPage({
               </div>
 
               {/* Selected Property Preview Strip */}
-              <div 
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "10px 12px",
-                  backgroundColor: "#f0f7ff",
-                  borderRadius: "14px",
-                  border: "1px solid #dbeafe",
-                  marginBottom: "14px"
-                }}
-              >
-                <div 
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "10px",
-                    overflow: "hidden",
-                    flexShrink: 0,
-                    backgroundColor: "#e2e8f0",
-                    border: "1px solid #cbd5e1"
-                  }}
-                >
+              <div className="charla-modal-preview">
+                <div className="charla-modal-preview-img">
                   <img 
                     src={activeModalResidence.image} 
                     alt={activeModalResidence.houseName} 
@@ -985,14 +906,14 @@ export function ResidencesPage({
                   />
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#0c1b34", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#0c1b34", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {activeModalResidence.houseName}
                   </div>
                   <div style={{ fontSize: "11px", color: "#64748b", display: "flex", alignItems: "center", gap: "4px" }}>
                     <Building2 size={11} style={{ color: "#94a3b8", flexShrink: 0 }} />
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeModalResidence.locality}</span>
                   </div>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#FB7009", marginTop: "1px" }}>
+                  <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#FB7009", marginTop: "1px" }}>
                     Starts from {activeModalResidence.price}/mo
                   </div>
                 </div>
@@ -1000,12 +921,12 @@ export function ResidencesPage({
 
               {/* Body */}
               {submitSuccess ? (
-                <div style={{ padding: "24px 8px", textAlign: "center" }}>
+                <div style={{ padding: "20px 8px", textAlign: "center" }}>
                   <div 
                     style={{
-                      width: "56px",
-                      height: "56px",
-                      margin: "0 auto 14px",
+                      width: "52px",
+                      height: "52px",
+                      margin: "0 auto 12px",
                       borderRadius: "50%",
                       backgroundColor: "#dcfce7",
                       color: "#16a34a",
@@ -1014,12 +935,12 @@ export function ResidencesPage({
                       justifyContent: "center"
                     }}
                   >
-                    <CheckCircle size={32} strokeWidth={2.2} />
+                    <CheckCircle size={30} strokeWidth={2.2} />
                   </div>
-                  <h4 style={{ fontSize: "17px", fontWeight: 700, color: "#0c1b34", marginBottom: "6px" }}>
+                  <h4 style={{ fontSize: "16px", fontWeight: 700, color: "#0c1b34", marginBottom: "6px" }}>
                     {modalTab === "visit" ? "Visit Scheduled Successfully!" : "Callback Request Sent!"}
                   </h4>
-                  <p style={{ fontSize: "12.5px", color: "#64748b", lineHeight: 1.5, maxWidth: "340px", margin: "0 auto 16px" }}>
+                  <p style={{ fontSize: "12px", color: "#64748b", lineHeight: 1.5, maxWidth: "340px", margin: "0 auto 14px" }}>
                     {modalTab === "visit"
                       ? `Thank you, ${guestName}! Your ${visitTourFormat === "in-person" ? "In-Person Visit" : "Video Walkthrough"} for ${activeModalResidence.houseName} has been recorded. Opening WhatsApp...`
                       : `Thank you, ${guestName}! Our manager for ${activeModalResidence.houseName} will call you shortly.`}
@@ -1046,19 +967,9 @@ export function ResidencesPage({
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleUnifiedModalSubmit} style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                <form onSubmit={handleUnifiedModalSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {/* Inner Card Grouping Fields (matching reference image) */}
-                  <div 
-                    style={{
-                      borderRadius: "16px",
-                      border: "1.5px solid #dbeafe",
-                      backgroundColor: "#f8fafc",
-                      padding: "14px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "11px"
-                    }}
-                  >
+                  <div className="charla-modal-inner-card">
                     {/* Name Input */}
                     <div>
                       <input
@@ -1067,51 +978,29 @@ export function ResidencesPage({
                         value={guestName}
                         onChange={(e) => setGuestName(e.target.value)}
                         required
-                        style={{
-                          width: "100%",
-                          height: "46px",
-                          padding: "0 16px",
-                          borderRadius: "12px",
-                          border: "1px solid #cbd5e1",
-                          backgroundColor: "#ffffff",
-                          fontSize: "14px",
-                          color: "#0f172a",
-                          boxSizing: "border-box",
-                          outline: "none"
-                        }}
+                        className="charla-modal-input"
                       />
                     </div>
 
                     {/* Phone Input with 🇮🇳 +91 | Prefix (matching reference image) */}
-                    <div 
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        height: "46px",
-                        borderRadius: "12px",
-                        border: "1px solid #cbd5e1",
-                        backgroundColor: "#ffffff",
-                        overflow: "hidden",
-                        boxSizing: "border-box"
-                      }}
-                    >
+                    <div className="charla-modal-phone-box">
                       <div 
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: "6px",
-                          paddingLeft: "14px",
-                          paddingRight: "10px",
-                          fontSize: "13.5px",
+                          gap: "5px",
+                          paddingLeft: "12px",
+                          paddingRight: "8px",
+                          fontSize: "13px",
                           fontWeight: 600,
                           color: "#334155",
                           userSelect: "none",
                           flexShrink: 0
                         }}
                       >
-                        <span style={{ fontSize: "16px", lineHeight: 1 }}>🇮🇳</span>
+                        <span style={{ fontSize: "15px", lineHeight: 1 }}>🇮🇳</span>
                         <span>+91</span>
-                        <span style={{ color: "#cbd5e1", marginLeft: "4px" }}>|</span>
+                        <span style={{ color: "#cbd5e1", marginLeft: "2px" }}>|</span>
                       </div>
                       <input
                         type="tel"
@@ -1126,10 +1015,10 @@ export function ResidencesPage({
                         style={{
                           flex: 1,
                           height: "100%",
-                          paddingRight: "16px",
+                          paddingRight: "14px",
                           border: "none",
                           backgroundColor: "transparent",
-                          fontSize: "14px",
+                          fontSize: "13.5px",
                           color: "#0f172a",
                           outline: "none",
                           minWidth: 0
@@ -1139,31 +1028,21 @@ export function ResidencesPage({
 
                     {/* Visit-Specific Details (Only if modalTab === "visit") */}
                     {modalTab === "visit" && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "11px", paddingTop: "6px", borderTop: "1px solid #e2e8f0" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "9px", paddingTop: "5px", borderTop: "1px solid #e2e8f0" }}>
                         {/* Tour Format */}
                         <div>
-                          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                          <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "5px" }}>
                             Tour Format
                           </label>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
                             <button
                               type="button"
                               onClick={() => setVisitTourFormat("in-person")}
+                              className="charla-modal-tour-btn"
                               style={{
-                                height: "38px",
-                                padding: "0 10px",
-                                borderRadius: "10px",
                                 border: visitTourFormat === "in-person" ? "2px solid #003B99" : "1px solid #cbd5e1",
                                 backgroundColor: visitTourFormat === "in-person" ? "#eff6ff" : "#ffffff",
-                                color: visitTourFormat === "in-person" ? "#003B99" : "#334155",
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                                whiteSpace: "nowrap",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center"
+                                color: visitTourFormat === "in-person" ? "#003B99" : "#334155"
                               }}
                             >
                               In-Person Visit
@@ -1171,21 +1050,11 @@ export function ResidencesPage({
                             <button
                               type="button"
                               onClick={() => setVisitTourFormat("video")}
+                              className="charla-modal-tour-btn"
                               style={{
-                                height: "38px",
-                                padding: "0 10px",
-                                borderRadius: "10px",
                                 border: visitTourFormat === "video" ? "2px solid #003B99" : "1px solid #cbd5e1",
                                 backgroundColor: visitTourFormat === "video" ? "#eff6ff" : "#ffffff",
-                                color: visitTourFormat === "video" ? "#003B99" : "#334155",
-                                fontSize: "12px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                                whiteSpace: "nowrap",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center"
+                                color: visitTourFormat === "video" ? "#003B99" : "#334155"
                               }}
                             >
                               Video Walkthrough
@@ -1194,9 +1063,9 @@ export function ResidencesPage({
                         </div>
 
                         {/* Preferred Date & Slot */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
                           <div>
-                            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+                            <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
                               Preferred Date
                             </label>
                             <input
@@ -1205,41 +1074,17 @@ export function ResidencesPage({
                               value={visitDate}
                               onChange={(e) => setVisitDate(e.target.value)}
                               required
-                              style={{
-                                width: "100%",
-                                height: "38px",
-                                padding: "0 8px",
-                                borderRadius: "10px",
-                                border: "1px solid #cbd5e1",
-                                backgroundColor: "#ffffff",
-                                fontSize: "12.5px",
-                                color: "#0f172a",
-                                boxSizing: "border-box",
-                                outline: "none",
-                                WebkitAppearance: "none"
-                              }}
+                              className="charla-modal-date-input"
                             />
                           </div>
                           <div>
-                            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
+                            <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>
                               Preferred Slot
                             </label>
                             <select
                               value={visitSlot}
                               onChange={(e) => setVisitSlot(e.target.value)}
-                              style={{
-                                width: "100%",
-                                height: "38px",
-                                padding: "0 8px",
-                                borderRadius: "10px",
-                                border: "1px solid #cbd5e1",
-                                backgroundColor: "#ffffff",
-                                fontSize: "12px",
-                                color: "#0f172a",
-                                boxSizing: "border-box",
-                                outline: "none",
-                                cursor: "pointer"
-                              }}
+                              className="charla-modal-slot-select"
                             >
                               <option value="10:00 AM (Morning)">10:00 AM (Morning)</option>
                               <option value="12:00 PM (Lunch)">12:00 PM (Lunch)</option>
@@ -1252,10 +1097,10 @@ export function ResidencesPage({
 
                         {/* Room Preference: Private, Double, Triple, Any */}
                         <div>
-                          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                          <label style={{ display: "block", fontSize: "10.5px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "5px" }}>
                             Room Preference
                           </label>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "5px" }}>
                             {(["Private", "Double", "Triple", "Any"] as const).map((sharing) => {
                               const isSelected = visitSharing === sharing;
                               return (
@@ -1263,21 +1108,12 @@ export function ResidencesPage({
                                   key={sharing}
                                   type="button"
                                   onClick={() => setVisitSharing(sharing)}
+                                  className="charla-modal-sharing-btn"
                                   style={{
-                                    height: "34px",
-                                    borderRadius: "8px",
-                                    fontSize: "11.5px",
                                     fontWeight: isSelected ? 700 : 500,
                                     border: isSelected ? "1.5px solid #003B99" : "1px solid #cbd5e1",
                                     backgroundColor: isSelected ? "#003B99" : "#ffffff",
-                                    color: isSelected ? "#ffffff" : "#475569",
-                                    cursor: "pointer",
-                                    whiteSpace: "nowrap",
-                                    padding: "0 2px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    transition: "all 0.15s ease"
+                                    color: isSelected ? "#ffffff" : "#475569"
                                   }}
                                 >
                                   {sharing}
@@ -1288,40 +1124,24 @@ export function ResidencesPage({
                         </div>
                       </div>
                     )}
-
-                    {/* Minimum stay notice pill (matching reference image) */}
-                    <div 
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: "10px",
-                        border: "1px solid #a7f3d0",
-                        backgroundColor: "#ecfdf5",
-                        color: "#047857",
-                        fontSize: "11.5px",
-                        fontWeight: 600,
-                        textAlign: "center"
-                      }}
-                    >
-                      We accept bookings with a minimum stay of 3 months.
-                    </div>
                   </div>
 
                   {/* Terms and Privacy Checkbox (matching reference image) */}
-                  <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "0 2px", cursor: "pointer", userSelect: "none" }}>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "0 2px", cursor: "pointer", userSelect: "none" }}>
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
                       style={{
                         marginTop: "2px",
-                        width: "16px",
-                        height: "16px",
+                        width: "15px",
+                        height: "15px",
                         accentColor: "#003B99",
                         cursor: "pointer",
                         flexShrink: 0
                       }}
                     />
-                    <span style={{ fontSize: "12px", color: "#475569", lineHeight: 1.5 }}>
+                    <span style={{ fontSize: "11.5px", color: "#475569", lineHeight: 1.45 }}>
                       I have read and agreed to the{" "}
                       <a href="#/terms" style={{ color: "#003B99", textDecoration: "underline", fontWeight: 600 }}>terms and conditions</a>{" "}
                       and{" "}
@@ -1334,23 +1154,10 @@ export function ResidencesPage({
                   <button
                     type="submit"
                     disabled={isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms}
+                    className="charla-modal-cta"
                     style={{
-                      width: "100%",
-                      height: "48px",
-                      borderRadius: "12px",
-                      border: "none",
-                      backgroundColor: "#003B99",
-                      color: "#ffffff",
-                      fontSize: "14px",
-                      fontWeight: 700,
                       cursor: isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms ? "not-allowed" : "pointer",
-                      opacity: isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms ? 0.6 : 1,
-                      boxShadow: "0 4px 14px rgba(0, 59, 153, 0.3)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      transition: "all 0.15s ease"
+                      opacity: isSubmitting || !guestName.trim() || !guestPhone.trim() || !agreedToTerms ? 0.6 : 1
                     }}
                   >
                     {isSubmitting ? (
