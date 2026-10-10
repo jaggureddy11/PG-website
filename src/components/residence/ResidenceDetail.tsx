@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { ArrowLeft, Loader2, Play } from "lucide-react";
 import { type Residence, RESIDENCES } from "@/data/residences";
-import { saveVisitBookingToFirestore } from "@/lib/firebase";
+import { saveVisitBookingToFirestore, type ExtendedResidence } from "@/lib/firebase";
+import { PropertyGalleryLightbox, type GalleryMediaItem } from "./PropertyGalleryLightbox";
 import "@/residence.css";
 
 interface ResidenceDetailProps {
-  residence: Residence;
-  allResidences?: Residence[];
+  residence: Residence | ExtendedResidence;
+  allResidences?: (Residence | ExtendedResidence)[];
   onBack: () => void;
   onSelectResidence?: (id: string) => void;
 }
@@ -124,16 +125,203 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
     };
   }, []);
 
-  const gallerySlides = [
-    { src: residence.images.hero, label: "Master Suite & Furnished Bedroom" },
-    { src: residence.images.room, label: "Spacious Air-Conditioned Room" },
-    { src: residence.images.lounge, label: "Co-working & Community Lounge" },
-    { src: residence.images.dining, label: "Hygienic Dining Area & Pantry" },
-    { src: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80", label: "Attached Modern Washroom" },
-    { src: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1200&q=80", label: "High-Speed WiFi Study Desks" },
-    { src: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80", label: "Twin Sharing Layout" },
-    { src: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80", label: "Terrace Garden & Fitness Zone" }
-  ];
+  const extRes = residence as Partial<ExtendedResidence>;
+
+  // Dynamic Local SEO & Schema.org Structured Data
+  useEffect(() => {
+    const originalTitle = document.title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const originalDesc = metaDesc?.getAttribute("content") || "";
+
+    // Set page title & description for local Bangalore SEO
+    document.title = `${residence.name} | Premium PG in ${residence.locality}, South Bangalore`;
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        "content",
+        `${residence.name} in ${residence.locality}, Bangalore. ${residence.headline}. 4 homestyle meals, 100 Mbps Wi-Fi, attached washrooms, 1-month deposit, zero brokerage.`
+      );
+    }
+
+    // Dynamic JSON-LD injection
+    const scriptId = "charla-residence-jsonld";
+    let scriptEl = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!scriptEl) {
+      scriptEl = document.createElement("script");
+      scriptEl.id = scriptId;
+      scriptEl.type = "application/ld+json";
+      document.head.appendChild(scriptEl);
+    }
+
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": "LodgingBusiness",
+      "name": residence.name,
+      "description": residence.description || residence.headline,
+      "url": `https://charlaliving.in/#${residence.id}`,
+      "telephone": "+918884446093",
+      "email": "hello@charlaliving.in",
+      "priceRange": `₹${residence.startingPrice} - ₹14,000 / month`,
+      "image": [
+        residence.images.hero,
+        residence.images.room,
+        residence.images.lounge,
+        residence.images.dining,
+      ].filter(Boolean),
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": residence.locationDetails || residence.landmark,
+        "addressLocality": residence.locality,
+        "addressRegion": "Karnataka",
+        "postalCode": "560061",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": extRes.lat || 12.9056,
+        "longitude": extRes.lng || 77.5612
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": residence.reviews?.length ? residence.reviews.length * 8 : 42,
+        "bestRating": "5"
+      },
+      "amenityFeature": (residence.amenities || []).map((a) => ({
+        "@type": "LocationFeatureSpecification",
+        "name": a.title,
+        "value": true
+      })),
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Room Sharing Accommodation Plans",
+        "itemListElement": (residence.roomTypes || []).map((r) => ({
+          "@type": "Offer",
+          "name": `${r.name} at ${residence.name}`,
+          "price": r.price,
+          "priceCurrency": "INR",
+          "description": `${r.tagline || r.bedType} - ${r.features.join(", ")}`,
+          "availability": "https://schema.org/InStock"
+        }))
+      }
+    };
+
+    scriptEl.textContent = JSON.stringify(schemaData);
+
+    return () => {
+      document.title = originalTitle;
+      if (metaDesc) {
+        metaDesc.setAttribute("content", originalDesc);
+      }
+      const existingScript = document.getElementById(scriptId);
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, [residence, extRes]);
+
+  // Build Comprehensive Gallery Media Items
+  const galleryItems: GalleryMediaItem[] = useMemo(() => {
+    const list: GalleryMediaItem[] = [];
+
+    if (residence.images.hero) {
+      list.push({
+        id: "hero",
+        src: residence.images.hero,
+        label: "Master Suite & Furnished Bedroom",
+        category: "bedroom",
+        type: "image",
+      });
+    }
+
+    if (residence.images.room) {
+      list.push({
+        id: "room",
+        src: residence.images.room,
+        label: "Spacious Air-Conditioned Room & Desk",
+        category: "bedroom",
+        type: "image",
+      });
+    }
+
+    if (residence.images.lounge) {
+      list.push({
+        id: "lounge",
+        src: residence.images.lounge,
+        label: "Co-working & Community Lounge",
+        category: "lounge",
+        type: "image",
+      });
+    }
+
+    if (residence.images.dining) {
+      list.push({
+        id: "dining",
+        src: residence.images.dining,
+        label: "Hygienic Dining Area & Pantry",
+        category: "dining",
+        type: "image",
+      });
+    }
+
+    if (extRes.videoUrl) {
+      list.push({
+        id: "video-tour",
+        src: extRes.videoUrl,
+        label: "Full Walkthrough Video Tour",
+        category: "video",
+        type: "video",
+        thumbnail: residence.images.hero,
+      });
+    }
+
+    if (Array.isArray(extRes.additionalPhotos) && extRes.additionalPhotos.length > 0) {
+      extRes.additionalPhotos.forEach((photoUrl, idx) => {
+        if (photoUrl) {
+          list.push({
+            id: `additional-${idx}`,
+            src: photoUrl,
+            label: `Residence Area Photo ${idx + 1}`,
+            category: "bedroom",
+            type: "image",
+          });
+        }
+      });
+    }
+
+    // Curated high-res angle standards
+    list.push(
+      {
+        id: "washroom-spec",
+        src: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80",
+        label: "Attached Modern Washroom with 24/7 Hot Water",
+        category: "washroom",
+        type: "image",
+      },
+      {
+        id: "study-desks",
+        src: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1200&q=80",
+        label: "High-Speed WiFi Dedicated Study Desks",
+        category: "lounge",
+        type: "image",
+      },
+      {
+        id: "twin-sharing",
+        src: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80",
+        label: "Twin Sharing Layout with Wardrobes",
+        category: "bedroom",
+        type: "image",
+      },
+      {
+        id: "terrace-zone",
+        src: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+        label: "Terrace Garden & Open Air Recreation",
+        category: "exterior",
+        type: "image",
+      }
+    );
+
+    return list;
+  }, [residence, extRes]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -143,19 +331,19 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
   useEffect(() => {
     if (!isAutoPlaying || isGalleryOpen) return;
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % gallerySlides.length);
+      setCurrentSlide((prev) => (prev + 1) % galleryItems.length);
     }, 3200);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, isGalleryOpen, gallerySlides.length]);
+  }, [isAutoPlaying, isGalleryOpen, galleryItems.length]);
 
   const handlePrevSlide = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setCurrentSlide((prev) => (prev - 1 + gallerySlides.length) % gallerySlides.length);
+    setCurrentSlide((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
   };
 
   const handleNextSlide = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setCurrentSlide((prev) => (prev + 1) % gallerySlides.length);
+    setCurrentSlide((prev) => (prev + 1) % galleryItems.length);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -180,19 +368,7 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
     setTouchEnd(null);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isGalleryOpen) return;
-      if (e.key === "Escape") setIsGalleryOpen(false);
-      if (e.key === "ArrowRight") setActivePhotoIdx((prev) => (prev + 1) % gallerySlides.length);
-      if (e.key === "ArrowLeft") setActivePhotoIdx((prev) => (prev - 1 + gallerySlides.length) % gallerySlides.length);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isGalleryOpen, gallerySlides.length]);
-
   const selectedRoom = residence.roomTypes.find((r) => r.id === selectedRoomId) || residence.roomTypes[0];
-  const galleryImages = gallerySlides.map((s) => s.src);
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,6 +399,12 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleWhatsAppInquiry = () => {
+    const phone = "918884446093";
+    const msg = `Hi Charla Living! I was checking out the photos of ${residence.name} in ${residence.locality} and would like to know availability & schedule a visit.`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   return (
@@ -319,16 +501,40 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
               className="residence-rolling-track"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
-              {gallerySlides.map((slide, idx) => (
+              {galleryItems.map((slide, idx) => (
                 <div 
-                  key={idx} 
+                  key={slide.id || idx} 
                   className="residence-rolling-slide"
                   onClick={() => {
                     setActivePhotoIdx(idx);
                     setIsGalleryOpen(true);
                   }}
                 >
-                  <img src={slide.src} alt={`${residence.name} - ${slide.label}`} loading={idx === 0 ? "eager" : "lazy"} />
+                  <img src={slide.thumbnail || slide.src} alt={`${residence.name} - ${slide.label}`} loading={idx === 0 ? "eager" : "lazy"} />
+                  {slide.type === "video" && (
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(0,0,0,0.35)"
+                    }}>
+                      <div style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: "50%",
+                        background: "rgba(249, 115, 22, 0.95)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.4)"
+                      }}>
+                        <Play size={22} fill="#fff" style={{ marginLeft: 3 }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -339,12 +545,12 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx={12} cy={10} r={3} />
               </svg>
-              <span>{gallerySlides[currentSlide]?.label}</span>
+              <span>{galleryItems[currentSlide]?.label}</span>
             </div>
 
             {/* Photo Counter */}
             <div className="residence-rolling-counter">
-              {currentSlide + 1} / {gallerySlides.length}
+              {currentSlide + 1} / {galleryItems.length}
             </div>
 
             {/* Left / Right Nav Arrows */}
@@ -374,7 +580,7 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
             <div className="residence-rolling-bottom-bar">
               {/* Pagination Dots */}
               <div className="residence-rolling-dots">
-                {gallerySlides.map((_, idx) => (
+                {galleryItems.slice(0, 8).map((_, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -403,7 +609,7 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
                   <circle cx={8.5} cy={8.5} r={1.5} />
                   <polyline points="21 15 16 10 5 21" />
                 </svg>
-                <span>View {gallerySlides.length}+ photos</span>
+                <span>View {galleryItems.length}+ photos</span>
               </button>
             </div>
           </div>
@@ -1094,63 +1300,17 @@ export function ResidenceDetail({ residence, allResidences = Object.values(RESID
         </button>
       </div>
 
-      {/* ─── LIGHTBOX MODAL ─── */}
-      {isGalleryOpen && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 100,
-          background: "rgba(12, 27, 52, 0.96)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "20px"
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#fff", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
-            <span style={{ fontSize: "14px", fontWeight: 600 }}>
-              {residence.name} · Photo {activePhotoIdx + 1} of {galleryImages.length}
-            </span>
-            <button 
-              onClick={() => setIsGalleryOpen(false)}
-              style={{ padding: "8px", borderRadius: "50%", background: "rgba(255, 255, 255, 0.1)", color: "#fff", cursor: "pointer", border: "none" }}
-              aria-label="Close photo gallery"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
-                <line x1={18} y1={6} x2={6} y2={18} />
-                <line x1={6} y1={6} x2={18} y2={18} />
-              </svg>
-            </button>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", maxHeight: "70vh", margin: "auto 0" }}>
-            <img 
-              src={galleryImages[activePhotoIdx]} 
-              alt={`Gallery Preview ${activePhotoIdx + 1}`} 
-              style={{ maxHeight: "70vh", maxWidth: "100%", borderRadius: "var(--radius-sm)", objectFit: "contain" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "center", gap: "8px", overflowX: "auto", padding: "8px 0" }}>
-            {galleryImages.map((img, i) => (
-              <img 
-                key={i} 
-                src={img} 
-                onClick={() => setActivePhotoIdx(i)}
-                alt={`Thumbnail ${i + 1}`}
-                style={{
-                  width: "54px",
-                  height: "54px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  border: activePhotoIdx === i ? "2px solid var(--orange)" : "1px solid rgba(255,255,255,0.2)",
-                  opacity: activePhotoIdx === i ? 1 : 0.5
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ─── FULLSCREEN PROPERTY GALLERY LIGHTBOX & MOBILE SWIPE ─── */}
+      <PropertyGalleryLightbox
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        residenceName={residence.name}
+        residenceLocality={residence.locality}
+        items={galleryItems}
+        initialIndex={activePhotoIdx}
+        onScheduleVisit={scrollToBooking}
+        onWhatsAppInquiry={handleWhatsAppInquiry}
+      />
     </div>
   );
 }

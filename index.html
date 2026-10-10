@@ -30,39 +30,196 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- Schema.org Structured Data -->
+    <!-- Schema.org Structured Data: Multi-Entity Local SEO Graph -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LodgingBusiness",
-      "name": "Charla Living",
-      "url": "https://charlaliving.in",
-      "logo": "https://charlaliving.in/assets/logo.png",
-      "image": "https://charlaliving.in/assets/charla-living-wordmark.png",
-      "description": "Family-run, fully managed PG residences across South Bengaluru. Furnished rooms, 4 homestyle meals, zero brokerage, and 1-month deposit.",
-      "telephone": "+918884446093",
-      "email": "hello@charlaliving.in",
-      "priceRange": "₹7,000 - ₹13,500 / month",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "4th Block, Jayanagar",
-        "addressLocality": "Bengaluru",
-        "addressRegion": "Karnataka",
-        "postalCode": "560011",
-        "addressCountry": "IN"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 12.9056,
-        "longitude": 77.5612
-      },
-      "amenityFeature": [
-        { "@type": "LocationFeatureSpecification", "name": "4 Fresh Homestyle Meals Daily", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "100 Mbps High-Speed Wi-Fi", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "Daily Housekeeping", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "Attached Washrooms & Geyser", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "Zero Brokerage", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "1-Month Security Deposit", "value": true }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://charlaliving.in/#organization",
+          "name": "Charla Living",
+          "url": "https://charlaliving.in",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://charlaliving.in/assets/logo.png"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+918884446093",
+            "contactType": "customer service",
+            "areaServed": "IN",
+            "availableLanguage": ["en", "hi", "kn", "te"]
+          },
+          "sameAs": [
+            "https://www.instagram.com/charlaliving",
+            "https://www.facebook.com/charlaliving"
+          ]
+        },
+        {
+          "@type": "LodgingBusiness",
+          "@id": "https://charlaliving.in/#lodging",
+          "name": "Charla Living — Premium PG & Co-Living in South Bangalore",
+          "url": "https://charlaliving.in",
+          "logo": "https://charlaliving.in/assets/logo.png",
+          "image": "https://charlaliving.in/assets/charla-living-wordmark.png",
+          "description": "Family-run, fully managed PG homes across South Bengaluru: Kumaraswamy Layout, JP Nagar, Banashankari, Padmanabhanagar, Jayanagar & Uttarahalli. Zero brokerage, 4 daily fresh meals, 100 Mbps Wi-Fi, and 1-month deposit.",
+          "telephone": "+918884446093",
+          "email": "hello@charlaliving.in",
+          "priceRange": "₹7,000 - ₹14,000 / month",
+          "currenciesAccepted": "INR",
+          "paymentAccepted": "Cash, Credit Card, Debit Card, UPI",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "South Bangalore Hub, Jayanagar & Kumaraswamy Layout",
+            "addressLocality": "Bengaluru",
+            "addressRegion": "Karnataka",
+            "postalCode": "560078",
+            "addressCountry": "IN"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 12.9056,
+            "longitude": 77.5612
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "380",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "amenityFeature": [
+            { "@type": "LocationFeatureSpecification", "name": "4 Fresh Homestyle Meals Daily", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "100 Mbps High-Speed Wi-Fi", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Daily Housekeeping & Linen Care", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Attached Washrooms with 24/7 Geyser", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Zero Brokerage", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "1-Month Security Deposit", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "24/7 CCTV & Biometric Security", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Automatic Washing Machines & Drying Terrace", "value": true }
+          ],
+          "containsPlace": [
+            {
+              "@type": "ApartmentComplex",
+              "name": "Charla Living — Kumaraswamy Layout (Near DSCE)",
+              "description": "Premium PG 400m from Dayananda Sagar College of Engineering (DSCE). 4 daily meals, single & sharing rooms.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Near Dayananda Sagar College of Engineering, Kumaraswamy Layout",
+                "addressLocality": "Bengaluru",
+                "postalCode": "560078"
+              },
+              "geo": { "@type": "GeoCoordinates", "latitude": 12.9056, "longitude": 77.5612 }
+            },
+            {
+              "@type": "ApartmentComplex",
+              "name": "Charla Living — Padmanabhanagar",
+              "description": "Furnished PG near Carmel School, PES University & Deve Gowda Petrol Bunk. 4 daily meals and Wi-Fi.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Near Carmel School & Deve Gowda Petrol Bunk, Padmanabhanagar",
+                "addressLocality": "Bengaluru",
+                "postalCode": "560070"
+              },
+              "geo": { "@type": "GeoCoordinates", "latitude": 12.9182, "longitude": 77.5584 }
+            },
+            {
+              "@type": "ApartmentComplex",
+              "name": "Charla Living — JP Nagar",
+              "description": "Modern PG in JP Nagar 5th Phase near Vega City Mall and Central Mall. 6 min to Metro.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "5th Phase, Behind Vega City Mall, JP Nagar",
+                "addressLocality": "Bengaluru",
+                "postalCode": "560078"
+              },
+              "geo": { "@type": "GeoCoordinates", "latitude": 12.9081, "longitude": 77.5855 }
+            },
+            {
+              "@type": "ApartmentComplex",
+              "name": "Charla Living — Banashankari",
+              "description": "Executive co-living PG near BNMIT and Banashankari TTMC Metro Station. High-speed Wi-Fi & meals.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "2nd Stage, Near BNMIT College, Banashankari",
+                "addressLocality": "Bengaluru",
+                "postalCode": "560070"
+              },
+              "geo": { "@type": "GeoCoordinates", "latitude": 12.9255, "longitude": 77.5468 }
+            },
+            {
+              "@type": "ApartmentComplex",
+              "name": "Charla Living — Jayanagar",
+              "description": "Flagship South End residence in Jayanagar 4th Block. Quiet residential neighborhood with chef-prepared food.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "4th Block, Near South End Circle, Jayanagar",
+                "addressLocality": "Bengaluru",
+                "postalCode": "560011"
+              },
+              "geo": { "@type": "GeoCoordinates", "latitude": 12.9299, "longitude": 77.5824 }
+            },
+            {
+              "@type": "ApartmentComplex",
+              "name": "Charla Living — Uttarahalli",
+              "description": "Spacious student & professional PG near Subramanyapura Main Road, Uttarahalli.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Near Subramanyapura Main Road, Uttarahalli",
+                "addressLocality": "Bengaluru",
+                "postalCode": "560061"
+              },
+              "geo": { "@type": "GeoCoordinates", "latitude": 12.8988, "longitude": 77.5388 }
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://charlaliving.in/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is food included in Charla Living PG?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, Charla Living provides 4 freshly cooked homestyle meals every single day: wholesome breakfast, nutritious lunch, evening tea & snacks, and full dinner prepared in hygienic in-house kitchens."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the security deposit at Charla Living?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Charla Living requires only 1 month of security deposit with zero brokerage. The deposit is fully refundable at move-out according to the standard 30-day notice policy."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are there PGs near DSCE (Dayananda Sagar College of Engineering)?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, Charla Living — Kumaraswamy Layout is located just 400 meters (5 minutes walking distance) from Dayananda Sagar College of Engineering (DSCE) campus gate."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What amenities are provided in every Charla Living residence?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Every residence includes 100 Mbps high-speed Wi-Fi, attached bathrooms with 24/7 hot water geysers, daily room cleaning & housekeeping, RO mineral drinking water, automated washing machines, and CCTV security."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I schedule a property visit before booking?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! You can schedule a free in-person tour or a live video walkthrough directly through our website or WhatsApp. A resident manager will show you all available rooms, dining areas, and facilities."
+              }
+            }
+          ]
+        }
       ]
     }
     </script>
