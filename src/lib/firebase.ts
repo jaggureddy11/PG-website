@@ -218,6 +218,30 @@ export function subscribeToResidences(
 }
 
 /**
+ * Recursively strip undefined values so Firestore never rejects documents
+ */
+export function sanitizeForFirestore<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return null as unknown as T;
+  }
+  if (Array.isArray(data)) {
+    return data
+      .filter((item) => item !== undefined)
+      .map((item) => sanitizeForFirestore(item)) as unknown as T;
+  }
+  if (typeof data === "object") {
+    const clean: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      if (value !== undefined) {
+        clean[key] = sanitizeForFirestore(value);
+      }
+    }
+    return clean as T;
+  }
+  return data;
+}
+
+/**
  * Fetch all residences from Cloud Firestore
  */
 export async function getResidencesFromFirestore(): Promise<ExtendedResidence[]> {
@@ -230,11 +254,12 @@ export async function getResidencesFromFirestore(): Promise<ExtendedResidence[]>
 }
 
 /**
- * Save or update a single residence in Cloud Firestore
+ * Save or update a single residence in Cloud Firestore (sanitizes undefined fields)
  */
 export async function saveResidenceToFirestore(residence: ExtendedResidence): Promise<void> {
+  const clean = sanitizeForFirestore(residence);
   const docRef = doc(db, RESIDENCES_COLLECTION, residence.id);
-  await setDoc(docRef, residence, { merge: true });
+  await setDoc(docRef, clean, { merge: true });
 }
 
 /**
@@ -246,15 +271,40 @@ export async function deleteResidenceFromFirestore(id: string): Promise<void> {
 }
 
 /**
- * Seed initial properties to Firestore in a batch
+ * Seed initial properties to Firestore in a batch (sanitizes undefined fields)
  */
 export async function seedResidencesToFirestore(residences: ExtendedResidence[]): Promise<void> {
   const batch = writeBatch(db);
   for (const res of residences) {
+    const clean = sanitizeForFirestore(res);
     const docRef = doc(db, RESIDENCES_COLLECTION, res.id);
-    batch.set(docRef, res, { merge: true });
+    batch.set(docRef, clean, { merge: true });
   }
   await batch.commit();
+}
+
+/**
+ * Synchronize and fetch all collections from Cloud Firestore
+ */
+export async function syncAllFromFirestore(): Promise<{
+  residences: ExtendedResidence[];
+  bookings: VisitBooking[];
+  partners: PartnerInquiry[];
+  callbacks: CallbackRequest[];
+}> {
+  const [resSnap, bookSnap, partSnap, callSnap] = await Promise.all([
+    getDocs(collection(db, RESIDENCES_COLLECTION)),
+    getDocs(query(collection(db, BOOKINGS_COLLECTION), orderBy("createdAt", "desc"))),
+    getDocs(query(collection(db, PARTNER_COLLECTION), orderBy("createdAt", "desc"))),
+    getDocs(query(collection(db, CALLBACK_COLLECTION), orderBy("createdAt", "desc"))),
+  ]);
+
+  const residences = resSnap.docs.map((d) => d.data() as ExtendedResidence);
+  const bookings = bookSnap.docs.map((d) => ({ id: d.id, ...d.data() } as VisitBooking));
+  const partners = partSnap.docs.map((d) => ({ id: d.id, ...d.data() } as PartnerInquiry));
+  const callbacks = callSnap.docs.map((d) => ({ id: d.id, ...d.data() } as CallbackRequest));
+
+  return { residences, bookings, partners, callbacks };
 }
 
 /**

@@ -18,6 +18,7 @@ import {
   updateCallbackRequestStatus,
   updateVisitBookingStatus,
   updatePartnerInquiryStatus,
+  syncAllFromFirestore,
 } from "@/lib/firebase";
 import { CHARLA_LOCALITIES } from "@/utils/location";
 import type { ResidenceItem } from "@/components/residence/ResidencesPage";
@@ -110,6 +111,9 @@ interface ResidencesContextValue {
   residencesMap: Record<string, ExtendedResidence>;
   residenceItems: ResidenceItem[];
   firebaseStatus: "connecting" | "synced" | "offline";
+  isSyncing: boolean;
+  lastSyncedAt: Date | null;
+  syncDatabase: (forceSeedMissing?: boolean) => Promise<{ success: boolean; count: number; message: string }>;
   saveResidence: (r: ExtendedResidence) => Promise<void>;
   deleteResidence: (id: string) => Promise<void>;
   quickStatusChange: (id: string, status: "available" | "fast-filling" | "sold-out") => Promise<void>;
@@ -129,6 +133,8 @@ const ResidencesContext = createContext<ResidencesContextValue | undefined>(unde
 export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [residences, setResidences] = useState<ExtendedResidence[]>(getFallbackResidences);
   const [firebaseStatus, setFirebaseStatus] = useState<"connecting" | "synced" | "offline">("connecting");
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(() => new Date());
   const [visitBookings, setVisitBookings] = useState<VisitBooking[]>([]);
   const [partnerInquiries, setPartnerInquiries] = useState<PartnerInquiry[]>([]);
   const [callbackRequests, setCallbackRequests] = useState<CallbackRequest[]>([]);
@@ -142,6 +148,7 @@ export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (cloudResidences && cloudResidences.length > 0) {
           setResidences(cloudResidences);
           setFirebaseStatus("synced");
+          setLastSyncedAt(new Date());
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudResidences));
           } catch {
@@ -155,6 +162,7 @@ export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await seedResidencesToFirestore(initial);
             setResidences(initial);
             setFirebaseStatus("synced");
+            setLastSyncedAt(new Date());
           } catch (e) {
             console.warn("Failed to auto-seed to Firestore:", e);
             setFirebaseStatus("offline");
@@ -176,6 +184,7 @@ export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     const unsub = subscribeToVisitBookings((bookings) => {
       setVisitBookings(bookings);
+      setLastSyncedAt(new Date());
     });
     return () => unsub();
   }, []);
@@ -184,6 +193,7 @@ export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     const unsub = subscribeToPartnerInquiries((inquiries) => {
       setPartnerInquiries(inquiries);
+      setLastSyncedAt(new Date());
     });
     return () => unsub();
   }, []);
@@ -192,38 +202,114 @@ export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     const unsub = subscribeToCallbackRequests((requests) => {
       setCallbackRequests(requests);
+      setLastSyncedAt(new Date());
     });
     return () => unsub();
   }, []);
 
-  // Save / Update residence to Firestore + local state
+  // Dedicated manual / on-demand database synchronization
+  const syncDatabase = async (forceSeedMissing = false): Promise<{ success: boolean; count: number; message: string }> => {
+    setIsSyncing(true);
+    try {
+      const data = await syncAllFromFirestore();
+
+      let finalResidences = data.residences;
+      const fallbackList = getFallbackResidences();
+      const existingIds = new Set(finalResidences.map((r) => r.id));
+      const missingList = fallbackList.filter((r) => !existingIds.has(r.id));
+
+      if (finalResidences.length === 0 || (forceSeedMissing && missingList.length > 0)) {
+        const toSeed = finalResidences.length === 0 ? fallbackList : missingList;
+        await seedResidencesToFirestore(toSeed);
+        finalResidences = [...finalResidences, ...missingList];
+      }
+
+      setResidences(finalResidences);
+      setVisitBookings(data.bookings);
+      setPartnerInquiries(data.partners);
+      setCallbackRequests(data.callbacks);
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(finalResidences));
+      } catch {
+        // ignore
+      }
+
+      setFirebaseStatus("synced");
+      setLastSyncedAt(new Date());
+      setIsSyncing(false);
+
+      const totalLeads = data.callbacks.length + data.bookings.length + data.partners.length;
+      return {
+        success: true,
+        count: finalResidences.length,
+        message: `Database synchronized! ${finalResidences.length} properties and ${totalLeads} customer leads are live with Firestore.`,
+      };
+    } catch (err: unknown) {
+      console.error("Database sync error:", err);
+      setFirebaseStatus("offline");
+      setIsSyncing(false);
+      const errMsg = err instanceof Error ? err.message : "Network error";
+      return {
+        success: false,
+        count: residences.length,
+        message: `Sync failed (${errMsg}). Using locally cached data.`,
+      };
+    }
+  };
+
+  // Save / Update residence to Firestore + local state + localStorage
   const saveResidence = async (residence: ExtendedResidence) => {
-    setResidences((prev) => {
-      const idx = prev.findIndex((r) => r.id === residence.id);
+    setIsSyncing(true);
+    const updated = (() => {
+      const idx = residences.findIndex((r) => r.id === residence.id);
       if (idx >= 0) {
-        const next = [...prev];
+        const next = [...residences];
         next[idx] = residence;
         return next;
       }
-      return [residence, ...prev];
-    });
+      return [residence, ...residences];
+    })();
+
+    setResidences(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
 
     try {
       await saveResidenceToFirestore(residence);
       setFirebaseStatus("synced");
+      setLastSyncedAt(new Date());
     } catch (err) {
       console.warn("Cloud Firestore save error:", err);
+      throw err;
+    } finally {
+      setIsSyncing(false);
     }
   };
 
-  // Delete residence from Firestore + local state
+  // Delete residence from Firestore + local state + localStorage
   const deleteResidence = async (id: string) => {
-    setResidences((prev) => prev.filter((r) => r.id !== id));
+    setIsSyncing(true);
+    const updated = residences.filter((r) => r.id !== id);
+    setResidences(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+
     try {
       await deleteResidenceFromFirestore(id);
       setFirebaseStatus("synced");
+      setLastSyncedAt(new Date());
     } catch (err) {
       console.warn("Cloud Firestore delete error:", err);
+      throw err;
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -282,6 +368,9 @@ export const ResidencesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     residencesMap,
     residenceItems,
     firebaseStatus,
+    isSyncing,
+    lastSyncedAt,
+    syncDatabase,
     saveResidence,
     deleteResidence,
     quickStatusChange,

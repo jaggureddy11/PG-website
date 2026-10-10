@@ -105,6 +105,65 @@
   border: 1px solid #fde68a;
 }
 
+.admin-cloud-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.admin-cloud-sync-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.admin-cloud-sync-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.admin-cloud-sync-btn:disabled {
+  cursor: wait;
+}
+
+.admin-cloud-sync-btn--synced {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.admin-cloud-sync-btn--synced:hover:not(:disabled) {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.admin-cloud-sync-btn--connecting {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.admin-cloud-sync-btn--offline {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.admin-cloud-sync-btn--offline:hover:not(:disabled) {
+  background: #fef3c7;
+}
+
 .admin-cloud-dot {
   width: 6px;
   height: 6px;
@@ -123,6 +182,96 @@
 
 .admin-cloud-dot--offline {
   background: #d97706;
+}
+
+@keyframes adminSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-spin {
+  animation: adminSpin 1s linear infinite;
+  transform-origin: center center;
+}
+
+/* ── Live Cloud Sync Notice Banner ── */
+.admin-sync-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 24px;
+  border-bottom: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  animation: adminSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 50;
+}
+
+@keyframes adminSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-sync-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+}
+
+.admin-sync-banner__close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.admin-sync-banner__close:hover {
+  opacity: 1;
+}
+
+.admin-sync-banner--info {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+.admin-sync-banner--info .admin-sync-banner__close {
+  color: #0369a1;
+}
+
+.admin-sync-banner--success {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+.admin-sync-banner--success .admin-sync-banner__close {
+  color: #065f46;
+}
+
+.admin-sync-banner--error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+.admin-sync-banner--error .admin-sync-banner__close {
+  color: #991b1b;
 }
 
 .admin-header__actions {
@@ -697,7 +846,24 @@
 .admin-toolbar__right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-btn--sync {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  gap: 6px;
+  color: #334155;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.admin-btn--sync:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 /* ── Properties Grid ── */
@@ -1178,6 +1344,13 @@
   .admin-brand__badge {
     display: none;
   }
+  .admin-cloud-sync-btn__text {
+    display: none;
+  }
+  .admin-cloud-sync-btn {
+    padding: 4px 7px;
+    gap: 4px;
+  }
   .admin-header__actions {
     gap: 8px;
   }
@@ -1269,6 +1442,10 @@
   }
   .admin-brand__logo {
     height: 30px;
+  }
+  .admin-cloud-sync-btn {
+    height: 30px;
+    padding: 0 6px;
   }
   .admin-btn > span:not(.admin-notif-badge) {
     display: none;

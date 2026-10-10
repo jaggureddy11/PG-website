@@ -24,6 +24,8 @@ import {
   Loader2,
   ChevronRight,
   CheckCircle2,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { AdminLogin } from "./AdminLogin";
 import {
@@ -190,6 +192,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     updateCallbackStatus,
     updateBookingStatus,
     updateInquiryStatus,
+    firebaseStatus,
+    isSyncing,
+    lastSyncedAt,
+    syncDatabase,
   } = useResidences();
 
   const [currentAdminTab, setCurrentAdminTab] = useState<"properties" | "callbacks" | "bookings" | "partner">("properties");
@@ -212,6 +218,44 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [modalConfirmDelete, setModalConfirmDelete] = useState(false);
   const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+
+  // Cloud Sync & Saving States
+  const [isSavingResidence, setIsSavingResidence] = useState(false);
+  const [syncNotice, setSyncNotice] = useState<{
+    type: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
+
+  const formattedLastSync = useMemo(() => {
+    if (!lastSyncedAt) return null;
+    return lastSyncedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }, [lastSyncedAt]);
+
+  const handleManualSync = async (forceSeed = false) => {
+    try {
+      setSyncNotice({ type: "info", message: "Connecting to Cloud Firestore and syncing database..." });
+      const result = await syncDatabase(forceSeed);
+      if (result.success) {
+        setSyncNotice({
+          type: "success",
+          message: `Cloud sync successful: ${result.message}`,
+        });
+      } else {
+        setSyncNotice({
+          type: "error",
+          message: `Cloud sync notice: ${result.message}`,
+        });
+      }
+      setTimeout(() => setSyncNotice(null), 5000);
+    } catch (err) {
+      console.error("Manual sync failed:", err);
+      setSyncNotice({
+        type: "error",
+        message: "Sync failed. Please check internet connection.",
+      });
+      setTimeout(() => setSyncNotice(null), 5000);
+    }
+  };
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState<Partial<ExtendedResidence>>(EMPTY_FORM_STATE);
@@ -383,6 +427,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
       return;
     }
 
+    setIsSavingResidence(true);
     let finalLat = formData.lat;
     let finalLng = formData.lng;
     if ((finalLat === undefined || finalLng === undefined) && formData.googleMapsUrl) {
@@ -393,29 +438,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
       }
     }
 
-    if (editingId) {
-      const updatedProperty = {
-        ...formData,
-        lat: finalLat,
-        lng: finalLng,
-        id: editingId,
-      } as ExtendedResidence;
-      await saveResidence(updatedProperty);
-    } else {
-      const newId = (formData.name || "property")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4);
-      const newProperty: ExtendedResidence = {
-        ...(formData as ExtendedResidence),
-        lat: finalLat,
-        lng: finalLng,
-        id: newId,
-      };
-      await saveResidence(newProperty);
+    try {
+      if (editingId) {
+        const updatedProperty = {
+          ...formData,
+          lat: finalLat,
+          lng: finalLng,
+          id: editingId,
+        } as ExtendedResidence;
+        await saveResidence(updatedProperty);
+        setSyncNotice({
+          type: "success",
+          message: `"${updatedProperty.name}" updated & live synced to Cloud Firestore database.`,
+        });
+      } else {
+        const newId = (formData.name || "property")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4);
+        const newProperty: ExtendedResidence = {
+          ...(formData as ExtendedResidence),
+          lat: finalLat,
+          lng: finalLng,
+          id: newId,
+        };
+        await saveResidence(newProperty);
+        setSyncNotice({
+          type: "success",
+          message: `"${newProperty.name}" published & live synced to Cloud Firestore database.`,
+        });
+      }
+      setTimeout(() => setSyncNotice(null), 5000);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Failed to save residence:", err);
+      setSyncNotice({
+        type: "error",
+        message: "Failed to sync property to database. Saved locally.",
+      });
+      setTimeout(() => setSyncNotice(null), 5000);
+    } finally {
+      setIsSavingResidence(false);
     }
-
-    setIsModalOpen(false);
   };
 
   // Completely Hassle-Free Deletion (No blocked browser pop-ups, instant sync)
@@ -424,7 +488,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
     try {
       await deleteResidence(id);
       setDeleteNotice(name ? `"${name}" was successfully removed.` : "Property was removed.");
-      setTimeout(() => setDeleteNotice(null), 4000);
+      setSyncNotice({
+        type: "info",
+        message: name ? `"${name}" removed and synced across database.` : "Property removed and synced.",
+      });
+      setTimeout(() => {
+        setDeleteNotice(null);
+        setSyncNotice(null);
+      }, 4000);
     } catch (err) {
       console.error("Failed to delete residence:", err);
       alert("Failed to delete residence. Please check your connection.");
@@ -435,7 +506,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
   };
 
   const handleQuickStatusChange = async (id: string, status: "available" | "fast-filling" | "sold-out") => {
-    await quickStatusChange(id, status);
+    try {
+      await quickStatusChange(id, status);
+      const propName = residences.find((r) => r.id === id)?.name || "Property";
+      setSyncNotice({
+        type: "success",
+        message: `${propName} status updated to "${status}" and synced to Cloud Firestore.`,
+      });
+      setTimeout(() => setSyncNotice(null), 4000);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
   };
 
   // Media upload handling (permanent cloud storage / persistent optimized URI)
@@ -501,6 +582,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
               <span className="admin-brand__dot" aria-hidden="true" />
               <span>{loggedAdminUser}</span>
             </div>
+            <button
+              type="button"
+              className={`admin-cloud-sync-btn admin-cloud-sync-btn--${isSyncing ? "connecting" : firebaseStatus}`}
+              onClick={() => handleManualSync(false)}
+              disabled={isSyncing}
+              title={`Cloud Database: ${
+                firebaseStatus === "synced"
+                  ? "Live Synced with Firestore"
+                  : isSyncing
+                  ? "Syncing with cloud..."
+                  : "Offline mode"
+              }${formattedLastSync ? ` · Last synced: ${formattedLastSync}` : ""}. Click to re-sync.`}
+              aria-label="Sync Database with Cloud Firestore"
+            >
+              <span className={`admin-cloud-dot admin-cloud-dot--${isSyncing ? "connecting" : firebaseStatus}`} />
+              <RefreshCw size={11} className={isSyncing ? "admin-spin" : ""} />
+              <span className="admin-cloud-sync-btn__text">
+                {isSyncing ? "Syncing..." : firebaseStatus === "synced" ? "Cloud Synced" : "Offline"}
+              </span>
+            </button>
           </div>
 
           <div className="admin-header__actions">
@@ -660,6 +761,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
           </div>
         </div>
       </header>
+
+      {/* ── Live Cloud Sync Notice Banner ── */}
+      {syncNotice && (
+        <div className={`admin-sync-banner admin-sync-banner--${syncNotice.type}`}>
+          <div className="admin-sync-banner__content">
+            {syncNotice.type === "info" && <RefreshCw size={15} className="admin-spin" />}
+            {syncNotice.type === "success" && <CheckCircle2 size={16} />}
+            {syncNotice.type === "error" && <AlertCircle size={16} />}
+            <span>{syncNotice.message}</span>
+          </div>
+          <button
+            type="button"
+            className="admin-sync-banner__close"
+            onClick={() => setSyncNotice(null)}
+            aria-label="Dismiss notice"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ── Admin Navigation Tabs (Properties vs Leads from Firestore) ── */}
       <div className="admin-nav-tabs-bar">
@@ -863,6 +984,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
           </div>
 
           <div className="admin-toolbar__right">
+            <button
+              type="button"
+              className="admin-btn admin-btn--secondary admin-btn--sync"
+              onClick={() => handleManualSync(false)}
+              disabled={isSyncing}
+              title="Fetch latest updates from Firestore cloud database"
+              aria-label="Sync Database with Cloud"
+            >
+              <RefreshCw size={13} className={isSyncing ? "admin-spin" : ""} />
+              <span>{isSyncing ? "Syncing..." : "Sync Database"}</span>
+            </button>
             <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 500 }}>
               Showing {filteredResidences.length} of {residences.length}
             </span>
@@ -2334,11 +2466,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome, 
                       setIsModalOpen(false);
                       setModalConfirmDelete(false);
                     }}
+                    disabled={isSavingResidence}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="admin-btn admin-btn--primary">
-                    {editingId ? "Save Changes" : "Publish Residence"}
+                  <button
+                    type="submit"
+                    className="admin-btn admin-btn--primary"
+                    disabled={isSavingResidence}
+                  >
+                    {isSavingResidence ? (
+                      <>
+                        <Loader2 size={14} className="admin-spin" />
+                        <span>Saving &amp; Syncing...</span>
+                      </>
+                    ) : (
+                      editingId ? "Save Changes" : "Publish Residence"
+                    )}
                   </button>
                 </div>
               </div>
