@@ -13,6 +13,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { savePartnerInquiryToFirestore } from "@/lib/firebase";
+import { WhatsAppIcon } from "../ui/WhatsAppIcon";
 
 interface PartnerPageProps {
   onBackToHome?: (targetHash?: string) => void;
@@ -377,7 +378,7 @@ export function PartnerPage({ onBackToHome }: PartnerPageProps) {
                 rel="noopener noreferrer"
                 className="direct-link"
               >
-                <MessageCircle size={14} />
+                <WhatsAppIcon size={14} />
                 <span>WhatsApp</span>
               </a>
             </div>

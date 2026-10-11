@@ -5,12 +5,12 @@ import {
   ChevronRight,
   Play,
   CalendarCheck,
-  MessageCircle,
   Eye,
   Maximize2,
   Minimize2,
   Sparkles,
 } from "lucide-react";
+import { WhatsAppIcon } from "../ui/WhatsAppIcon";
 
 export interface GalleryMediaItem {
   id: string;
@@ -279,7 +279,7 @@ export const PropertyGalleryLightbox: React.FC<PropertyGalleryLightboxProps> = (
               }}
               title="Chat with property manager on WhatsApp"
             >
-              <MessageCircle size={14} />
+              <WhatsAppIcon size={14} />
               <span className="charla-lightbox-cta-btn__text">WhatsApp</span>
             </button>
           )}
