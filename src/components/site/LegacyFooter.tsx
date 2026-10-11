@@ -2,9 +2,15 @@ interface LegacyFooterProps {
   onSelectResidence?: (id: string) => void;
   onNavigateHome?: () => void;
   onNavigatePartner?: () => void;
+  onOpenLegalModal?: (tab: "privacy" | "cookies" | "rules" | "terms") => void;
 }
 
-export function LegacyFooter({ onSelectResidence, onNavigateHome, onNavigatePartner }: LegacyFooterProps = {}) {
+export function LegacyFooter({ 
+  onSelectResidence, 
+  onNavigateHome, 
+  onNavigatePartner,
+  onOpenLegalModal 
+}: LegacyFooterProps = {}) {
   const handleResidenceClick = (e: React.MouseEvent, id: string) => {
     if (onSelectResidence) {
       e.preventDefault();
@@ -86,10 +92,31 @@ export function LegacyFooter({ onSelectResidence, onNavigateHome, onNavigatePart
             </div>
             <div className="footer__col">
               <h4>Legal</h4>
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
-              <a href="#">House rules</a>
-              <a href="#/admin" style={{ opacity: 0.7, fontSize: "12px", marginTop: "4px" }}>Admin Space</a>
+              <button 
+                type="button" 
+                onClick={() => onOpenLegalModal?.("privacy")}
+              >
+                Privacy Policy
+              </button>
+              <button 
+                type="button" 
+                onClick={() => onOpenLegalModal?.("terms")}
+              >
+                Terms of Service
+              </button>
+              <button 
+                type="button" 
+                onClick={() => onOpenLegalModal?.("rules")}
+              >
+                House Rules
+              </button>
+              <button 
+                type="button" 
+                onClick={() => onOpenLegalModal?.("cookies")}
+              >
+                Cookie Settings
+              </button>
+              <a href="#/admin" style={{ opacity: 0.7, fontSize: "12px", marginTop: "6px" }}>Admin Space</a>
               <p className="footer__disclaimer">Images shown are for representational purposes only. Amenities depicted may or may not form a part of that individual property.</p>
               <p className="footer__availability">© <span id="year">2026</span> Charla Living.<br />All rooms subject to availability.</p>
             </div>

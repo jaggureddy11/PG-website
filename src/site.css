@@ -3913,14 +3913,21 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   color: var(--ink);
   margin-bottom: 20px;
 }
-.footer__col a {
+.footer__col a,
+.footer__col button {
   display: block;
   font-size: 14.5px;
   color: var(--muted);
   padding: 6px 0;
   transition: color .25s, transform .25s var(--ease);
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
 }
-.footer__col a:hover { color: var(--blue); transform: translateX(4px); }
+.footer__col a:hover,
+.footer__col button:hover { color: var(--blue); transform: translateX(4px); }
 .footer__addr { font-size: 14.5px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
 .footer__disclaimer {
   font-size: 12px;
@@ -5194,9 +5201,11 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Completely hide floating FABs when mobile drawer navigation is open */
+/* Completely hide floating FABs and cookie banner when mobile drawer navigation is open */
 body.has-drawer-open .floating-contact-actions,
-body:has(.mmenu.open) .floating-contact-actions {
+body:has(.mmenu.open) .floating-contact-actions,
+body.has-drawer-open .charla-cookie-consent,
+body:has(.mmenu.open) .charla-cookie-consent {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
@@ -5693,5 +5702,478 @@ body:has(.mmenu.open) .floating-contact-actions {
   background: #002d75;
   transform: translateY(-1px);
 }
+
+/* ── Cookie Consent Banner ────────────────────────────────── */
+.charla-cookie-consent {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  max-width: 420px;
+  width: calc(100% - 48px);
+  pointer-events: auto;
+  animation: charlaCookieSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes charlaCookieSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.charla-cookie-consent__card {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06);
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.charla-cookie-consent__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.charla-cookie-consent__icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #dcfce7;
+}
+
+.charla-cookie-consent__title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.charla-cookie-consent__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 2px 7px;
+  border-radius: 100px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.charla-cookie-consent__title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.charla-cookie-consent__close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.charla-cookie-consent__close:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.charla-cookie-consent__desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #475569;
+  margin: 0;
+}
+
+.charla-cookie-consent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.charla-cookie-btn {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+}
+
+.charla-cookie-btn--primary {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.charla-cookie-btn--primary:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.charla-cookie-btn--secondary {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.charla-cookie-btn--secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.charla-cookie-btn--text {
+  background: none;
+  border: none;
+  color: #64748b;
+  padding: 6px 8px;
+  margin-left: auto;
+}
+
+.charla-cookie-btn--text:hover {
+  color: #0f172a;
+}
+
+@media (max-width: 640px) {
+  .charla-cookie-consent {
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .charla-cookie-consent__card {
+    padding: 14px 16px;
+    border-radius: 16px;
+  }
+
+  .charla-cookie-btn--text {
+    margin-left: 0;
+  }
+}
+
+/* ── Legal & Policy Modal ─────────────────────────────────── */
+.charla-legal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: charlaLegalFadeIn 0.2s ease-out;
+}
+
+@keyframes charlaLegalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.charla-legal-dialog {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+  animation: charlaLegalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes charlaLegalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.charla-legal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.charla-legal-header__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.charla-legal-header__badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ea580c;
+}
+
+.charla-legal-header__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.charla-legal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.charla-legal-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.charla-legal-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0 16px;
+  overflow-x: auto;
+  gap: 6px;
+}
+
+.charla-legal-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.charla-legal-tab:hover {
+  color: #0f172a;
+}
+
+.charla-legal-tab.is-active {
+  color: #0f172a;
+  border-bottom-color: #0f172a;
+  background: #ffffff;
+}
+
+.charla-legal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #334155;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.charla-legal-section h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.charla-legal-updated {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.charla-legal-section h4 {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 18px 0 8px 0;
+}
+
+.charla-legal-section ul {
+  padding-left: 20px;
+  margin: 8px 0 16px 0;
+}
+
+.charla-legal-section li {
+  margin-bottom: 6px;
+}
+
+.charla-legal-section a {
+  color: #0284c7;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.charla-legal-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.charla-legal-mini-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.charla-legal-mini-card__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.charla-legal-mini-card p {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.charla-legal-reset-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.charla-legal-reset-box strong {
+  font-size: 13px;
+  color: #14532d;
+  display: block;
+}
+
+.charla-legal-reset-box p {
+  font-size: 12px;
+  color: #166534;
+  margin: 2px 0 0 0;
+}
+
+.charla-legal-reset-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  background: #15803d;
+  color: #ffffff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.charla-legal-reset-btn:hover {
+  background: #166534;
+}
+
+.charla-legal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.charla-legal-footer__note {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.charla-legal-footer__note a {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .charla-legal-dialog {
+    max-height: 92vh;
+    border-radius: 18px;
+  }
+  .charla-legal-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .charla-legal-reset-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .charla-legal-header {
+    padding: 16px 18px;
+  }
+  .charla-legal-body {
+    padding: 18px;
+  }
+  .charla-legal-footer {
+    padding: 12px 18px;
+  }
+}
+
 
 

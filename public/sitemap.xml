@@ -2,46 +2,55 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://charlaliving.in/</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residences</loc>
+    <loc>https://charlaliving.in/residences</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/partner-with-us</loc>
+    <loc>https://charlaliving.in/partner-with-us</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residence/jp-nagar</loc>
+    <loc>https://charlaliving.in/residence/jp-nagar</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residence/jayanagar</loc>
+    <loc>https://charlaliving.in/residence/jayanagar</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residence/banashankari</loc>
+    <loc>https://charlaliving.in/residence/banashankari</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residence/kumaraswamy-layout</loc>
+    <loc>https://charlaliving.in/residence/kumaraswamy-layout</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residence/padmanabhanagar</loc>
+    <loc>https://charlaliving.in/residence/padmanabhanagar</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://charlaliving.in/#/residence/uttarahalli</loc>
+    <loc>https://charlaliving.in/residence/uttarahalli</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

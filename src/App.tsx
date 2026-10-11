@@ -7,6 +7,8 @@ import { ResidenceDetail } from "@/components/residence/ResidenceDetail";
 import { ResidencesPage } from "@/components/residence/ResidencesPage";
 import { PartnerPage } from "@/components/partner/PartnerPage";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { CookieConsent } from "@/components/ui/CookieConsent";
+import { LegalModal, type LegalTab } from "@/components/ui/LegalModal";
 import { RESIDENCES } from "@/data/residences";
 import { ResidencesProvider, useResidences } from "@/context/ResidencesContext";
 import Skiper39 from "@/components/ui/skiper39";
@@ -20,27 +22,46 @@ type ViewState = "home" | "residences" | "detail" | "partner" | "admin";
 
 function parseRouteFromHash(): { view: ViewState; residenceId: string | null; targetSection?: string } {
   const hash = window.location.hash;
-  if (!hash || hash === "#" || hash === "#home" || hash === "#/home") {
-    return { view: "home", residenceId: null };
+  const path = window.location.pathname.replace(/\/$/, "");
+
+  // 1. Process hash route if present
+  if (hash && hash !== "#" && hash !== "#home" && hash !== "#/home") {
+    if (hash === "#admin" || hash === "#/admin" || hash.startsWith("#/admin")) {
+      return { view: "admin", residenceId: null };
+    }
+    if (hash.startsWith("#/residence/")) {
+      const id = hash.replace("#/residence/", "").trim();
+      if (id) return { view: "detail", residenceId: id };
+    }
+    if (hash.startsWith("#residence/")) {
+      const id = hash.replace("#residence/", "").trim();
+      if (id) return { view: "detail", residenceId: id };
+    }
+    if (hash === "#residences" || hash === "#/residences" || hash.startsWith("#/residences")) {
+      return { view: "residences", residenceId: null };
+    }
+    if (hash === "#partner" || hash === "#/partner" || hash === "#partner-with-us" || hash === "#/partner-with-us") {
+      return { view: "partner", residenceId: null };
+    }
+    return { view: "home", residenceId: null, targetSection: hash.replace("#", "") };
   }
-  if (hash === "#admin" || hash === "#/admin" || hash.startsWith("#/admin")) {
+
+  // 2. Direct clean pathname fallback (Google search results or clean URL direct hits)
+  if (path === "/admin") {
     return { view: "admin", residenceId: null };
   }
-  if (hash.startsWith("#/residence/")) {
-    const id = hash.replace("#/residence/", "").trim();
-    if (id) return { view: "detail", residenceId: id };
-  }
-  if (hash.startsWith("#residence/")) {
-    const id = hash.replace("#residence/", "").trim();
-    if (id) return { view: "detail", residenceId: id };
-  }
-  if (hash === "#residences" || hash === "#/residences" || hash.startsWith("#/residences")) {
+  if (path === "/residences") {
     return { view: "residences", residenceId: null };
   }
-  if (hash === "#partner" || hash === "#/partner" || hash === "#partner-with-us" || hash === "#/partner-with-us") {
+  if (path === "/partner" || path === "/partner-with-us") {
     return { view: "partner", residenceId: null };
   }
-  return { view: "home", residenceId: null, targetSection: hash.replace("#", "") };
+  if (path.startsWith("/residence/")) {
+    const id = path.replace("/residence/", "").trim();
+    if (id) return { view: "detail", residenceId: id };
+  }
+
+  return { view: "home", residenceId: null };
 }
 
 function AppContent() {
@@ -54,6 +75,9 @@ function AppContent() {
   const [detectedLocalityInfo, setDetectedLocalityInfo] = useState<{ id: string; name: string; distanceKm: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
+  const [activeLegalTab, setActiveLegalTab] = useState<LegalTab>("privacy");
+  const [cookieConsentKey, setCookieConsentKey] = useState<number>(0);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -175,6 +199,46 @@ function AppContent() {
     ? (residencesMap[selectedResidenceId] || RESIDENCES[selectedResidenceId] || null)
     : null;
 
+  // Dynamic SEO page title and meta description updates
+  useEffect(() => {
+    let title = "Charla Living | Premium PG & Co-Living in South Bangalore";
+    let desc = "Family-run, fully managed PG residences across South Bengaluru: Kumaraswamy Layout, JP Nagar, Banashankari, Padmanabhanagar, Jayanagar & Uttarahalli. Zero brokerage, 4 daily meals, 100 Mbps Wi-Fi, and 1-month deposit.";
+
+    if (currentView === "residences") {
+      title = "Explore All Residences | Charla Living - South Bangalore PGs";
+      desc = "Browse verified, fully managed student and professional PG homes across South Bengaluru. Filter by sharing type, budget, and proximity to DSCE, Jain, RV, or Namma Metro.";
+    } else if (currentView === "detail" && currentResidence) {
+      title = `${currentResidence.name} | Charla Living - PG in ${currentResidence.locality}`;
+      desc = `Explore ${currentResidence.name} in ${currentResidence.locality}, Bangalore. Starting ₹${currentResidence.startingPrice.toLocaleString("en-IN")}/mo with 4 fresh meals, high-speed Wi-Fi, and zero brokerage.`;
+    } else if (currentView === "partner") {
+      title = "Partner with Us | Charla Living - PG Property Management";
+      desc = "Partner your property with Charla Living for guaranteed on-time rental income, professional property upkeep, and zero hassle.";
+    } else if (currentView === "admin") {
+      title = "Admin Space | Charla Living";
+      desc = "Charla Living administration and inquiries management dashboard.";
+    }
+
+    document.title = title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", desc);
+    }
+  }, [currentView, currentResidence]);
+
+  const handleOpenLegalModal = (tab: LegalTab = "privacy") => {
+    setActiveLegalTab(tab);
+    setIsLegalModalOpen(true);
+  };
+
+  const handleResetCookies = () => {
+    try {
+      localStorage.removeItem("charla_cookie_consent");
+      setCookieConsentKey((k) => k + 1);
+    } catch (err) {
+      void err;
+    }
+  };
+
   if (currentView === "admin") {
     return (
       <AdminDashboard
@@ -237,9 +301,23 @@ function AppContent() {
         onSelectResidence={handleSelectResidence} 
         onNavigateHome={handleBackToHome} 
         onNavigatePartner={handleNavigatePartner}
+        onOpenLegalModal={handleOpenLegalModal}
       />
 
       <FloatingContactActions />
+
+      <CookieConsent 
+        key={cookieConsentKey} 
+        onOpenLegalModal={handleOpenLegalModal} 
+      />
+
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        activeTab={activeLegalTab}
+        onSelectTab={setActiveLegalTab}
+        onResetCookies={handleResetCookies}
+      />
     </>
   );
 }
