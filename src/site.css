@@ -5781,7 +5781,7 @@ body:has(.mmenu.open) .charla-cookie-consent {
 }
 
 .charla-cookie-pill__ok {
-  background: #0099ff;
+  background: var(--blue, #003B99);
   color: #ffffff;
   border: none;
   border-radius: 9999px;
@@ -5790,15 +5790,15 @@ body:has(.mmenu.open) .charla-cookie-consent {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 153, 255, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 59, 153, 0.28);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   margin-left: 4px;
 }
 
 .charla-cookie-pill__ok:hover {
-  background: #0088e6;
+  background: var(--blue-deep, #012659);
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0, 153, 255, 0.45);
+  box-shadow: 0 4px 12px rgba(0, 59, 153, 0.38);
 }
 
 .charla-cookie-pill__ok:active {
