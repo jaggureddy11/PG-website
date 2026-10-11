@@ -402,6 +402,286 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   transform: translateY(-3.5px) rotate(-45deg);
 }
 
+/* ── Navigation Search Button & Drawer (Residences) ── */
+.nav__search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 59, 153, 0.07);
+  border: 1px solid rgba(0, 59, 153, 0.16);
+  color: var(--blue, #003B99);
+  cursor: pointer;
+  padding: 0;
+  animation: charlaSearchIconPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s var(--ease);
+}
+
+@keyframes charlaSearchIconPop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.nav__search-btn:hover,
+.nav__search-btn:active,
+.nav__search-btn.is-active {
+  background: var(--blue, #003B99);
+  color: #ffffff;
+  border-color: var(--blue, #003B99);
+  box-shadow: 0 4px 12px rgba(0, 59, 153, 0.25);
+}
+
+.nav__search-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #FB7009;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 0 6px rgba(251, 112, 9, 0.6);
+}
+
+.nav__desktop-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: rgba(0, 59, 153, 0.06);
+  border: 1px solid rgba(0, 59, 153, 0.16);
+  color: #1e293b;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.nav__desktop-search-btn:hover,
+.nav__desktop-search-btn.active {
+  background: rgba(0, 59, 153, 0.12);
+  border-color: rgba(0, 59, 153, 0.35);
+  color: #003B99;
+}
+
+.nav__desktop-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 59, 153, 0.15);
+  color: #003B99;
+  margin-left: 2px;
+  transition: all 0.15s ease;
+}
+
+.nav__desktop-search-clear:hover {
+  background: #003B99;
+  color: #ffffff;
+}
+
+.nav__search-drawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 59, 153, 0.12);
+  box-shadow: 0 16px 32px -8px rgba(0, 59, 153, 0.12);
+  z-index: 99;
+  animation: charlaSearchSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes charlaSearchSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav__search-drawer-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  padding-bottom: 8px;
+}
+
+.nav__search-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.nav__search-field:focus-within {
+  border-color: #003B99;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 59, 153, 0.1);
+}
+
+.nav__search-field-icon {
+  color: #003B99;
+  flex-shrink: 0;
+}
+
+.nav__search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: #0f172a;
+  width: 100%;
+}
+
+.nav__search-input::placeholder {
+  color: #94a3b8;
+}
+
+.nav__search-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.nav__search-clear-btn:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+.nav__search-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: #003B99;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav__search-close-btn:hover {
+  background: #002d75;
+  transform: translateY(-1px);
+}
+
+.nav__search-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.nav__search-cancel-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.nav__search-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 4px;
+  padding-bottom: 12px;
+  scrollbar-width: none;
+}
+
+.nav__search-tags::-webkit-scrollbar {
+  display: none;
+}
+
+.nav__search-tags-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.nav__search-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nav__search-tag-chip:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.nav__search-tag-chip.active {
+  background: #003B99;
+  color: #ffffff;
+  border-color: #003B99;
+  font-weight: 600;
+}
+
 /* ── Mobile Menu Backdrop & Drawer ── */
 .mmenu-backdrop {
   position: fixed;
@@ -1372,37 +1652,36 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.85);
-  border-radius: 16px;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.05);
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
 }
 
 .residences-back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 14px 6px 8px;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  border-radius: 8px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   color: #334155;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .residences-back-btn:hover {
   background: #f8fafc;
-  color: #003b99;
-  border-color: #bfdbfe;
-  box-shadow: 0 3px 8px rgba(0, 59, 153, 0.08);
-  transform: translateY(-1px);
+  color: #0f172a;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.05);
 }
 
 .residences-back-btn:active {
@@ -1413,26 +1692,24 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: #eff6ff;
-  color: #003b99;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
   transition: all 0.2s ease;
 }
 
 .residences-back-btn:hover .residences-back-icon-wrap {
-  background: #003b99;
-  color: #ffffff;
-  transform: translateX(-2px);
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .residences-breadcrumb-path {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 12.5px;
-  font-weight: 600;
   color: #64748b;
 }
 
@@ -1442,7 +1719,7 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
   padding: 0;
   color: #64748b;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: color 0.15s ease;
 }
@@ -1452,20 +1729,52 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 }
 
 .residences-breadcrumb-sep {
-  color: #cbd5e1;
+  color: #94a3b8;
+  font-size: 11px;
 }
 
-.residences-breadcrumb-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #003b99;
-  background: #eff6ff;
-  padding: 4px 12px;
-  border-radius: 100px;
-  border: 1px solid #dbeafe;
-  font-size: 12px;
+.residences-breadcrumb-current {
+  color: #1e293b;
+  font-size: 12.5px;
   font-weight: 600;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+@media (max-width: 640px) {
+  .residences-breadcrumb-bar {
+    margin-bottom: 14px;
+  }
+
+  .residences-breadcrumb-inner {
+    padding: 6px 12px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+
+  .residences-back-btn {
+    padding: 3px 8px 3px 5px;
+    font-size: 11.5px;
+    gap: 5px;
+    border-radius: 7px;
+  }
+
+  .residences-back-icon-wrap {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+  }
+
+  .residences-breadcrumb-path {
+    gap: 5px;
+    font-size: 11.5px;
+  }
+
+  .residences-breadcrumb-link,
+  .residences-breadcrumb-current {
+    font-size: 11.5px;
+  }
 }
 
 /* ── residences ───────────────────────────────────── */
@@ -4569,6 +4878,10 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
     padding: 0 9px;
     font-size: 11px;
   }
+  .nav__search-btn {
+    width: 35px;
+    height: 35px;
+  }
   .nav__burger {
     width: 38px;
     height: 38px;
@@ -5276,4 +5589,109 @@ body:has(.mmenu.open) .floating-contact-actions {
 .leaflet-tooltip.charla-tip-popup::before {
   border-top-color: rgba(255, 255, 255, 0.98) !important;
 }
+
+/* ─── Residences Search Active Status Bar & Empty State ─── */
+.residences-search-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 24px;
+  background: rgba(0, 59, 153, 0.04);
+  border: 1px solid rgba(0, 59, 153, 0.14);
+  border-radius: 12px;
+  animation: fadeIn 0.2s ease;
+}
+
+.residences-search-status-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.residences-search-status-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #003B99;
+  background: #ffffff;
+  border: 1px solid rgba(0, 59, 153, 0.2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.residences-search-status-clear:hover {
+  background: #003B99;
+  color: #ffffff;
+  border-color: #003B99;
+}
+
+.residences-search-empty-state {
+  padding: 56px 24px;
+  text-align: center;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 16px;
+  margin: 12px 0 32px 0;
+}
+
+.residences-search-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0, 59, 153, 0.08);
+  color: #003B99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.residences-search-empty-state h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.residences-search-empty-state p {
+  font-size: 14px;
+  color: #64748b;
+  max-width: 440px;
+  margin: 0 auto 20px auto;
+  line-height: 1.5;
+}
+
+.residences-search-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: #003B99;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.residences-search-empty-btn:hover {
+  background: #002d75;
+  transform: translateY(-1px);
+}
+
 

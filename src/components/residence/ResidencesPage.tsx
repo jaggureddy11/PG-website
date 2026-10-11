@@ -13,7 +13,8 @@ import {
   CheckCircle,
   Loader2,
   Building2,
-  Layers
+  Layers,
+  Search
 } from "lucide-react";
 import { calculateDistanceKm } from "@/utils/location";
 import { saveCallbackRequestToFirestore, saveVisitBookingToFirestore } from "@/lib/firebase";
@@ -222,6 +223,9 @@ export interface ResidencesPageProps {
   roomTypeFilter?: string;
   onClearLocation?: () => void;
   onBackToHome?: (hash?: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  onOpenSearch?: () => void;
 }
 
 export function ResidencesPage({
@@ -235,7 +239,10 @@ export function ResidencesPage({
   detectedLocalityInfo,
   roomTypeFilter = "any",
   onClearLocation,
-  onBackToHome
+  onBackToHome,
+  searchQuery = "",
+  onSearchChange,
+  onOpenSearch
 }: ResidencesPageProps) {
   const [internalLocality, setInternalLocality] = useState<string>("all");
   const [internalSortBy, setInternalSortBy] = useState<string>("featured");
@@ -447,7 +454,18 @@ export function ResidencesPage({
         (selectedGender === "Male" && item.gender === "Male") ||
         (selectedGender === "Female" && item.gender === "Female") ||
         (selectedGender === "Unisex" && (item.gender === "Unisex" || (item.gender as string) === "Co-living"));
-      return matchesLocality && matchesRoom && matchesGender;
+
+      const q = (searchQuery || "").trim().toLowerCase();
+      const matchesSearch = !q ||
+        item.name.toLowerCase().includes(q) ||
+        (item.houseName && item.houseName.toLowerCase().includes(q)) ||
+        item.locality.toLowerCase().includes(q) ||
+        (item.locationSnippet && item.locationSnippet.toLowerCase().includes(q)) ||
+        (item.proximityBadge && item.proximityBadge.toLowerCase().includes(q)) ||
+        item.sharingTypes.some((t) => t.toLowerCase().includes(q)) ||
+        (item.highlights && item.highlights.some((h) => h.toLowerCase().includes(q)));
+
+      return matchesLocality && matchesRoom && matchesGender && matchesSearch;
     })
     .sort((a, b) => {
       if (sortBy === "nearest") {
@@ -471,12 +489,12 @@ export function ResidencesPage({
             aria-label="Back to Home"
           >
             <div className="residences-back-icon-wrap">
-              <ArrowLeft size={14} />
+              <ArrowLeft size={13} />
             </div>
             <span>Back to Home</span>
           </button>
 
-          <div className="residences-breadcrumb-path">
+          <div className="residences-breadcrumb-path" aria-label="Breadcrumb">
             <button 
               type="button"
               className="residences-breadcrumb-link" 
@@ -485,10 +503,8 @@ export function ResidencesPage({
               Home
             </button>
             <span className="residences-breadcrumb-sep">/</span>
-            <span className="residences-breadcrumb-badge">
-              {selectedLocality !== "all"
-                ? `PG in ${LOCALITY_FILTERS.find((l) => l.id === selectedLocality)?.label || "South Bangalore"}`
-                : "Residences in South Bangalore"}
+            <span className="residences-breadcrumb-current">
+              Residences
             </span>
           </div>
         </div>
@@ -628,11 +644,73 @@ export function ResidencesPage({
             </div>
           )}
 
+          {/* Active Search Filter Status */}
+          {Boolean(searchQuery && searchQuery.trim()) && (
+            <div className="residences-search-status-bar">
+              <div
+                className="residences-search-status-info cursor-pointer hover:underline"
+                onClick={onOpenSearch}
+                role="button"
+                tabIndex={0}
+                aria-label="Edit search query"
+              >
+                <Search size={14} className="text-[#003B99]" />
+                <span>
+                  Found <strong>{filteredResidences.length}</strong> {filteredResidences.length === 1 ? "residence" : "residences"} matching <strong>"{searchQuery}"</strong>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onSearchChange?.("")}
+                className="residences-search-status-clear"
+                aria-label="Clear search filter"
+              >
+                <X size={12} />
+                <span>Clear</span>
+              </button>
+            </div>
+          )}
+
           {/* ─── SPLIT VIEW: Horizontal Listing Cards (Left) + Sticky Interactive Map (Right) ─── */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* ── LEFT COLUMN: Residence Cards (Matching Template) ── */}
             <div className={`lg:col-span-7 xl:col-span-7 space-y-6 ${mobileViewMode === "map" ? "hidden lg:block" : "block"}`}>
-              {filteredResidences.map((res) => {
+              {filteredResidences.length === 0 ? (
+                <div className="residences-search-empty-state">
+                  <div className="residences-search-empty-icon">
+                    <Search size={28} strokeWidth={1.8} />
+                  </div>
+                  <h3>No residences found</h3>
+                  <p>
+                    {searchQuery
+                      ? `No properties matched "${searchQuery}". Try searching for another locality, college like DSCE, or room type.`
+                      : "No properties match your current filter settings."}
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onSearchChange) onSearchChange("");
+                        if (onSelectLocality) onSelectLocality("all");
+                        setSelectedGender("all");
+                      }}
+                      className="residences-search-empty-btn"
+                    >
+                      Reset Filters & Show All
+                    </button>
+                    {onOpenSearch && (
+                      <button
+                        type="button"
+                        onClick={onOpenSearch}
+                        className="btn-outline-search px-4 py-2 text-sm font-semibold text-[#003B99] border border-[#003B99]/30 rounded-xl hover:bg-[#003B99]/5 transition-colors"
+                      >
+                        Try New Search
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                filteredResidences.map((res) => {
                 const isSelected = activeResidenceId === res.id;
                 const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${res.lat},${res.lng}`;
 
@@ -771,26 +849,7 @@ export function ResidencesPage({
                     </div>
                   </article>
                 );
-              })}
-
-              {filteredResidences.length === 0 && (
-                <div className="residences-empty-state text-center py-14 px-6 bg-white/80 rounded-2xl border border-slate-200/80 shadow-sm">
-                  <h3 className="text-3xl font-bold text-[#FB7009] mb-3">Sorry :(</h3>
-                  <p className="text-lg font-semibold text-slate-800 mb-6">
-                    We don’t have any property near {selectedLocality} at the moment
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleLocalityChange("all");
-                      if (onClearLocation) onClearLocation();
-                    }}
-                    className="btn btn--blue px-6 py-2.5 rounded-xl font-semibold inline-flex items-center gap-2"
-                  >
-                    <span>View all South Bangalore residences</span>
-                  </button>
-                </div>
-              )}
+              }))}
 
               <p className="residences__note text-xs text-slate-400 pt-2">
                 *All-inclusive covers rent, Wi-Fi, housekeeping and maintenance. Food plans optional at ₹3,200/month.

@@ -55,13 +55,20 @@ export const PropertyGalleryLightbox: React.FC<PropertyGalleryLightboxProps> = (
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lightboxRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync initialIndex when lightbox opens
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setCurrentIndex(Math.max(0, Math.min(initialIndex, items.length - 1)));
       setDragOffset(0);
       setVerticalOffset(0);
       setSelectedCategory("all");
+    }
+  }
+
+  // Handle body scroll locking and video cleanup
+  useEffect(() => {
+    if (isOpen) {
       // Prevent body scrolling
       document.body.style.overflow = "hidden";
     } else {
@@ -73,7 +80,7 @@ export const PropertyGalleryLightbox: React.FC<PropertyGalleryLightboxProps> = (
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen, initialIndex, items.length]);
+  }, [isOpen]);
 
   // Pause video on slide change
   useEffect(() => {

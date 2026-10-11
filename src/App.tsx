@@ -52,6 +52,8 @@ function AppContent() {
   const [roomTypeFilter, setRoomTypeFilter] = useState<string>("any");
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [detectedLocalityInfo, setDetectedLocalityInfo] = useState<{ id: string; name: string; distanceKm: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -190,6 +192,11 @@ function AppContent() {
         onNavigatePartner={handleNavigatePartner}
         onSelectResidence={handleSelectResidence} 
         currentPage={currentView === "detail" ? "detail" : currentView === "residences" ? "residences" : currentView === "partner" ? "partner" : "home"}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        isSearchOpen={isSearchOpen}
+        onToggleSearch={() => setIsSearchOpen((prev) => !prev)}
+        onCloseSearch={() => setIsSearchOpen(false)}
       />
 
       {currentView === "detail" && currentResidence ? (
@@ -213,6 +220,9 @@ function AppContent() {
           roomTypeFilter={roomTypeFilter}
           onClearLocation={handleClearLocation}
           onBackToHome={handleBackToHome}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onOpenSearch={() => setIsSearchOpen(true)}
         />
       ) : currentView === "partner" ? (
         <PartnerPage onBackToHome={handleBackToHome} />

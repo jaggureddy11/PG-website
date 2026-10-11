@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Search, X } from "lucide-react";
 
 interface LegacyChromeProps {
   onNavigateHome?: (targetHash?: string) => void;
@@ -6,6 +7,11 @@ interface LegacyChromeProps {
   onNavigatePartner?: () => void;
   onSelectResidence?: (id: string) => void;
   currentPage?: "home" | "residences" | "detail" | "partner";
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  isSearchOpen?: boolean;
+  onToggleSearch?: () => void;
+  onCloseSearch?: () => void;
 }
 
 interface NavItem {
@@ -21,8 +27,19 @@ const NAV_ITEMS: NavItem[] = [
   { id: "partner", label: "Partner with Us" },
 ];
 
-export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigatePartner, currentPage = "home" }: LegacyChromeProps = {}) {
+export function LegacyChrome({
+  onNavigateHome,
+  onNavigateResidences,
+  onNavigatePartner,
+  currentPage = "home",
+  searchQuery = "",
+  onSearchChange,
+  isSearchOpen = false,
+  onToggleSearch,
+  onCloseSearch,
+}: LegacyChromeProps = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasScrolledPastHero, setHasScrolledPastHero] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("home");
 
@@ -31,6 +48,7 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigateP
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 20);
+      setHasScrolledPastHero(scrollY > 200);
 
       if (currentPage !== "home") {
         setActiveSection(currentPage);
@@ -72,16 +90,32 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigateP
     };
   }, [isMobileMenuOpen]);
 
-  // Handle escape key to close menu
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchOpen]);
+
+  // Handle escape key to close menu or search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false);
+      if (e.key === "Escape") {
+        if (isSearchOpen && onCloseSearch) {
+          onCloseSearch();
+        }
+        if (isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, isSearchOpen, onCloseSearch]);
 
   const scrollToSection = (targetId: string, e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -131,6 +165,36 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigateP
     }, 60);
   };
 
+  // Show search icon on residences page, or when scrolled past the hero on home, or when search is open/active
+  const showSearchIcon =
+    currentPage === "residences" ||
+    (currentPage === "home" && hasScrolledPastHero) ||
+    currentPage === "detail" ||
+    currentPage === "partner" ||
+    isSearchOpen ||
+    Boolean(searchQuery);
+
+  const handleSearchClick = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    onToggleSearch?.();
+  };
+
+  const handleExecuteSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (currentPage !== "residences") {
+      onNavigateResidences?.();
+    }
+    onCloseSearch?.();
+  };
+
+  const handleSelectChip = (tag: string) => {
+    onSearchChange?.(tag);
+    if (currentPage !== "residences") {
+      onNavigateResidences?.();
+    }
+    onCloseSearch?.();
+  };
+
   return (
     <>
       {/* ── Main Navigation Bar ── */}
@@ -168,6 +232,33 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigateP
 
           {/* Desktop Call-to-Actions */}
           <div className="nav__cta">
+            {showSearchIcon && (
+              <button
+                type="button"
+                onClick={handleSearchClick}
+                className={`nav__desktop-search-btn ${isSearchOpen || searchQuery ? "active" : ""}`}
+                aria-label="Search residences"
+                title="Search residences"
+              >
+                <Search size={15} strokeWidth={2.2} />
+                <span>{searchQuery ? `"${searchQuery}"` : "Search PGs"}</span>
+                {searchQuery && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSearchChange?.("");
+                    }}
+                    className="nav__desktop-search-clear"
+                    aria-label="Clear search"
+                  >
+                    <X size={12} />
+                  </span>
+                )}
+              </button>
+            )}
+
             <a
               href="tel:+918884446093"
               className="nav__phone"
@@ -191,17 +282,20 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigateP
             </button>
           </div>
 
-          {/* Mobile Right Controls (Explore Residences + Hamburger) */}
+          {/* Mobile Right Controls: Search Icon (when scrolled/residences) + Hamburger */}
           <div className="nav__mobile-actions">
-            <button
-              type="button"
-              onClick={(e) => scrollToSection("residences", e)}
-              className={`nav__mobile-explore-btn ${currentPage === "residences" ? "is-active" : ""}`}
-              aria-label="Explore Residences"
-            >
-              <span className="nav__mobile-explore-text-full">Explore Residences</span>
-              <span className="nav__mobile-explore-text-short">Explore</span>
-            </button>
+            {showSearchIcon && (
+              <button
+                type="button"
+                onClick={handleSearchClick}
+                className={`nav__search-btn ${isSearchOpen || searchQuery ? "is-active" : ""}`}
+                aria-label="Search residences"
+                title="Search residences"
+              >
+                <Search size={18} strokeWidth={2.2} />
+                {Boolean(searchQuery) && <span className="nav__search-dot" />}
+              </button>
+            )}
 
             <button
               type="button"
@@ -217,6 +311,79 @@ export function LegacyChrome({ onNavigateHome, onNavigateResidences, onNavigateP
             </button>
           </div>
         </div>
+
+        {/* Expandable Search Drawer */}
+        {isSearchOpen && (
+          <div className="nav__search-drawer" role="search">
+            <form onSubmit={handleExecuteSearch} className="container nav__search-drawer-inner">
+              <div className="nav__search-field">
+                <Search size={16} className="nav__search-field-icon" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  placeholder="Search locality, landmark (DSCE), or room type..."
+                  className="nav__search-input"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange?.("")}
+                    className="nav__search-clear-btn"
+                    aria-label="Clear search input"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="nav__search-close-btn"
+                aria-label="Search residences"
+              >
+                Search
+              </button>
+
+              <button
+                type="button"
+                onClick={onCloseSearch}
+                className="nav__search-cancel-btn"
+                aria-label="Close search"
+                title="Close search"
+              >
+                <X size={18} />
+              </button>
+            </form>
+
+            {/* Quick Suggestions / Chips */}
+            <div className="container nav__search-tags">
+              <span className="nav__search-tags-label">Quick:</span>
+              {[
+                "DSCE",
+                "Kumaraswamy Layout",
+                "JP Nagar",
+                "Banashankari",
+                "Jayanagar",
+                "Single Sharing",
+                "2-Sharing",
+              ].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleSelectChip(tag)}
+                  className={`nav__search-tag-chip ${
+                    (searchQuery || "").toLowerCase() === tag.toLowerCase() ? "active" : ""
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ── Modern Full Mobile Drawer ── */}
