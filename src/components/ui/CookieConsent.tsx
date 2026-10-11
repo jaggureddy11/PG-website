@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Cookie, ChevronRight, X } from "lucide-react";
+import { Cookie } from "lucide-react";
 
 interface CookieConsentProps {
   onOpenLegalModal?: (tab: "privacy" | "cookies" | "rules" | "terms") => void;
@@ -9,33 +9,25 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ onOpenLegalModal }
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Check if user has already made a choice
     try {
       const consent = localStorage.getItem("charla_cookie_consent");
       if (!consent) {
-        // Show after a brief delay so page loads gracefully first
         const timer = setTimeout(() => {
           setIsVisible(true);
-        }, 1200);
+        }, 800);
         return () => clearTimeout(timer);
       }
-    } catch {
-      // Storage unavailable fallback
-    }
-  }, []);
-
-  const handleAcceptAll = () => {
-    try {
-      localStorage.setItem("charla_cookie_consent", JSON.stringify({ type: "all", date: new Date().toISOString() }));
     } catch (err) {
       void err;
     }
-    setIsVisible(false);
-  };
+  }, []);
 
-  const handleEssentialOnly = () => {
+  const handleAccept = () => {
     try {
-      localStorage.setItem("charla_cookie_consent", JSON.stringify({ type: "essential", date: new Date().toISOString() }));
+      localStorage.setItem(
+        "charla_cookie_consent",
+        JSON.stringify({ accepted: true, date: new Date().toISOString() })
+      );
     } catch (err) {
       void err;
     }
@@ -46,63 +38,35 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ onOpenLegalModal }
 
   return (
     <aside 
-      className="charla-cookie-consent" 
+      className="charla-cookie-pill-wrap" 
       role="region" 
-      aria-label="Cookie and Privacy Consent Banner"
+      aria-label="Cookie notification"
     >
-      <div className="charla-cookie-consent__card">
-        <div className="charla-cookie-consent__header">
-          <div className="charla-cookie-consent__icon-wrap" aria-hidden="true">
-            <Cookie size={18} className="charla-cookie-consent__icon" />
-          </div>
-          <div className="charla-cookie-consent__title-wrap">
-            <span className="charla-cookie-consent__badge">
-              <ShieldCheck size={12} /> DPDP & Privacy Compliant
-            </span>
-            <h3 className="charla-cookie-consent__title">We value your privacy</h3>
-          </div>
+      <div className="charla-cookie-pill">
+        <div className="charla-cookie-pill__icon-wrap" aria-hidden="true">
+          <Cookie size={20} className="charla-cookie-pill__icon" />
+        </div>
+
+        <div className="charla-cookie-pill__text">
+          <span>This website uses cookies. </span>
           <button
             type="button"
-            className="charla-cookie-consent__close"
-            onClick={handleEssentialOnly}
-            aria-label="Dismiss cookie notice with essential cookies only"
+            className="charla-cookie-pill__link"
+            onClick={() => onOpenLegalModal?.("cookies")}
+            title="Read cookie policy"
           >
-            <X size={16} />
+            Learn more.
           </button>
         </div>
 
-        <p className="charla-cookie-consent__desc">
-          We use essential local storage to remember your search preferences, save walkthrough slots, and keep your experience fast. We do not sell your personal data.
-        </p>
-
-        <div className="charla-cookie-consent__actions">
-          <button
-            type="button"
-            className="charla-cookie-btn charla-cookie-btn--primary"
-            onClick={handleAcceptAll}
-          >
-            Accept All
-          </button>
-
-          <button
-            type="button"
-            className="charla-cookie-btn charla-cookie-btn--secondary"
-            onClick={handleEssentialOnly}
-          >
-            Essential Only
-          </button>
-
-          {onOpenLegalModal && (
-            <button
-              type="button"
-              className="charla-cookie-btn charla-cookie-btn--text"
-              onClick={() => onOpenLegalModal("cookies")}
-            >
-              <span>Learn more</span>
-              <ChevronRight size={13} />
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          className="charla-cookie-pill__ok"
+          onClick={handleAccept}
+          aria-label="Acknowledge cookies"
+        >
+          Ok
+        </button>
       </div>
     </aside>
   );

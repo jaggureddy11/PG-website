@@ -5204,6 +5204,8 @@ button { font: inherit; cursor: pointer; border: none; background: none; color: 
 /* Completely hide floating FABs and cookie banner when mobile drawer navigation is open */
 body.has-drawer-open .floating-contact-actions,
 body:has(.mmenu.open) .floating-contact-actions,
+body.has-drawer-open .charla-cookie-pill-wrap,
+body:has(.mmenu.open) .charla-cookie-pill-wrap,
 body.has-drawer-open .charla-cookie-consent,
 body:has(.mmenu.open) .charla-cookie-consent {
   display: none !important;
@@ -5703,186 +5705,124 @@ body:has(.mmenu.open) .charla-cookie-consent {
   transform: translateY(-1px);
 }
 
-/* ── Cookie Consent Banner ────────────────────────────────── */
-.charla-cookie-consent {
+/* ── Minimalist Cookie Notification Pill ─────────────────────── */
+.charla-cookie-pill-wrap {
   position: fixed;
   bottom: 24px;
-  left: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
-  max-width: 420px;
-  width: calc(100% - 48px);
+  max-width: calc(100vw - 32px);
   pointer-events: auto;
-  animation: charlaCookieSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: charlaCookiePillFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes charlaCookieSlideUp {
+@keyframes charlaCookiePillFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.97);
+    transform: translate(-50%, 16px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, 0) scale(1);
   }
 }
 
-.charla-cookie-consent__card {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+.charla-cookie-pill {
+  background: #ffffff;
+  border-radius: 9999px;
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.05);
   border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06);
-  border-radius: 18px;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: 6px 6px 6px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
 }
 
-.charla-cookie-consent__header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.charla-cookie-consent__icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #f0fdf4;
-  color: #16a34a;
+.charla-cookie-pill__icon-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #111827;
   flex-shrink: 0;
-  border: 1px solid #dcfce7;
 }
 
-.charla-cookie-consent__title-wrap {
-  flex: 1;
-  min-width: 0;
+.charla-cookie-pill__icon {
+  width: 20px;
+  height: 20px;
 }
 
-.charla-cookie-consent__badge {
-  display: inline-flex;
+.charla-cookie-pill__text {
+  font-size: 14.5px;
+  color: #111827;
+  letter-spacing: -0.01em;
+  display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #15803d;
-  background: #dcfce7;
-  padding: 2px 7px;
-  border-radius: 100px;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
-.charla-cookie-consent__title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-  line-height: 1.25;
-}
-
-.charla-cookie-consent__close {
+.charla-cookie-pill__link {
   background: none;
   border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-}
-
-.charla-cookie-consent__close:hover {
-  color: #0f172a;
-  background: #f1f5f9;
-}
-
-.charla-cookie-consent__desc {
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: #475569;
-  margin: 0;
-}
-
-.charla-cookie-consent__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.charla-cookie-btn {
+  padding: 0;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 8px;
-  border: none;
+  font-size: inherit;
+  font-weight: 700;
+  color: #111827;
   cursor: pointer;
-  transition: all 0.18s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   text-decoration: none;
+  transition: opacity 0.15s ease;
 }
 
-.charla-cookie-btn--primary {
-  background: #0f172a;
+.charla-cookie-pill__link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.charla-cookie-pill__ok {
+  background: #0099ff;
   color: #ffffff;
-}
-
-.charla-cookie-btn--primary:hover {
-  background: #1e293b;
-  transform: translateY(-1px);
-}
-
-.charla-cookie-btn--secondary {
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-}
-
-.charla-cookie-btn--secondary:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
-}
-
-.charla-cookie-btn--text {
-  background: none;
   border: none;
-  color: #64748b;
-  padding: 6px 8px;
-  margin-left: auto;
+  border-radius: 9999px;
+  padding: 8px 24px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 153, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 4px;
 }
 
-.charla-cookie-btn--text:hover {
-  color: #0f172a;
+.charla-cookie-pill__ok:hover {
+  background: #0088e6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 153, 255, 0.45);
+}
+
+.charla-cookie-pill__ok:active {
+  transform: scale(0.96);
 }
 
 @media (max-width: 640px) {
-  .charla-cookie-consent {
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    left: 12px;
-    right: 12px;
+  .charla-cookie-pill-wrap {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     width: auto;
-    max-width: none;
   }
 
-  .charla-cookie-consent__card {
-    padding: 14px 16px;
-    border-radius: 16px;
+  .charla-cookie-pill {
+    padding: 6px 6px 6px 14px;
+    gap: 8px;
   }
 
-  .charla-cookie-btn--text {
-    margin-left: 0;
+  .charla-cookie-pill__text {
+    font-size: 13px;
+  }
+
+  .charla-cookie-pill__ok {
+    padding: 7px 18px;
+    font-size: 13px;
   }
 }
 
