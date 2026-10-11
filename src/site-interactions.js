@@ -510,7 +510,7 @@ export function initSiteInteractions() {
     let pathLength = 3200;
 
     const buildStoryThread = () => {
-      if (rows.length < 4) {
+      if (window.innerWidth <= 900 || rows.length < 4) {
         if (threadTimeline) {
           threadTimeline.kill();
           threadTimeline = null;
@@ -518,123 +518,62 @@ export function initSiteInteractions() {
         return;
       }
 
-      const storyWrap = storySection.querySelector(".story-zigzag-wrap") || storySection;
-      const wrapRect = storyWrap.getBoundingClientRect();
+      const secRect = storySection.getBoundingClientRect();
       const collages = rows.map((r) => r.querySelector(".story-collage"));
-      const contents = rows.map((r) => r.querySelector(".story-content"));
-      if (collages.some((c) => !c) || contents.some((c) => !c)) return;
+      if (collages.some((c) => !c)) return;
 
       const getBox = (el) => {
         const r = el.getBoundingClientRect();
         return {
-          left: r.left - wrapRect.left,
-          top: r.top - wrapRect.top,
-          right: r.right - wrapRect.left,
-          bottom: r.bottom - wrapRect.top,
+          left: r.left - secRect.left,
+          top: r.top - secRect.top,
+          right: r.right - secRect.left,
+          bottom: r.bottom - secRect.top,
           w: r.width,
           h: r.height,
-          cx: r.left - wrapRect.left + r.width / 2,
-          cy: r.top - wrapRect.top + r.height / 2,
         };
       };
 
-      const isMobile = window.innerWidth <= 900;
-      let waypoints = [];
+      const c1 = getBox(collages[0]);
+      const c2 = getBox(collages[1]);
+      const c3 = getBox(collages[2]);
+      const c4 = getBox(collages[3]);
 
-      if (!isMobile) {
-        // Desktop: Fluid harmonic wave weaving through images and behind text across alternating rows
-        const c0 = getBox(collages[0]); // Row 0: Image Left
-        const t0 = getBox(contents[0]); // Row 0: Text Right
-        const t1 = getBox(contents[1]); // Row 1: Text Left
-        const c1 = getBox(collages[1]); // Row 1: Image Right
-        const c2 = getBox(collages[2]); // Row 2: Image Left
-        const t2 = getBox(contents[2]); // Row 2: Text Right
-        const t3 = getBox(contents[3]); // Row 3: Text Left
-        const c3 = getBox(collages[3]); // Row 3: Image Right
+      const waypoints = [
+        // ── Row 1: Collage 1 (Left Image - line emerges smoothly from image) ──
+        { x: c1.left + c1.w * 0.45, y: c1.top + c1.h * 0.4 },
+        { x: c1.right + 20, y: c1.top + c1.h * 0.58 },
+        { x: c1.left + c1.w * 0.7, y: c1.bottom + 30 },
+        
+        // ── Smooth Weave from Row 1 to Row 2 ──
+        { x: (c1.right + c2.left) / 2, y: (c1.bottom + c2.top) / 2 },
+        
+        // ── Row 2: Collage 2 (Right Image) ──
+        { x: c2.left - 15, y: c2.top + c2.h * 0.3 },
+        { x: c2.left + c2.w * 0.55, y: c2.top - 20 },
+        { x: c2.right + 20, y: c2.top + c2.h * 0.52 },
+        { x: c2.left + c2.w * 0.45, y: c2.bottom + 30 },
+        
+        // ── Clean, Elegant Curve from Row 2 to Row 3 ──
+        { x: (c2.left + c3.right) / 2, y: (c2.bottom + c3.top) / 2 },
+        
+        // ── Row 3: Collage 3 (Left Image) ──
+        { x: c3.right + 15, y: c3.top + c3.h * 0.28 },
+        { x: c3.left + c3.w * 0.45, y: c3.top - 20 },
+        { x: c3.left - 20, y: c3.top + c3.h * 0.5 },
+        { x: c3.left + c3.w * 0.6, y: c3.bottom + 30 },
+        
+        // ── Clean Curve from Row 3 to Row 4 ──
+        { x: (c3.right + c4.left) / 2, y: (c3.bottom + c4.top) / 2 },
+        
+        // ── Row 4: Collage 4 (Right Image) ──
+        { x: c4.left - 15, y: c4.top + c4.h * 0.3 },
+        { x: c4.left + c4.w * 0.55, y: c4.top - 20 },
+        { x: c4.right + 20, y: c4.top + c4.h * 0.52 },
+        { x: c4.left + c4.w * 0.35, y: c4.bottom + 45 },
+      ];
 
-        waypoints = [
-          // ── Row 0: Starts in Image 0 (Left), sweeps across behind Text 0 (Right) ──
-          { x: c0.left + c0.w * 0.35, y: c0.top + c0.h * 0.28 },
-          { x: c0.right - c0.w * 0.15, y: c0.top + c0.h * 0.65 },
-          { x: t0.left + t0.w * 0.35, y: t0.top + t0.h * 0.45 },
-          { x: t0.right - 25, y: t0.bottom + 15 },
-
-          // ── Transition: Center swoop from Row 0 to Row 1 ──
-          { x: (t0.cx + t1.cx) / 2, y: (t0.bottom + t1.top) / 2 },
-
-          // ── Row 1: Sweeps behind Text 1 (Left), then through Image 1 (Right) ──
-          { x: t1.left + t1.w * 0.35, y: t1.top + t1.h * 0.45 },
-          { x: (t1.right + c1.left) / 2, y: (t1.bottom + c1.top) / 2 },
-          { x: c1.cx, y: c1.top + c1.h * 0.55 },
-          { x: c1.right - c1.w * 0.2, y: c1.bottom + 15 },
-
-          // ── Transition: Center swoop from Row 1 to Row 2 ──
-          { x: (c1.cx + c2.cx) / 2, y: (c1.bottom + c2.top) / 2 },
-
-          // ── Row 2: Sweeps through Image 2 (Left), then behind Text 2 (Right) ──
-          { x: c2.left + c2.w * 0.35, y: c2.top + c2.h * 0.30 },
-          { x: c2.right - c2.w * 0.15, y: c2.top + c2.h * 0.68 },
-          { x: t2.left + t2.w * 0.35, y: t2.top + t2.h * 0.45 },
-          { x: t2.right - 25, y: t2.bottom + 15 },
-
-          // ── Transition: Center swoop from Row 2 to Row 3 ──
-          { x: (t2.cx + t3.cx) / 2, y: (t2.bottom + t3.top) / 2 },
-
-          // ── Row 3: Sweeps behind Text 3 (Left), then through Image 3 (Right) ──
-          { x: t3.left + t3.w * 0.35, y: t3.top + t3.h * 0.45 },
-          { x: (t3.right + c3.left) / 2, y: (t3.bottom + c3.top) / 2 },
-          { x: c3.cx, y: c3.top + c3.h * 0.55 },
-          { x: c3.cx - 50, y: c3.bottom + 45 },
-        ];
-      } else {
-        // Mobile & Tablet Weave: Harmonious sinusoidal wave between images and behind text
-        const c0 = getBox(collages[0]);
-        const t0 = getBox(contents[0]);
-        const c1 = getBox(collages[1]);
-        const t1 = getBox(contents[1]);
-        const c2 = getBox(collages[2]);
-        const t2 = getBox(contents[2]);
-        const c3 = getBox(collages[3]);
-        const t3 = getBox(contents[3]);
-
-        const clampX = (val) => Math.max(16, Math.min(wrapRect.width - 16, val));
-
-        waypoints = [
-          // ── Row 0: Through Image 0 ──
-          { x: clampX(c0.left + c0.w * 0.30), y: c0.top + c0.h * 0.30 },
-          { x: clampX(c0.left + c0.w * 0.70), y: c0.top + c0.h * 0.75 },
-
-          // ── Row 0: Behind Text 0 ──
-          { x: clampX(t0.left + t0.w * 0.38), y: t0.top + t0.h * 0.45 },
-          { x: clampX(t0.left + t0.w * 0.55), y: t0.bottom + (c1.top - t0.bottom) * 0.45 },
-
-          // ── Row 1: Through Image 1 ──
-          { x: clampX(c1.left + c1.w * 0.70), y: c1.top + c1.h * 0.30 },
-          { x: clampX(c1.left + c1.w * 0.30), y: c1.top + c1.h * 0.75 },
-
-          // ── Row 1: Behind Text 1 ──
-          { x: clampX(t1.left + t1.w * 0.62), y: t1.top + t1.h * 0.45 },
-          { x: clampX(t1.left + t1.w * 0.45), y: t1.bottom + (c2.top - t1.bottom) * 0.45 },
-
-          // ── Row 2: Through Image 2 ──
-          { x: clampX(c2.left + c2.w * 0.30), y: c2.top + c2.h * 0.30 },
-          { x: clampX(c2.left + c2.w * 0.70), y: c2.top + c2.h * 0.75 },
-
-          // ── Row 2: Behind Text 2 ──
-          { x: clampX(t2.left + t2.w * 0.38), y: t2.top + t2.h * 0.45 },
-          { x: clampX(t2.left + t2.w * 0.55), y: t2.bottom + (c3.top - t2.bottom) * 0.45 },
-
-          // ── Row 3: Through Image 3 ──
-          { x: clampX(c3.left + c3.w * 0.70), y: c3.top + c3.h * 0.30 },
-          { x: clampX(c3.left + c3.w * 0.30), y: c3.top + c3.h * 0.75 },
-
-          // ── Row 3: Behind Text 3 ──
-          { x: clampX(t3.left + t3.w * 0.50), y: t3.top + t3.h * 0.45 },
-          { x: clampX(t3.cx), y: t3.bottom + 35 },
-        ];
-      }
-
-      function getSmoothSplinePath(pts, tension = 0.20) {
+      function getSmoothSplinePath(pts, tension = 0.24) {
         if (!pts || pts.length < 2) return "";
         let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
         for (let i = 0; i < pts.length - 1; i++) {
@@ -653,8 +592,8 @@ export function initSiteInteractions() {
         return path;
       }
 
-      const d = getSmoothSplinePath(waypoints, isMobile ? 0.18 : 0.20);
-      threadSvg.setAttribute("viewBox", `0 0 ${wrapRect.width} ${wrapRect.height}`);
+      const d = getSmoothSplinePath(waypoints, 0.25);
+      threadSvg.setAttribute("viewBox", `0 0 ${secRect.width} ${secRect.height}`);
       threadPath.setAttribute("d", d);
       if (threadTrack) threadTrack.setAttribute("d", d);
 
@@ -673,9 +612,9 @@ export function initSiteInteractions() {
           scrollTrigger: {
             trigger: rows[0],
             endTrigger: rows[rows.length - 1],
-            start: isMobile ? "top 85%" : "top 60%",
-            end: isMobile ? "bottom 75%" : "bottom 65%",
-            scrub: isMobile ? 0.5 : true,
+            start: "top 60%",
+            end: "bottom 65%",
+            scrub: true,
             invalidateOnRefresh: true,
           }
         });
@@ -710,16 +649,6 @@ export function initSiteInteractions() {
         }, 100);
       });
     }
-
-    // Secondary triggers to account for async image decoding
-    setTimeout(() => {
-      buildStoryThread();
-      ScrollTrigger.refresh();
-    }, 300);
-    setTimeout(() => {
-      buildStoryThread();
-      ScrollTrigger.refresh();
-    }, 700);
 
     let storyResizeTimer;
     addTrackedListener(window, "resize", () => {
