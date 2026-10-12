@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /#admin
-Disallow: /#/admin
 
 Sitemap: https://charlaliving.in/sitemap.xml
